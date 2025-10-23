@@ -46,7 +46,7 @@ src/
 ├── utils/              # Utility functions
 │   ├── urlState.ts     # ✅ URL encoding/decoding (23 tests)
 │   ├── dateHelpers.ts  # ✅ Date formatting/generation (26 tests)
-│   ├── voteHelpers.ts  # ⏳ Next to implement
+│   ├── voteHelpers.ts  # ✅ Vote tallying/statistics (31 tests)
 │   └── icsGenerator.ts # ⏳ Phase 2
 ├── types/              # ✅ TypeScript type definitions
 ├── hooks/              # Custom React hooks
@@ -60,15 +60,15 @@ src/
 - ✅ Type definitions (Event, Vote, DateOption, etc.)
 - ✅ URL state utilities with tests (23 passing)
 - ✅ Date helpers with tests (26 passing)
-- ⏳ Vote helpers (next up)
-- ⏳ React Router setup
+- ✅ Vote helpers with tests (31 passing)
+- ⏳ React Router setup (next up)
 - ⏳ Shared UI components
 - ⏳ CreateEventPage
 - ⏳ VotingPage
 - ⏳ ResultsPage
 - ⏳ E2e tests
 
-**Total: 49 tests passing**
+**Total: 80 tests passing**
 
 ### Design System
 
