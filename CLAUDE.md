@@ -62,8 +62,8 @@ src/
 - ✅ Date helpers with tests (26 passing)
 - ✅ Vote helpers with tests (31 passing)
 - ✅ React Router setup with hash routing (6 placeholder pages)
-- ⏳ Shared UI components (next up)
-- ⏳ CreateEventPage implementation
+- ✅ Shared UI components (Button, Card, Input, Modal, CopyButton)
+- ⏳ CreateEventPage implementation (next up)
 - ⏳ VotingPage implementation
 - ⏳ ResultsPage implementation
 - ⏳ E2e tests
