@@ -61,11 +61,11 @@ src/
 - ✅ URL state utilities with tests (23 passing)
 - ✅ Date helpers with tests (26 passing)
 - ✅ Vote helpers with tests (31 passing)
-- ⏳ React Router setup (next up)
-- ⏳ Shared UI components
-- ⏳ CreateEventPage
-- ⏳ VotingPage
-- ⏳ ResultsPage
+- ✅ React Router setup with hash routing (6 placeholder pages)
+- ⏳ Shared UI components (next up)
+- ⏳ CreateEventPage implementation
+- ⏳ VotingPage implementation
+- ⏳ ResultsPage implementation
 - ⏳ E2e tests
 
 **Total: 80 tests passing**
