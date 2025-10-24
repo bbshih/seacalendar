@@ -19,9 +19,15 @@ export default function Button({
   const baseStyles = 'font-semibold rounded-full shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none';
 
   const variantStyles = {
-    primary: 'bg-ocean-500 hover:bg-ocean-600 text-white transform hover:scale-105',
-    secondary: 'bg-coral-400 hover:bg-coral-500 text-white transform hover:scale-105',
-    outline: 'bg-white border-2 border-ocean-400 text-ocean-600 hover:bg-ocean-50',
+    primary: 'bg-ocean-500 hover:bg-ocean-600 transform hover:scale-105',
+    secondary: 'bg-coral-400 hover:bg-coral-500 transform hover:scale-105',
+    outline: 'bg-white border-2 border-ocean-400 hover:bg-ocean-50',
+  };
+
+  const variantTextColors = {
+    primary: '#ffffff',
+    secondary: '#ffffff',
+    outline: '#0284c7',
   };
 
   const sizeStyles = {
@@ -35,6 +41,7 @@ export default function Button({
   return (
     <button
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyles} ${className}`}
+      style={{ color: variantTextColors[variant] }}
       disabled={disabled}
       {...props}
     >
