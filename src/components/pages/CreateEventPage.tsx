@@ -6,6 +6,7 @@ import Button from "../shared/Button";
 import Modal from "../shared/Modal";
 import CopyButton from "../shared/CopyButton";
 import GitHubTokenSetup from "../shared/GitHubTokenSetup";
+import DateListView from "../features/DateListView";
 import type { Event, DateOption } from "../../types";
 import { formatDateLabel, generateDatesInRange } from "../../utils/dateHelpers";
 import {
@@ -13,7 +14,6 @@ import {
   getGitHubToken,
   type CreateEventResult,
 } from "../../utils/githubStorage";
-import ColorPickerTool from "../dev/ColorPickerTool";
 
 export default function CreateEventPage() {
   const [eventTitle, setEventTitle] = useState("");
@@ -405,40 +405,13 @@ export default function CreateEventPage() {
               {/* Date List */}
               {dateOptions.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-ocean-700 mb-3">
-                    Selected Dates ({dateOptions.length})
+                  <h3 className="font-semibold text-ocean-700 mb-4">
+                    Selected Dates ({dateOptions.length} total)
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {dateOptions.map((option) => (
-                      <div
-                        key={option.id}
-                        className="bg-white border-2 border-ocean-200 rounded-lg p-3 flex items-center justify-between"
-                      >
-                        <span className="text-ocean-700 font-medium">
-                          {option.label}
-                        </span>
-                        <button
-                          onClick={() => handleRemoveDate(option.id)}
-                          className="text-red-500 hover:text-red-700 transition-colors p-1"
-                          aria-label="Remove date"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                  <DateListView
+                    dateOptions={dateOptions}
+                    onRemoveDate={handleRemoveDate}
+                  />
                 </div>
               )}
             </div>
@@ -594,7 +567,6 @@ export default function CreateEventPage() {
           </div>
         </Modal>
       </div>
-      <ColorPickerTool />
     </div>
   );
 }
