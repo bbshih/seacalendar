@@ -5,13 +5,13 @@ import Input from '../shared/Input';
 import Button from '../shared/Button';
 import Modal from '../shared/Modal';
 import CopyButton from '../shared/CopyButton';
+import DateCalendarView from '../features/DateCalendarView';
 import type { Event, Vote } from '../../types';
 import {
   fetchEventFromGist,
-  updateEventGist,
-  getGitHubToken,
 } from '../../utils/githubStorage';
 import { hasVoterVoted } from '../../utils/voteHelpers';
+import { encryptData, deriveKeyFromPassword } from '../../utils/encryption';
 
 export default function VotingPage() {
   const [searchParams] = useSearchParams();
@@ -165,27 +165,37 @@ export default function VotingPage() {
           : [...event.votes, newVote],
       };
 
-      // Save to Gist
-      // Note: Voters should not need a GitHub token to vote
-      // This is a limitation of the current architecture - we need the organizer's token
-      // For now, we'll show an error. In production, we'd need a different approach.
-      // TODO: Consider using a serverless function or allowing anonymous Gist updates
-      const token = getGitHubToken();
-      if (!token) {
-        setSubmitError(
-          'Unable to submit vote. This voting link requires a GitHub token. Please contact the organizer.'
-        );
-        setIsSubmitting(false);
-        return;
-      }
+      // Save vote via serverless API
+      // This allows voting without a GitHub token
+      const actualKey = needsPassword && password
+        ? await deriveKeyFromPassword(password, event.id)
+        : encryptionKey || '';
 
-      await updateEventGist(
-        gistId,
-        updatedEvent,
-        encryptionKey || '',
-        { token },
-        needsPassword ? password : undefined
+      const encrypted = await encryptData(
+        JSON.stringify(updatedEvent),
+        actualKey
       );
+
+      // Submit to serverless API
+      const apiUrl = import.meta.env.DEV
+        ? 'http://localhost:5173/api/submit-vote'
+        : '/api/submit-vote';
+
+      const apiResponse = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gistId,
+          encryptedData: encrypted,
+        }),
+      });
+
+      if (!apiResponse.ok) {
+        const errorData = await apiResponse.json();
+        throw new Error(errorData.error || 'Failed to submit vote');
+      }
 
       // Success! Update local state and show success modal
       setEvent(updatedEvent);
@@ -327,29 +337,13 @@ export default function VotingPage() {
             {/* Date Selection */}
             <div>
               <label className="block text-lg font-semibold text-ocean-700 mb-4">
-                Available Dates
+                Select Your Available Dates
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {event.dateOptions.map((option) => {
-                  const isSelected = selectedDates.includes(option.id);
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleToggleDate(option.id)}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                        isSelected
-                          ? 'bg-ocean-500 border-ocean-600 text-white shadow-lg transform scale-105'
-                          : 'bg-white border-ocean-200 text-ocean-700 hover:border-ocean-400 hover:shadow-md'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{option.label}</span>
-                        {isSelected && <span className="text-xl">✓</span>}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              <DateCalendarView
+                dateOptions={event.dateOptions}
+                selectedDates={selectedDates}
+                onToggleDate={handleToggleDate}
+              />
             </div>
 
             {/* Error message */}

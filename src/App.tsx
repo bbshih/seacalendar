@@ -5,6 +5,7 @@ import VotingPage from './components/pages/VotingPage';
 import ResultsPage from './components/pages/ResultsPage';
 import VenueSelectionPage from './components/pages/VenueSelectionPage';
 import EventSummaryPage from './components/pages/EventSummaryPage';
+import ColorPickerTool from './components/dev/ColorPickerTool';
 
 export default function App() {
   return (
@@ -17,6 +18,9 @@ export default function App() {
         <Route path="/venue" element={<VenueSelectionPage />} />
         <Route path="/event" element={<EventSummaryPage />} />
       </Routes>
+
+      {/* Development Tool - Remove before production */}
+      <ColorPickerTool />
     </HashRouter>
   );
 }

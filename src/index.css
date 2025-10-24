@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  /* Ocean theme colors */
   --color-ocean-50: #f0f9ff;
   --color-ocean-100: #e0f2fe;
   --color-ocean-200: #b9e6fe;
@@ -12,14 +11,11 @@
   --color-ocean-700: #0369a1;
   --color-ocean-800: #075985;
   --color-ocean-900: #0c4a6e;
-
-  --color-coral-400: #fb923c;
+  --color-coral-400: #ff957a;
   --color-coral-500: #f97316;
-
   --color-sand-100: #fef3c7;
   --color-sand-200: #fde68a;
   --color-sand-300: #fcd34d;
-
   --color-seaweed-50: #f0fdf4;
   --color-seaweed-500: #10b981;
   --color-seaweed-600: #059669;
@@ -29,15 +25,15 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
