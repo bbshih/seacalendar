@@ -65,11 +65,22 @@ src/
 - ✅ Shared UI components (Button, Card, Input, Modal, CopyButton)
 - ✅ CreateEventPage implementation with date selection
 - ✅ Custom hooks (useEventFromUrl, useOrganizerKey)
+- ✅ GitHub Gist storage with AES-GCM encryption
+- ✅ GitHubTokenSetup component for PAT management
 - ⏳ VotingPage implementation (next up)
 - ⏳ ResultsPage implementation
 - ⏳ E2e tests
 
 **Total: 80 tests passing**
+
+### Storage Architecture
+
+**GitHub Gist Backend (Private & Encrypted):**
+- Private Gists store event data
+- AES-GCM client-side encryption (256-bit keys)
+- Encryption keys embedded in URLs, never stored on GitHub
+- Organizer can delete event data anytime
+- Requires GitHub Personal Access Token (gist scope)
 
 ### Design System
 
