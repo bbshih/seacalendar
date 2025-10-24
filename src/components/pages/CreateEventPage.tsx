@@ -5,14 +5,16 @@ import Input from '../shared/Input';
 import Button from '../shared/Button';
 import Modal from '../shared/Modal';
 import CopyButton from '../shared/CopyButton';
+import GitHubTokenSetup from '../shared/GitHubTokenSetup';
 import type { Event, DateOption } from '../../types';
-import { buildVotingUrl, buildResultsUrl } from '../../utils/urlState';
 import { formatDateLabel, generateDatesInRange } from '../../utils/dateHelpers';
+import { createEventGist, getGitHubToken, type CreateEventResult } from '../../utils/githubStorage';
 
 export default function CreateEventPage() {
   const [eventTitle, setEventTitle] = useState('');
   const [organizerName, setOrganizerName] = useState('');
   const [dateOptions, setDateOptions] = useState<DateOption[]>([]);
+  const [githubToken, setGithubToken] = useState<string | null>(null);
 
   // Quick add state
   const [startDate, setStartDate] = useState('');
@@ -24,7 +26,9 @@ export default function CreateEventPage() {
 
   // Modal state
   const [showLinksModal, setShowLinksModal] = useState(false);
-  const [generatedEvent, setGeneratedEvent] = useState<Event | null>(null);
+  const [eventResult, setEventResult] = useState<CreateEventResult | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
 
   const handleQuickAdd = () => {
     if (!startDate || !endDate) {
@@ -78,7 +82,7 @@ export default function CreateEventPage() {
     setDateOptions(dateOptions.filter(opt => opt.id !== id));
   };
 
-  const handleGenerateLinks = () => {
+  const handleGenerateLinks = async () => {
     if (!eventTitle.trim()) {
       alert('Please enter an event title');
       return;
@@ -91,6 +95,12 @@ export default function CreateEventPage() {
 
     if (dateOptions.length === 0) {
       alert('Please add at least one date option');
+      return;
+    }
+
+    const token = githubToken || getGitHubToken();
+    if (!token) {
+      alert('Please set up your GitHub token first');
       return;
     }
 
@@ -108,8 +118,21 @@ export default function CreateEventPage() {
       createdAt: new Date().toISOString(),
     };
 
-    setGeneratedEvent(event);
-    setShowLinksModal(true);
+    setIsCreating(true);
+    setCreateError('');
+
+    try {
+      const result = await createEventGist(event, { token });
+      setEventResult(result);
+      setShowLinksModal(true);
+    } catch (error) {
+      console.error('Failed to create event:', error);
+      setCreateError(
+        error instanceof Error ? error.message : 'Failed to create event. Please try again.'
+      );
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleToggleDay = (day: number) => {
@@ -119,9 +142,6 @@ export default function CreateEventPage() {
       setSelectedDays([...selectedDays, day].sort());
     }
   };
-
-  const votingUrl = generatedEvent ? buildVotingUrl(generatedEvent) : '';
-  const resultsUrl = generatedEvent ? buildResultsUrl(generatedEvent) : '';
 
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -135,6 +155,14 @@ export default function CreateEventPage() {
           <p className="text-lg text-ocean-500">
             Create an event and let your crew vote on dates
           </p>
+        </div>
+
+        {/* GitHub Token Setup */}
+        <div className="mb-6">
+          <GitHubTokenSetup
+            onTokenReady={setGithubToken}
+            requireToken={false}
+          />
         </div>
 
         <Card>
@@ -272,13 +300,19 @@ export default function CreateEventPage() {
 
             {/* Generate Button */}
             <div className="pt-6 border-t-2 border-ocean-100">
+              {createError && (
+                <div className="mb-4 p-4 bg-red-50 border-2 border-red-200 rounded-lg text-red-700">
+                  {createError}
+                </div>
+              )}
               <Button
                 onClick={handleGenerateLinks}
                 variant="primary"
                 size="lg"
                 fullWidth
+                disabled={isCreating || !githubToken}
               >
-                Generate Voting Link
+                {isCreating ? 'Creating Event...' : 'Generate Voting Link'}
               </Button>
             </div>
           </div>
@@ -292,10 +326,14 @@ export default function CreateEventPage() {
           size="lg"
         >
           <div className="space-y-6">
-            <p className="text-gray-700">
-              Share the voting link with your friends, and use the results link to view
-              votes and select the winning date.
-            </p>
+            <div className="bg-seaweed-50 border-2 border-seaweed-200 rounded-lg p-4">
+              <p className="text-seaweed-800 font-medium">
+                ✅ Event stored securely in private encrypted Gist
+              </p>
+              <p className="text-sm text-seaweed-700 mt-1">
+                Share the voting link with your friends. Keep the results link for yourself!
+              </p>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -304,11 +342,11 @@ export default function CreateEventPage() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={votingUrl}
+                  value={eventResult?.votingUrl || ''}
                   readOnly
-                  className="flex-1 px-4 py-2 border-2 border-ocean-200 rounded-lg bg-ocean-50 text-sm"
+                  className="flex-1 px-4 py-2 border-2 border-ocean-200 rounded-lg bg-ocean-50 text-sm font-mono"
                 />
-                <CopyButton textToCopy={votingUrl} variant="secondary" size="md" />
+                <CopyButton textToCopy={eventResult?.votingUrl || ''} variant="secondary" size="md" />
               </div>
             </div>
 
@@ -319,15 +357,25 @@ export default function CreateEventPage() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={resultsUrl}
+                  value={eventResult?.resultsUrl || ''}
                   readOnly
-                  className="flex-1 px-4 py-2 border-2 border-ocean-200 rounded-lg bg-sand-100 text-sm"
+                  className="flex-1 px-4 py-2 border-2 border-ocean-200 rounded-lg bg-sand-100 text-sm font-mono"
                 />
-                <CopyButton textToCopy={resultsUrl} variant="primary" size="md" />
+                <CopyButton textToCopy={eventResult?.resultsUrl || ''} variant="primary" size="md" />
               </div>
-              <p className="mt-2 text-sm text-coral-500">
-                Important: Save this link to access results and finalize the event!
+              <p className="mt-2 text-sm text-coral-500 font-medium">
+                ⚠️ Important: Save this link to access results and finalize the event!
               </p>
+            </div>
+
+            <div className="bg-ocean-50 border-2 border-ocean-200 rounded-lg p-4">
+              <h4 className="font-semibold text-ocean-800 mb-2">Privacy & Storage</h4>
+              <ul className="text-sm text-ocean-700 space-y-1">
+                <li>• Votes are encrypted before storage</li>
+                <li>• Stored in a private GitHub Gist (not publicly listed)</li>
+                <li>• You can delete the event data anytime from the results page</li>
+                <li>• Gist ID: <code className="bg-white px-1 rounded text-xs">{eventResult?.gistId}</code></li>
+              </ul>
             </div>
           </div>
         </Modal>
