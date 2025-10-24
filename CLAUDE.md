@@ -63,15 +63,18 @@ src/
 - ✅ Vote helpers with tests (31 passing)
 - ✅ React Router setup with hash routing (6 placeholder pages)
 - ✅ Shared UI components (Button, Card, Input, Modal, CopyButton)
-- ✅ CreateEventPage implementation with date selection
+- ✅ CreateEventPage implementation with date selection & password protection
 - ✅ Custom hooks (useEventFromUrl, useOrganizerKey)
 - ✅ GitHub Gist storage with AES-GCM encryption
 - ✅ GitHubTokenSetup component for PAT management
-- ⏳ VotingPage implementation (next up)
-- ⏳ ResultsPage implementation
-- ⏳ E2e tests
+- ✅ VotingPage implementation with password support
+- ✅ ResultsPage implementation with vote tallies & organizer controls
+- ✅ Security improvements (sessionStorage, PBKDF2 password protection)
+- ⏳ E2e tests (next up)
 
 **Total: 80 tests passing**
+
+**Phase 1 Status: COMPLETE** ✅
 
 ### Storage Architecture
 
@@ -107,14 +110,26 @@ src/
 
 ### Next Steps
 
-Continue with Phase 1:
-1. Implement `voteHelpers.ts` with tests
-2. Set up React Router with hash routing
-3. Create shared components (Button, Card, Input, Modal, CopyButton)
-4. Build CreateEventPage
-5. Build VotingPage
-6. Build ResultsPage
-7. Add e2e tests for complete voting flow
-8. Apply ocean theme styling
+Phase 1 is complete! Next priorities:
+1. **E2e tests** - Add Playwright tests for complete voting flow
+2. **Phase 2 features** (venue selection, calendar invites):
+   - VenueSelectionPage with OpenTable integration
+   - ICS file generator for calendar invites
+   - Email template generator
+3. **Polish & improvements**:
+   - Additional animations and ocean theme enhancements
+   - Better mobile responsiveness
+   - Accessibility improvements
+   - Performance optimizations
 
-Refer to TECHNICAL_SPEC.md for detailed requirements for each component.
+### Current Limitations
+
+**GitHub Token Requirement:**
+Voters currently need a GitHub token in sessionStorage to submit votes. This is a limitation of the client-side Gist update architecture.
+
+**Possible solutions:**
+- Serverless function to handle Gist updates
+- Alternative backend (MySQL, Supabase, etc.)
+- Organizer-only vote collection via results page
+
+Refer to TECHNICAL_SPEC.md for detailed requirements for Phase 2 components.
