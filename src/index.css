@@ -1,6 +1,4 @@
-@import 'tailwindcss';
-
-/* Custom ocean theme colors are defined in tailwind.config.js */
+@import "tailwindcss";
 
 body {
   margin: 0;
@@ -18,5 +16,5 @@ code {
 
 /* Ensure button text is always visible */
 button {
-  color: inherit;
+  color: inherit !important;
 }
