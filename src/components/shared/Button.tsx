@@ -41,7 +41,11 @@ export default function Button({
   return (
     <button
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyles} ${className}`}
-      style={{ color: variantTextColors[variant] }}
+      style={{
+        color: variantTextColors[variant],
+        // Force color to be visible
+        WebkitTextFillColor: variantTextColors[variant],
+      }}
       disabled={disabled}
       {...props}
     >

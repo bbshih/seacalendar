@@ -26,10 +26,20 @@ export default function GitHubTokenSetup({
   const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
+    // Check for token in localStorage first
     const savedToken = getGitHubToken();
     if (savedToken) {
       setHasToken(true);
       onTokenReady(savedToken);
+      return;
+    }
+
+    // Check for token in environment variables
+    const envToken = import.meta.env.VITE_GITHUB_TOKEN;
+    if (envToken) {
+      saveGitHubToken(envToken);
+      setHasToken(true);
+      onTokenReady(envToken);
     }
   }, [onTokenReady]);
 
