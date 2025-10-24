@@ -26,8 +26,8 @@ export default function Button({
   };
 
   const variantTextColors = {
-    primary: "#ffffff",
-    secondary: "#ffffff",
+    primary: "#f0f9ff",
+    secondary: "#fef3c7",
     outline: "#0284c7",
   };
 

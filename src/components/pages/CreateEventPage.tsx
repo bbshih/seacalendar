@@ -16,6 +16,10 @@ export default function CreateEventPage() {
   const [dateOptions, setDateOptions] = useState<DateOption[]>([]);
   const [githubToken, setGithubToken] = useState<string | null>(null);
 
+  // Password protection
+  const [usePassword, setUsePassword] = useState(false);
+  const [password, setPassword] = useState('');
+
   // Quick add state
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -98,6 +102,16 @@ export default function CreateEventPage() {
       return;
     }
 
+    if (usePassword && !password.trim()) {
+      alert('Please enter a password or disable password protection');
+      return;
+    }
+
+    if (usePassword && password.length < 8) {
+      alert('Password must be at least 8 characters for security');
+      return;
+    }
+
     const token = githubToken || getGitHubToken();
     if (!token) {
       alert('Please set up your GitHub token first');
@@ -122,7 +136,11 @@ export default function CreateEventPage() {
     setCreateError('');
 
     try {
-      const result = await createEventGist(event, { token });
+      const result = await createEventGist(
+        event,
+        { token },
+        usePassword ? password : undefined
+      );
       setEventResult(result);
       setShowLinksModal(true);
     } catch (error) {
@@ -150,10 +168,10 @@ export default function CreateEventPage() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-ocean-600 mb-2">
-            Set Sail on a New Adventure
+            ⚓ Set Sail on a New Adventure ⛵
           </h1>
           <p className="text-lg text-ocean-500">
-            Create an event and let your crew vote on dates
+            Create an event and let your crew vote on dates 🗳️
           </p>
         </div>
 
@@ -184,10 +202,35 @@ export default function CreateEventPage() {
               fullWidth
             />
 
+            {/* Password Protection */}
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="use-password"
+                checked={usePassword}
+                onChange={(e) => setUsePassword(e.target.checked)}
+                className="w-4 h-4 text-ocean-600 border-ocean-300 rounded focus:ring-ocean-500"
+              />
+              <label htmlFor="use-password" className="text-ocean-700">
+                Password protect event
+              </label>
+            </div>
+
+            {usePassword && (
+              <Input
+                label="Event Password"
+                type="password"
+                placeholder="Choose a memorable password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                fullWidth
+              />
+            )}
+
             {/* Date Selection */}
             <div>
               <h2 className="text-2xl font-bold text-ocean-600 mb-4">
-                Add Date Options
+                📅 Add Date Options
               </h2>
 
               {/* Quick Add */}
@@ -196,21 +239,87 @@ export default function CreateEventPage() {
                   Quick Add: Date Range
                 </h3>
 
+                {/* Quick Selection Buttons */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Quick Select Range
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => {
+                        const today = new Date();
+                        const oneMonthLater = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+                        setStartDate(today.toISOString().split('T')[0]);
+                        setEndDate(oneMonthLater.toISOString().split('T')[0]);
+                      }}
+                      className="px-3 py-1.5 text-sm bg-white border-2 border-ocean-300 text-ocean-700 rounded-lg hover:bg-ocean-50 transition-colors"
+                    >
+                      Next 1 Month
+                    </button>
+                    <button
+                      onClick={() => {
+                        const today = new Date();
+                        const twoMonthsLater = new Date(today.getFullYear(), today.getMonth() + 2, today.getDate());
+                        setStartDate(today.toISOString().split('T')[0]);
+                        setEndDate(twoMonthsLater.toISOString().split('T')[0]);
+                      }}
+                      className="px-3 py-1.5 text-sm bg-white border-2 border-ocean-300 text-ocean-700 rounded-lg hover:bg-ocean-50 transition-colors"
+                    >
+                      Next 2 Months
+                    </button>
+                    <button
+                      onClick={() => {
+                        const today = new Date();
+                        const threeMonthsLater = new Date(today.getFullYear(), today.getMonth() + 3, today.getDate());
+                        setStartDate(today.toISOString().split('T')[0]);
+                        setEndDate(threeMonthsLater.toISOString().split('T')[0]);
+                      }}
+                      className="px-3 py-1.5 text-sm bg-white border-2 border-ocean-300 text-ocean-700 rounded-lg hover:bg-ocean-50 transition-colors"
+                    >
+                      Next 3 Months
+                    </button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <Input
-                    label="Start Date"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    fullWidth
-                  />
-                  <Input
-                    label="End Date"
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    fullWidth
-                  />
+                  <div>
+                    <Input
+                      label="Start Date"
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      fullWidth
+                    />
+                    <button
+                      onClick={() => {
+                        const today = new Date();
+                        const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                        setStartDate(firstOfMonth.toISOString().split('T')[0]);
+                      }}
+                      className="mt-2 px-3 py-1.5 text-sm bg-white border-2 border-ocean-300 text-ocean-700 rounded-lg hover:bg-ocean-50 transition-colors"
+                    >
+                      First of Month
+                    </button>
+                  </div>
+                  <div>
+                    <Input
+                      label="End Date"
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      fullWidth
+                    />
+                    <button
+                      onClick={() => {
+                        const today = new Date();
+                        const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                        setEndDate(lastOfMonth.toISOString().split('T')[0]);
+                      }}
+                      className="mt-2 px-3 py-1.5 text-sm bg-white border-2 border-ocean-300 text-ocean-700 rounded-lg hover:bg-ocean-50 transition-colors"
+                    >
+                      End of Month
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mb-4">
@@ -235,7 +344,7 @@ export default function CreateEventPage() {
                 </div>
 
                 <Button onClick={handleQuickAdd} variant="secondary" size="sm">
-                  Generate Dates
+                  ✨ Generate Dates
                 </Button>
               </div>
 
@@ -252,7 +361,7 @@ export default function CreateEventPage() {
                     fullWidth
                   />
                   <Button onClick={handleManualAdd} variant="outline" size="md">
-                    Add Date
+                    ➕ Add Date
                   </Button>
                 </div>
               </div>
@@ -312,7 +421,7 @@ export default function CreateEventPage() {
                 fullWidth
                 disabled={isCreating || !githubToken}
               >
-                {isCreating ? 'Creating Event...' : 'Generate Voting Link'}
+                {isCreating ? '🔄 Creating Event...' : '🚀 Generate Voting Link'}
               </Button>
             </div>
           </div>
@@ -322,7 +431,7 @@ export default function CreateEventPage() {
         <Modal
           isOpen={showLinksModal}
           onClose={() => setShowLinksModal(false)}
-          title="Your Event is Ready!"
+          title="🎉 Your Event is Ready!"
           size="lg"
         >
           <div className="space-y-6">
@@ -334,6 +443,38 @@ export default function CreateEventPage() {
                 Share the voting link with your friends. Keep the results link for yourself!
               </p>
             </div>
+
+            {usePassword ? (
+              <div className="bg-seaweed-50 border-2 border-seaweed-400 rounded-lg p-4">
+                <p className="text-seaweed-800 font-semibold mb-2">
+                  🔒 Password Protected
+                </p>
+                <p className="text-sm text-seaweed-700 mb-2">
+                  Your event is password-protected! The URLs below don't contain encryption keys.
+                </p>
+                <div className="bg-white rounded-lg p-3 mt-2">
+                  <p className="text-sm font-semibold text-ocean-700 mb-1">Event Password:</p>
+                  <code className="text-lg font-mono text-ocean-600 bg-ocean-50 px-3 py-1 rounded">
+                    {password}
+                  </code>
+                </div>
+                <p className="text-sm text-seaweed-600 mt-2">
+                  Share this password with voters through a separate channel (text message, Signal, in-person, etc.)
+                </p>
+              </div>
+            ) : (
+              <div className="bg-coral-50 border-2 border-coral-400 rounded-lg p-4">
+                <p className="text-coral-800 font-semibold mb-2">
+                  ⚠️ Security Notice
+                </p>
+                <ul className="text-sm text-coral-700 space-y-1">
+                  <li>• These URLs contain encryption keys - anyone with the URL can view/vote</li>
+                  <li>• Don't share URLs in public channels (avoid Discord, Slack, public forums)</li>
+                  <li>• URLs will be saved in browser history and may be logged by analytics</li>
+                  <li>• For sensitive events, consider using password protection instead</li>
+                </ul>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

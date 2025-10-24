@@ -14,6 +14,48 @@ export function generateEncryptionKey(): string {
 }
 
 /**
+ * Derive an encryption key from a password using PBKDF2
+ * This allows password-protected events without keys in URLs
+ */
+export async function deriveKeyFromPassword(
+  password: string,
+  salt: string
+): Promise<string> {
+  try {
+    // Import password as key material
+    const encoder = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(password),
+      'PBKDF2',
+      false,
+      ['deriveBits', 'deriveKey']
+    );
+
+    // Derive 256-bit key using PBKDF2
+    const key = await crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: encoder.encode(salt),
+        iterations: 100000, // High iteration count for security
+        hash: 'SHA-256',
+      },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      true,
+      ['encrypt', 'decrypt']
+    );
+
+    // Export as raw key data
+    const exportedKey = await crypto.subtle.exportKey('raw', key);
+    return arrayBufferToBase64(exportedKey);
+  } catch (error) {
+    console.error('Key derivation failed:', error);
+    throw new Error('Failed to derive encryption key from password');
+  }
+}
+
+/**
  * Encrypt data using AES-GCM
  */
 export async function encryptData(

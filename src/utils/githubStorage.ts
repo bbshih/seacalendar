@@ -4,7 +4,7 @@
  */
 
 import type { Event } from '../types';
-import { encryptData, decryptData, generateEncryptionKey } from './encryption';
+import { encryptData, decryptData, generateEncryptionKey, deriveKeyFromPassword } from './encryption';
 
 const GIST_FILENAME = 'seacalendar-event.enc';
 
@@ -29,34 +29,41 @@ export interface CreateEventResult {
 }
 
 /**
- * Store GitHub token in localStorage
+ * Store GitHub token in sessionStorage (more secure than localStorage)
+ * Token will be cleared when browser tab is closed
  */
 export function saveGitHubToken(token: string): void {
-  localStorage.setItem('seacalendar_github_token', token);
+  sessionStorage.setItem('seacalendar_github_token', token);
 }
 
 /**
- * Get GitHub token from localStorage
+ * Get GitHub token from sessionStorage
  */
 export function getGitHubToken(): string | null {
-  return localStorage.getItem('seacalendar_github_token');
+  return sessionStorage.getItem('seacalendar_github_token');
 }
 
 /**
- * Clear GitHub token from localStorage
+ * Clear GitHub token from sessionStorage
  */
 export function clearGitHubToken(): void {
-  localStorage.removeItem('seacalendar_github_token');
+  sessionStorage.removeItem('seacalendar_github_token');
 }
 
 /**
  * Create a new event and store it in a private encrypted Gist
+ * If password is provided, uses password-based encryption (no key in URL)
  */
 export async function createEventGist(
   event: Event,
-  config: GistConfig
+  config: GistConfig,
+  password?: string
 ): Promise<CreateEventResult> {
-  const encryptionKey = generateEncryptionKey();
+  // Use password-based key derivation if password provided
+  const encryptionKey = password
+    ? await deriveKeyFromPassword(password, event.id)
+    : generateEncryptionKey();
+
   const encrypted = await encryptData(JSON.stringify(event), encryptionKey);
 
   const response = await fetch('https://api.github.com/gists', {
@@ -86,8 +93,16 @@ export async function createEventGist(
 
   // Generate URLs
   const baseUrl = `${window.location.origin}${window.location.pathname}`;
-  const votingUrl = `${baseUrl}#/vote?gist=${gistId}&key=${encodeURIComponent(encryptionKey)}`;
-  const resultsUrl = `${baseUrl}#/results?gist=${gistId}&key=${encodeURIComponent(encryptionKey)}&org=${btoa(event.id)}`;
+
+  // If password-protected, don't include key in URL
+  const votingUrl = password
+    ? `${baseUrl}#/vote?gist=${gistId}`
+    : `${baseUrl}#/vote?gist=${gistId}&key=${encodeURIComponent(encryptionKey)}`;
+
+  const resultsUrl = password
+    ? `${baseUrl}#/results?gist=${gistId}&org=${btoa(event.id)}`
+    : `${baseUrl}#/results?gist=${gistId}&key=${encodeURIComponent(encryptionKey)}&org=${btoa(event.id)}`;
+
   const deleteToken = btoa(gistId).substring(0, 8);
 
   return {
@@ -101,12 +116,20 @@ export async function createEventGist(
 
 /**
  * Fetch and decrypt event data from a Gist
+ * If password is provided, derives key from password instead of using direct key
  */
 export async function fetchEventFromGist(
   gistId: string,
   encryptionKey: string,
-  config?: GistConfig
+  config?: GistConfig,
+  password?: string,
+  eventId?: string
 ): Promise<Event> {
+  // If password provided, derive the key
+  let actualKey = encryptionKey;
+  if (password && eventId) {
+    actualKey = await deriveKeyFromPassword(password, eventId);
+  }
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
@@ -134,20 +157,27 @@ export async function fetchEventFromGist(
     throw new Error('Event data not found in Gist');
   }
 
-  const decrypted = await decryptData(encryptedContent, encryptionKey);
+  const decrypted = await decryptData(encryptedContent, actualKey);
   return JSON.parse(decrypted);
 }
 
 /**
  * Update event data in a Gist (e.g., add a vote)
+ * If password is provided, derives key from password
  */
 export async function updateEventGist(
   gistId: string,
   event: Event,
   encryptionKey: string,
-  config: GistConfig
+  config: GistConfig,
+  password?: string
 ): Promise<void> {
-  const encrypted = await encryptData(JSON.stringify(event), encryptionKey);
+  // If password provided, derive the key
+  const actualKey = password
+    ? await deriveKeyFromPassword(password, event.id)
+    : encryptionKey;
+
+  const encrypted = await encryptData(JSON.stringify(event), actualKey);
 
   const response = await fetch(`https://api.github.com/gists/${gistId}`, {
     method: 'PATCH',
