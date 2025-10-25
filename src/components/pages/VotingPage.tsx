@@ -6,12 +6,14 @@ import Button from '../shared/Button';
 import Modal from '../shared/Modal';
 import CopyButton from '../shared/CopyButton';
 import DateCalendarView from '../features/DateCalendarView';
+import AnimatedBackground from '../shared/AnimatedBackground';
 import type { Event, Vote } from '../../types';
 import {
   fetchEventFromGist,
 } from '../../utils/githubStorage';
 import { hasVoterVoted } from '../../utils/voteHelpers';
 import { encryptData, deriveKeyFromPassword } from '../../utils/encryption';
+import { saveVoterInfo, getVoterInfo } from '../../utils/voterStorage';
 
 export default function VotingPage() {
   const [searchParams] = useSearchParams();
@@ -51,6 +53,17 @@ export default function VotingPage() {
 
     loadEvent();
   }, [gistId]);
+
+  // Load saved voter info if returning to edit vote
+  useEffect(() => {
+    if (!event || !gistId) return;
+
+    const savedVote = getVoterInfo(gistId);
+    if (savedVote) {
+      setVoterName(savedVote.voterName);
+      setSelectedDates(savedVote.selectedDates);
+    }
+  }, [event, gistId]);
 
   const loadEvent = async () => {
     if (!gistId) return;
@@ -201,6 +214,13 @@ export default function VotingPage() {
       setEvent(updatedEvent);
       setShowSuccessModal(true);
 
+      // Save voter info to localStorage for future edits
+      saveVoterInfo(gistId, {
+        voterName: voterName.trim(),
+        selectedDates: selectedDates,
+        votedAt: new Date().toISOString(),
+      });
+
       // Generate URL with updated event (for bookmarking)
       const baseUrl = `${window.location.origin}${window.location.pathname}`;
       const updatedUrl = encryptionKey
@@ -309,20 +329,25 @@ export default function VotingPage() {
 
   // Main voting UI
   return (
-    <div className="min-h-screen bg-gradient-to-b from-ocean-50 to-ocean-100 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-ocean-600 mb-2">
-            🌊 {event.title}
-          </h1>
-          <p className="text-lg text-ocean-500">Organized by {event.organizer}</p>
-          <p className="text-ocean-600 mt-2">
-            Select all dates you're available 📅
-          </p>
-        </div>
+    <AnimatedBackground variant="minimal">
+      <div className="min-h-screen p-4 md:p-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8 animate-slide-down">
+            <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-ocean-600 via-coral-500 to-ocean-500 bg-clip-text text-transparent animate-gradient-x bg-[length:200%_100%]"
+              style={{
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>
+              🌊 {event.title}
+            </h1>
+            <p className="text-lg text-ocean-700 font-semibold animate-slide-up">Organized by {event.organizer}</p>
+            <p className="text-ocean-600 mt-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+              Select all dates you're available 📅
+            </p>
+          </div>
 
-        <Card>
+          <Card hover3d={false}>
           <div className="space-y-6">
             {/* Voter Name */}
             <Input
@@ -383,18 +408,21 @@ export default function VotingPage() {
               </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bookmark this link to change your vote later:
-              </label>
-              <div className="flex gap-2">
+            <div className="bg-ocean-50 border-2 border-ocean-200 rounded-lg p-4">
+              <p className="text-sm text-ocean-700 mb-2">
+                <strong>✨ Good news!</strong> You can edit your vote anytime by returning to this page.
+              </p>
+              <p className="text-xs text-ocean-600">
+                Your vote is saved in your browser, so just bookmark this link or keep the URL:
+              </p>
+              <div className="flex gap-2 mt-2">
                 <input
                   type="text"
                   value={voteUrl}
                   readOnly
-                  className="flex-1 px-4 py-2 border-2 border-ocean-200 rounded-lg bg-ocean-50 text-sm font-mono"
+                  className="flex-1 px-3 py-2 border border-ocean-300 rounded bg-white text-xs font-mono"
                 />
-                <CopyButton textToCopy={voteUrl} variant="secondary" size="md" />
+                <CopyButton textToCopy={voteUrl} variant="secondary" size="sm" />
               </div>
             </div>
 
@@ -418,7 +446,8 @@ export default function VotingPage() {
             </div>
           </div>
         </Modal>
+        </div>
       </div>
-    </div>
+    </AnimatedBackground>
   );
 }
