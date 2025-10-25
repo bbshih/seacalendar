@@ -96,7 +96,7 @@ export default function VotingPage() {
         '', // Empty key - will be derived from password
         undefined,
         password,
-        gistId // Use gistId as salt temporarily - this is a limitation
+        gistId ?? undefined // Use gistId as salt temporarily - this is a limitation
       );
       setEvent(eventData);
       setNeedsPassword(false);
@@ -150,7 +150,7 @@ export default function VotingPage() {
       const newVote: Vote = {
         voterName: voterName.trim(),
         selectedDates: selectedDates,
-        votedAt: new Date().toISOString(),
+        timestamp: new Date().toISOString(),
       };
 
       // Update event with new vote
