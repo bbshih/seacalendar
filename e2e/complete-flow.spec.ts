@@ -27,10 +27,10 @@ const createMockGist = (eventData: any) => ({
 
 test.describe('SeaCalendar Complete Flow', () => {
   test.beforeEach(async ({ page }) => {
-    // Set up a mock GitHub token in sessionStorage
+    // Set up a mock GitHub token in localStorage
     await page.goto('/');
     await page.evaluate(() => {
-      sessionStorage.setItem('seacalendar_github_token', 'mock-token-for-testing');
+      localStorage.setItem('seacalendar_github_token', 'mock-token-for-testing');
     });
   });
 

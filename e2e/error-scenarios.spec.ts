@@ -9,7 +9,7 @@ test.describe('Error Scenarios', () => {
     // Set up a mock GitHub token
     await page.goto('/');
     await page.evaluate(() => {
-      sessionStorage.setItem('seacalendar_github_token', 'mock-token');
+      localStorage.setItem('seacalendar_github_token', 'mock-token');
     });
   });
 
