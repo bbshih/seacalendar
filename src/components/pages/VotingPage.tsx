@@ -13,6 +13,7 @@ import {
 } from '../../utils/githubStorage';
 import { hasVoterVoted } from '../../utils/voteHelpers';
 import { encryptData, deriveKeyFromPassword } from '../../utils/encryption';
+import { saveVoterInfo, getVoterInfo } from '../../utils/voterStorage';
 
 export default function VotingPage() {
   const [searchParams] = useSearchParams();
@@ -52,6 +53,17 @@ export default function VotingPage() {
 
     loadEvent();
   }, [gistId]);
+
+  // Load saved voter info if returning to edit vote
+  useEffect(() => {
+    if (!event || !gistId) return;
+
+    const savedVote = getVoterInfo(gistId);
+    if (savedVote) {
+      setVoterName(savedVote.voterName);
+      setSelectedDates(savedVote.selectedDates);
+    }
+  }, [event, gistId]);
 
   const loadEvent = async () => {
     if (!gistId) return;
@@ -201,6 +213,13 @@ export default function VotingPage() {
       // Success! Update local state and show success modal
       setEvent(updatedEvent);
       setShowSuccessModal(true);
+
+      // Save voter info to localStorage for future edits
+      saveVoterInfo(gistId, {
+        voterName: voterName.trim(),
+        selectedDates: selectedDates,
+        votedAt: new Date().toISOString(),
+      });
 
       // Generate URL with updated event (for bookmarking)
       const baseUrl = `${window.location.origin}${window.location.pathname}`;
@@ -389,18 +408,21 @@ export default function VotingPage() {
               </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bookmark this link to change your vote later:
-              </label>
-              <div className="flex gap-2">
+            <div className="bg-ocean-50 border-2 border-ocean-200 rounded-lg p-4">
+              <p className="text-sm text-ocean-700 mb-2">
+                <strong>✨ Good news!</strong> You can edit your vote anytime by returning to this page.
+              </p>
+              <p className="text-xs text-ocean-600">
+                Your vote is saved in your browser, so just bookmark this link or keep the URL:
+              </p>
+              <div className="flex gap-2 mt-2">
                 <input
                   type="text"
                   value={voteUrl}
                   readOnly
-                  className="flex-1 px-4 py-2 border-2 border-ocean-200 rounded-lg bg-ocean-50 text-sm font-mono"
+                  className="flex-1 px-3 py-2 border border-ocean-300 rounded bg-white text-xs font-mono"
                 />
-                <CopyButton textToCopy={voteUrl} variant="secondary" size="md" />
+                <CopyButton textToCopy={voteUrl} variant="secondary" size="sm" />
               </div>
             </div>
 

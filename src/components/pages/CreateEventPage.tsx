@@ -15,6 +15,7 @@ import {
   getGitHubToken,
   type CreateEventResult,
 } from "../../utils/githubStorage";
+import { saveMyEvent } from "../../utils/myEvents";
 
 export default function CreateEventPage() {
   const [eventTitle, setEventTitle] = useState("");
@@ -151,6 +152,15 @@ export default function CreateEventPage() {
       );
       setEventResult(result);
       setShowLinksModal(true);
+
+      // Save event to My Events
+      saveMyEvent({
+        gistId: result.gistId,
+        title: event.title,
+        createdAt: event.createdAt,
+        votingUrl: result.votingUrl,
+        resultsUrl: result.resultsUrl,
+      });
     } catch (error) {
       console.error("Failed to create event:", error);
       setCreateError(
@@ -534,17 +544,21 @@ export default function CreateEventPage() {
                 Results Link (For organizer only)
               </label>
               <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={eventResult?.resultsUrl || ""}
-                  readOnly
-                  className="flex-1 px-4 py-2 border-2 border-ocean-200 rounded-lg bg-sand-100 text-sm font-mono"
-                />
-                <CopyButton
-                  textToCopy={eventResult?.resultsUrl || ""}
+                <a
+                  href={eventResult?.resultsUrl || ""}
+                  className="flex-1 px-4 py-2 border-2 border-coral-200 rounded-lg bg-sand-100 text-sm font-mono hover:bg-sand-200 transition-colors break-all"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {eventResult?.resultsUrl || ""}
+                </a>
+                <Button
                   variant="primary"
                   size="md"
-                />
+                  onClick={() => window.open(eventResult?.resultsUrl || "", '_blank')}
+                >
+                  View Results
+                </Button>
               </div>
               <p className="mt-2 text-sm text-coral-500 font-medium">
                 ⚠️ Important: Save this link to access results and finalize the
@@ -569,6 +583,26 @@ export default function CreateEventPage() {
                   </code>
                 </li>
               </ul>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4 border-t border-ocean-200">
+              <Button
+                variant="outline"
+                size="md"
+                fullWidth
+                onClick={() => window.location.hash = '/my-events'}
+              >
+                📋 View All My Events
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                fullWidth
+                onClick={() => setShowLinksModal(false)}
+              >
+                Done
+              </Button>
             </div>
           </div>
         </Modal>
