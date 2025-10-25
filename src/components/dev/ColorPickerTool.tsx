@@ -132,7 +132,7 @@ export default function ColorPickerTool() {
           <div>
             <h3 className="font-semibold text-sm text-gray-700 mb-2">Ocean (Primary)</h3>
             <div className="space-y-2">
-              {colors.filter(c => c.name.startsWith('Ocean')).map((color, idx) => {
+              {colors.filter(c => c.name.startsWith('Ocean')).map((color, _idx) => {
                 const actualIndex = colors.findIndex(c => c.cssVar === color.cssVar);
                 return (
                   <div key={color.cssVar} className="flex items-center gap-2">
@@ -156,7 +156,7 @@ export default function ColorPickerTool() {
           <div>
             <h3 className="font-semibold text-sm text-gray-700 mb-2">Coral (Accent)</h3>
             <div className="space-y-2">
-              {colors.filter(c => c.name.startsWith('Coral')).map((color, idx) => {
+              {colors.filter(c => c.name.startsWith('Coral')).map((color, _idx) => {
                 const actualIndex = colors.findIndex(c => c.cssVar === color.cssVar);
                 return (
                   <div key={color.cssVar} className="flex items-center gap-2">
@@ -180,7 +180,7 @@ export default function ColorPickerTool() {
           <div>
             <h3 className="font-semibold text-sm text-gray-700 mb-2">Sand (Light)</h3>
             <div className="space-y-2">
-              {colors.filter(c => c.name.startsWith('Sand')).map((color, idx) => {
+              {colors.filter(c => c.name.startsWith('Sand')).map((color, _idx) => {
                 const actualIndex = colors.findIndex(c => c.cssVar === color.cssVar);
                 return (
                   <div key={color.cssVar} className="flex items-center gap-2">
@@ -204,7 +204,7 @@ export default function ColorPickerTool() {
           <div>
             <h3 className="font-semibold text-sm text-gray-700 mb-2">Seaweed (Success)</h3>
             <div className="space-y-2">
-              {colors.filter(c => c.name.startsWith('Seaweed')).map((color, idx) => {
+              {colors.filter(c => c.name.startsWith('Seaweed')).map((color, _idx) => {
                 const actualIndex = colors.findIndex(c => c.cssVar === color.cssVar);
                 return (
                   <div key={color.cssVar} className="flex items-center gap-2">

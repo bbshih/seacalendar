@@ -105,7 +105,7 @@ export default function ResultsPage() {
         '',
         undefined,
         password,
-        gistId
+        gistId ?? undefined
       );
 
       // Verify organizer key

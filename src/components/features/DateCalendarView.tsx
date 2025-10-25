@@ -44,8 +44,8 @@ export default function DateCalendarView({
 
   // Sort months chronologically
   groupedByMonth.sort((a, b) => {
-    const dateA = new Date(groupedByMonth[0].dates[0].dateOption.date);
-    const dateB = new Date(groupedByMonth[1].dates[0].dateOption.date);
+    const dateA = new Date(a.dates[0].dateOption.date);
+    const dateB = new Date(b.dates[0].dateOption.date);
     return dateA.getTime() - dateB.getTime();
   });
 
@@ -75,7 +75,7 @@ export default function DateCalendarView({
                 </tr>
               </thead>
               <tbody>
-                {monthGroup.dates.map((dateInfo, index) => {
+                {monthGroup.dates.map((dateInfo, _index) => {
                   const isSelected = selectedDates.includes(dateInfo.dateOption.id);
                   const isWeekend = ['Sat', 'Sun'].includes(dateInfo.dayOfWeek);
 
