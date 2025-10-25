@@ -7,6 +7,7 @@ import Modal from "../shared/Modal";
 import CopyButton from "../shared/CopyButton";
 import GitHubTokenSetup from "../shared/GitHubTokenSetup";
 import DateListView from "../features/DateListView";
+import AnimatedBackground from "../shared/AnimatedBackground";
 import type { Event, DateOption } from "../../types";
 import { formatDateLabel, generateDatesInRange } from "../../utils/dateHelpers";
 import {
@@ -173,19 +174,24 @@ export default function CreateEventPage() {
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-ocean-50 to-ocean-100 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-ocean-600 mb-2">
-            ⚓ Set Sail on a New Adventure ⛵
-          </h1>
-          <p className="text-lg text-ocean-500">
-            Create an event and let your crew vote on dates 🗳️
-          </p>
-        </div>
+    <AnimatedBackground variant="bubbles">
+      <div className="min-h-screen p-4 md:p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8 animate-slide-down">
+            <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-ocean-600 via-coral-500 to-ocean-500 bg-clip-text text-transparent animate-gradient-x bg-[length:200%_100%]"
+              style={{
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>
+              ⚓ Set Sail on a New Adventure ⛵
+            </h1>
+            <p className="text-lg text-ocean-700 font-semibold animate-slide-up">
+              Create an event and let your crew vote on dates 🗳️
+            </p>
+          </div>
 
-        {/* GitHub Token Setup */}
-        <div className="mb-6">
+          {/* GitHub Token Setup */}
+          <div className="mb-6">
           <GitHubTokenSetup
             onTokenReady={setGithubToken}
             requireToken={false}
@@ -566,7 +572,8 @@ export default function CreateEventPage() {
             </div>
           </div>
         </Modal>
+        </div>
       </div>
-    </div>
+    </AnimatedBackground>
   );
 }
