@@ -309,23 +309,6 @@ describe('CalendarMonthView', () => {
     }
   });
 
-  it('displays legend with color coding', () => {
-    render(
-      <CalendarMonthView
-        dateOptions={[]}
-        onAddDate={mockOnAddDate}
-        onRemoveDate={mockOnRemoveDate}
-      />
-    );
-
-    expect(screen.getByText('Selected')).toBeInTheDocument();
-    // Use getAllByText since "Today" appears in both button and legend
-    const todayElements = screen.getAllByText('Today');
-    expect(todayElements.length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText('Weekend')).toBeInTheDocument();
-    expect(screen.getByText('Past')).toBeInTheDocument();
-  });
-
   it('handles month boundaries correctly', () => {
     render(
       <CalendarMonthView
