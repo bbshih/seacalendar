@@ -39,14 +39,14 @@ const CalendarDay = memo(function CalendarDay({
         aspect-square p-2 rounded-lg transition-all
         flex items-center justify-center
         text-sm font-medium
-        ${isToday && !isSelected ? 'ring-2 ring-ocean-500' : ''}
+        ${isToday ? 'ring-2 ring-coral-400 ring-offset-1' : ''}
         ${isPast
-          ? 'text-gray-300 cursor-not-allowed'
+          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
           : isSelected
-          ? 'bg-ocean-500 text-white hover:bg-ocean-600'
+          ? 'bg-ocean-500 text-white hover:bg-ocean-600 shadow-md'
           : isWeekend
-          ? 'text-coral-500 hover:bg-ocean-50'
-          : 'text-gray-500 hover:bg-ocean-50 hover:text-ocean-700'
+          ? 'bg-sand-50 text-ocean-700 hover:bg-sand-100'
+          : 'bg-white text-gray-600 hover:bg-ocean-50 hover:text-ocean-700'
         }
       `}
       aria-label={`${formatDateLabel(isoDate)}${isSelected ? ' (selected)' : ''}`}
