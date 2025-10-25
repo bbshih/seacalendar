@@ -26,8 +26,9 @@ export default function Card({
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -10;
-    const rotateY = ((x - centerX) / centerX) * 10;
+    // Reduced from 10 to 2 degrees for subtle effect
+    const rotateX = ((y - centerY) / centerY) * -2;
+    const rotateY = ((x - centerX) / centerX) * 2;
 
     setRotation({ x: rotateX, y: rotateY });
   };

@@ -64,10 +64,10 @@ export default function AnimatedBackground({
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-ocean-50 via-ocean-100 to-coral-100/30 animate-gradient-xy bg-[length:400%_400%]" />
+      <div className="fixed inset-0 bg-gradient-to-br from-ocean-50 via-ocean-100 to-coral-100/30 animate-gradient-xy bg-[length:400%_400%] -z-10" />
 
       {/* Floating elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         {elements.map((el) => (
           <div
             key={el.id}
@@ -84,7 +84,7 @@ export default function AnimatedBackground({
             }}
           >
             {el.emoji && (
-              <div className="flex items-center justify-center w-full h-full text-2xl md:text-4xl">
+              <div className="flex items-center justify-center w-full h-full text-2xl md:text-4xl animate-spin-slow">
                 {el.emoji}
               </div>
             )}
@@ -94,14 +94,14 @@ export default function AnimatedBackground({
 
       {/* Additional decorative blobs for depth */}
       {variant !== 'minimal' && (
-        <>
+        <div className="fixed inset-0 pointer-events-none -z-10">
           <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-gradient-to-br from-ocean-300/20 to-coral-300/20 rounded-full blur-3xl animate-float-slow" />
           <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-coral-300/20 to-ocean-400/20 rounded-full blur-3xl animate-float-medium" />
-        </>
+        </div>
       )}
 
       {/* Content */}
-      <div className="relative z-10">
+      <div className="relative">
         {children}
       </div>
     </div>

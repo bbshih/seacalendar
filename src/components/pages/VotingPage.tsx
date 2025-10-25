@@ -328,7 +328,7 @@ export default function VotingPage() {
             </p>
           </div>
 
-          <Card>
+          <Card hover3d={false}>
           <div className="space-y-6">
             {/* Voter Name */}
             <Input

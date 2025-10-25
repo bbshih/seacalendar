@@ -198,7 +198,7 @@ export default function CreateEventPage() {
           />
         </div>
 
-        <Card>
+        <Card hover3d={false}>
           {/* Event Details */}
           <div className="space-y-6">
             <Input

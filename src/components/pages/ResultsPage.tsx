@@ -269,7 +269,7 @@ export default function ResultsPage() {
           </div>
 
           {/* Voting Link Share */}
-          <Card className="mb-6">
+          <Card className="mb-6" hover3d={false}>
           <div className="space-y-3">
             <label className="block text-sm font-medium text-gray-700">
               Share Voting Link
@@ -287,7 +287,7 @@ export default function ResultsPage() {
         </Card>
 
         {/* Vote Results */}
-        <Card>
+        <Card hover3d={false}>
           <h2 className="text-2xl font-bold text-ocean-700 mb-6">
             📊 Vote Tallies
           </h2>
