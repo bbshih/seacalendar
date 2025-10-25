@@ -7,6 +7,7 @@ import Modal from "../shared/Modal";
 import CopyButton from "../shared/CopyButton";
 import GitHubTokenSetup from "../shared/GitHubTokenSetup";
 import DateListView from "../features/DateListView";
+import CalendarMonthView from "../features/CalendarMonthView";
 import AnimatedBackground from "../shared/AnimatedBackground";
 import type { Event, DateOption } from "../../types";
 import { formatDateLabel, generateDatesInRange } from "../../utils/dateHelpers";
@@ -89,6 +90,21 @@ export default function CreateEventPage() {
 
     setDateOptions([...dateOptions, newDateOption]);
     setManualDate("");
+  };
+
+  const handleCalendarAddDate = (isoDate: string) => {
+    // Check for duplicates
+    if (dateOptions.some((opt) => opt.date === isoDate)) {
+      return; // Silently ignore duplicates in calendar view
+    }
+
+    const newDateOption: DateOption = {
+      id: `date-${Date.now()}-${Math.random()}`, // More unique ID for calendar
+      date: isoDate,
+      label: formatDateLabel(isoDate),
+    };
+
+    setDateOptions([...dateOptions, newDateOption]);
   };
 
   const handleRemoveDate = (id: string) => {
@@ -257,6 +273,18 @@ export default function CreateEventPage() {
               <h2 className="text-2xl font-bold text-ocean-600 mb-4">
                 📅 Add Date Options
               </h2>
+
+              {/* Calendar View */}
+              <div className="mb-6">
+                <h3 className="font-semibold text-ocean-700 mb-3">
+                  Calendar View: Click to Select Dates
+                </h3>
+                <CalendarMonthView
+                  dateOptions={dateOptions}
+                  onAddDate={handleCalendarAddDate}
+                  onRemoveDate={handleRemoveDate}
+                />
+              </div>
 
               {/* Quick Add */}
               <div className="bg-ocean-50 p-6 rounded-xl mb-6">
