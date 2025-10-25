@@ -96,7 +96,7 @@ export default function GitHubTokenSetup({
             <div>
               <p className="font-medium text-seaweed-800">GitHub Connected</p>
               <p className="text-sm text-seaweed-600">
-                Your votes will be stored securely
+                Token saved - you won't need to enter it again
               </p>
             </div>
           </div>
@@ -152,7 +152,7 @@ export default function GitHubTokenSetup({
               value={token}
               onChange={(e) => setToken(e.target.value)}
               error={error}
-              helperText="This token is stored locally and never sent anywhere except GitHub"
+              helperText="Saved in your browser - you only need to enter this once"
               fullWidth
             />
 
@@ -211,9 +211,10 @@ export default function GitHubTokenSetup({
 
           <div className="bg-sand-100 p-4 rounded-lg">
             <p className="text-sm text-gray-700">
-              <strong>Privacy Note:</strong> Your token is stored only in your browser's
-              local storage and is used exclusively to communicate with GitHub's API. It's
-              never sent to any third-party servers.
+              <strong>Privacy Note:</strong> Your token is saved in your browser's
+              local storage (persists across sessions) and is used exclusively to communicate
+              with GitHub's API. It's never sent to any third-party servers. You can disconnect
+              anytime to remove it.
             </p>
           </div>
         </div>

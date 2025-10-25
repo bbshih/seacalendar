@@ -29,25 +29,26 @@ export interface CreateEventResult {
 }
 
 /**
- * Store GitHub token in sessionStorage (more secure than localStorage)
- * Token will be cleared when browser tab is closed
+ * Store GitHub token in localStorage
+ * Token will persist across browser sessions for convenience
+ * Users can clear it anytime using the "Disconnect" button
  */
 export function saveGitHubToken(token: string): void {
-  sessionStorage.setItem('seacalendar_github_token', token);
+  localStorage.setItem('seacalendar_github_token', token);
 }
 
 /**
- * Get GitHub token from sessionStorage
+ * Get GitHub token from localStorage
  */
 export function getGitHubToken(): string | null {
-  return sessionStorage.getItem('seacalendar_github_token');
+  return localStorage.getItem('seacalendar_github_token');
 }
 
 /**
- * Clear GitHub token from sessionStorage
+ * Clear GitHub token from localStorage
  */
 export function clearGitHubToken(): void {
-  sessionStorage.removeItem('seacalendar_github_token');
+  localStorage.removeItem('seacalendar_github_token');
 }
 
 /**

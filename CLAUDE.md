@@ -47,7 +47,7 @@ src/
 │   ├── urlState.ts     # ✅ URL encoding/decoding (23 tests)
 │   ├── dateHelpers.ts  # ✅ Date formatting/generation (26 tests)
 │   ├── voteHelpers.ts  # ✅ Vote tallying/statistics (31 tests)
-│   └── icsGenerator.ts # ⏳ Phase 2
+│   └── icsGenerator.ts # ✅ Calendar file generation (19 tests)
 ├── types/              # ✅ TypeScript type definitions
 ├── hooks/              # Custom React hooks
 └── test/               # ✅ Test setup and utilities
@@ -61,7 +61,7 @@ src/
 - ✅ URL state utilities with tests (23 passing)
 - ✅ Date helpers with tests (26 passing)
 - ✅ Vote helpers with tests (31 passing)
-- ✅ React Router setup with hash routing (6 placeholder pages)
+- ✅ React Router setup with hash routing (all pages implemented)
 - ✅ Shared UI components (Button, Card, Input, Modal, CopyButton)
 - ✅ CreateEventPage implementation with date selection & password protection
 - ✅ Custom hooks (useEventFromUrl, useOrganizerKey)
@@ -71,11 +71,27 @@ src/
 - ✅ ResultsPage implementation with vote tallies & organizer controls
 - ✅ Security improvements (sessionStorage, PBKDF2 password protection)
 - ✅ Serverless vote submission (Vercel API endpoint)
-- ⏳ E2e tests (next up)
-
-**Total: 80 tests passing**
 
 **Phase 1 Status: COMPLETE** ✅
+
+**Phase 2 Progress (Calendar Integration):**
+- ✅ VenueSelectionPage with date selection & venue form
+- ✅ ICS file generator utility with tests (19 passing)
+- ✅ EventSummaryPage with calendar download & sharing
+- ✅ Email template generation (mailto: links)
+- ✅ Google Maps integration for venue address
+- ✅ Venue requirements checklist with OpenTable link
+- ✅ Event finalization workflow (results → venue → summary)
+
+**Phase 2 Status: COMPLETE** ✅
+
+**E2E Tests:**
+- ✅ Complete flow test (create → vote → finalize → download)
+- ✅ Landing page and navigation tests
+- ✅ Error scenarios and edge cases
+- ✅ Responsive design tests
+
+**Total: 99 unit tests passing + 3 E2E test suites**
 
 ### Storage Architecture
 
@@ -111,17 +127,21 @@ src/
 
 ### Next Steps
 
-Phase 1 is complete! Next priorities:
-1. **E2e tests** - Add Playwright tests for complete voting flow
-2. **Phase 2 features** (venue selection, calendar invites):
-   - VenueSelectionPage with OpenTable integration
-   - ICS file generator for calendar invites
-   - Email template generator
-3. **Polish & improvements**:
+Phase 1, 2, and E2E tests are complete! ✅ Next priorities:
+1. **Phase 3 features** (optional enhancements):
+   - Past venues tracker (localStorage)
+   - Date pattern helpers (quick presets)
+   - Enhanced venue checklist features
+2. **Polish & improvements**:
    - Additional animations and ocean theme enhancements
    - Better mobile responsiveness
    - Accessibility improvements
    - Performance optimizations
+   - User documentation/help pages
+3. **Deployment**:
+   - Deploy to Vercel/GitHub Pages
+   - Set up environment variables
+   - Monitor and optimize performance
 
 ### Serverless Voting
 

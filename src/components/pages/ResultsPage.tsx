@@ -363,6 +363,26 @@ export default function ResultsPage() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Select Date Button */}
+                      <div className="md:ml-auto">
+                        <Button
+                          onClick={() => {
+                            const params = new URLSearchParams();
+                            params.set('gist', gistId!);
+                            params.set('org', organizerKey!);
+                            params.set('dateId', tally.dateOption.id);
+                            if (encryptionKey) {
+                              params.set('key', encryptionKey);
+                            }
+                            navigate(`/venue?${params.toString()}`);
+                          }}
+                          variant="secondary"
+                          size="sm"
+                        >
+                          Select This Date
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
