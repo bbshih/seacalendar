@@ -70,6 +70,7 @@ src/
 - ✅ VotingPage implementation with password support
 - ✅ ResultsPage implementation with vote tallies & organizer controls
 - ✅ Security improvements (sessionStorage, PBKDF2 password protection)
+- ✅ Serverless vote submission (Vercel API endpoint)
 - ⏳ E2e tests (next up)
 
 **Total: 80 tests passing**
@@ -122,14 +123,19 @@ Phase 1 is complete! Next priorities:
    - Accessibility improvements
    - Performance optimizations
 
-### Current Limitations
+### Serverless Voting
 
-**GitHub Token Requirement:**
-Voters currently need a GitHub token in sessionStorage to submit votes. This is a limitation of the client-side Gist update architecture.
+**✅ IMPLEMENTED** - Voters can now vote without GitHub tokens!
 
-**Possible solutions:**
-- Serverless function to handle Gist updates
-- Alternative backend (MySQL, Supabase, etc.)
-- Organizer-only vote collection via results page
+The app uses a Vercel serverless function (`/api/submit-vote`) to handle Gist updates server-side. This means:
+- Voters don't need GitHub accounts or tokens
+- Only the organizer needs to set up a GitHub PAT in Vercel environment variables
+- Event data is encrypted client-side before being sent to the serverless function
+- The serverless function securely updates Gists using the server-side token
+
+**Setup Requirements:**
+1. Deploy to Vercel (or compatible serverless platform)
+2. Set `GITHUB_TOKEN` environment variable in Vercel dashboard
+3. See DEPLOYMENT.md for detailed setup instructions
 
 Refer to TECHNICAL_SPEC.md for detailed requirements for Phase 2 components.
