@@ -83,7 +83,7 @@ export default function GitHubTokenSetup({
 
   if (hasToken) {
     return (
-      <Card className="bg-seaweed-50 border-seaweed-500">
+      <Card className="bg-seaweed-50 border-seaweed-500" hover3d={false}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <svg
@@ -110,7 +110,7 @@ export default function GitHubTokenSetup({
 
   return (
     <>
-      <Card className="bg-ocean-50 border-ocean-400">
+      <Card className="bg-ocean-50 border-ocean-400" hover3d={false}>
         <div className="space-y-4">
           <div className="flex items-start gap-3">
             <svg
