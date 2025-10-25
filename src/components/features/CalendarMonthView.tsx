@@ -15,6 +15,8 @@ const CalendarDay = memo(function CalendarDay({
   month,
   isSelected,
   isPast,
+  isToday,
+  isWeekend,
   onClick,
 }: {
   day: number;
@@ -22,6 +24,8 @@ const CalendarDay = memo(function CalendarDay({
   month: number;
   isSelected: boolean;
   isPast: boolean;
+  isToday: boolean;
+  isWeekend: boolean;
   onClick: () => void;
 }) {
   const date = new Date(year, month, day);
@@ -35,10 +39,13 @@ const CalendarDay = memo(function CalendarDay({
         aspect-square p-2 rounded-lg transition-all
         flex items-center justify-center
         text-sm font-medium
+        ${isToday && !isSelected ? 'ring-2 ring-ocean-500' : ''}
         ${isPast
           ? 'text-gray-300 cursor-not-allowed'
           : isSelected
           ? 'bg-ocean-500 text-white hover:bg-ocean-600'
+          : isWeekend
+          ? 'text-coral-500 hover:bg-ocean-50'
           : 'text-gray-500 hover:bg-ocean-50 hover:text-ocean-700'
         }
       `}
@@ -61,7 +68,7 @@ function CalendarMonthView({
   const month = currentMonth.getMonth();
 
   // Memoize calendar calculations
-  const { calendarDays, selectedDatesSet, todayTimestamp } = useMemo(() => {
+  const { calendarDays, selectedDatesSet, todayTimestamp, todayDate } = useMemo(() => {
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
     const daysInMonth = lastDayOfMonth.getDate();
@@ -88,7 +95,19 @@ function CalendarMonthView({
     today.setHours(0, 0, 0, 0);
     const todayTs = today.getTime();
 
-    return { calendarDays: days, selectedDatesSet: selectedSet, todayTimestamp: todayTs };
+    // Store today's full date info
+    const todayInfo = {
+      year: today.getFullYear(),
+      month: today.getMonth(),
+      day: today.getDate(),
+    };
+
+    return {
+      calendarDays: days,
+      selectedDatesSet: selectedSet,
+      todayTimestamp: todayTs,
+      todayDate: todayInfo
+    };
   }, [year, month, dateOptions]);
 
   // Format current month display
@@ -193,6 +212,9 @@ function CalendarMonthView({
             const isoDate = date.toISOString().split('T')[0];
             const isSelected = selectedDatesSet.has(isoDate);
             const isPastDate = dateTimestamp < todayTimestamp;
+            const isTodayDate = todayDate.year === year && todayDate.month === month && todayDate.day === day;
+            const dayOfWeek = date.getDay();
+            const isWeekendDate = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
 
             return (
               <CalendarDay
@@ -202,6 +224,8 @@ function CalendarMonthView({
                 month={month}
                 isSelected={isSelected}
                 isPast={isPastDate}
+                isToday={isTodayDate}
+                isWeekend={isWeekendDate}
                 onClick={() => handleDateClick(day)}
               />
             );
