@@ -1,5 +1,4 @@
 import Card from './Card';
-import AnimatedBackground from './AnimatedBackground';
 
 interface LoadingStateProps {
   message?: string;
@@ -21,8 +20,7 @@ export default function LoadingState({
   };
 
   return (
-    <AnimatedBackground variant="bubbles">
-      <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
+      <div className="min-h-screen p-4 md:p-8 flex items-center justify-center bg-gradient-to-b from-ocean-50 to-ocean-100">
         <Card>
           <div className="text-center py-8">
             <div
@@ -32,6 +30,5 @@ export default function LoadingState({
           </div>
         </Card>
       </div>
-    </AnimatedBackground>
   );
 }

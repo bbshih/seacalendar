@@ -1,6 +1,5 @@
 import Button from './Button';
 import Card from './Card';
-import AnimatedBackground from './AnimatedBackground';
 
 interface ErrorStateProps {
   title?: string;
@@ -28,8 +27,7 @@ export default function ErrorState({
   };
 
   return (
-    <AnimatedBackground variant="bubbles">
-      <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
+      <div className="min-h-screen p-4 md:p-8 flex items-center justify-center bg-gradient-to-b from-ocean-50 to-ocean-100">
         <div className="max-w-md mx-auto">
           <Card>
             <div className="text-center">
@@ -52,6 +50,5 @@ export default function ErrorState({
           </Card>
         </div>
       </div>
-    </AnimatedBackground>
   );
 }

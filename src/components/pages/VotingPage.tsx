@@ -6,7 +6,6 @@ import Button from '../shared/Button';
 import Modal from '../shared/Modal';
 import CopyButton from '../shared/CopyButton';
 import DateCalendarView from '../features/DateCalendarView';
-import AnimatedBackground from '../shared/AnimatedBackground';
 import type { Event, Vote } from '../../types';
 import {
   fetchEventFromGist,
@@ -329,8 +328,7 @@ export default function VotingPage() {
 
   // Main voting UI
   return (
-    <AnimatedBackground variant="minimal">
-      <div className="min-h-screen p-4 md:p-8">
+      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-ocean-50 to-ocean-100">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8 animate-slide-down">
@@ -448,6 +446,5 @@ export default function VotingPage() {
         </Modal>
         </div>
       </div>
-    </AnimatedBackground>
   );
 }

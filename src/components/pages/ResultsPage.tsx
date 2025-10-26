@@ -4,7 +4,6 @@ import Card from '../shared/Card';
 import Input from '../shared/Input';
 import Button from '../shared/Button';
 import CopyButton from '../shared/CopyButton';
-import AnimatedBackground from '../shared/AnimatedBackground';
 import type { Event } from '../../types';
 import {
   fetchEventFromGist,
@@ -250,8 +249,7 @@ export default function ResultsPage() {
 
   // Main results UI
   return (
-    <AnimatedBackground variant="minimal">
-      <div className="min-h-screen p-4 md:p-8">
+      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-ocean-50 to-ocean-100">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8 animate-slide-down">
@@ -454,6 +452,5 @@ export default function ResultsPage() {
         </Card>
         </div>
       </div>
-    </AnimatedBackground>
   );
 }

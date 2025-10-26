@@ -41,3 +41,98 @@ code {
 button {
   color: inherit !important;
 }
+
+/* Animation keyframes for AnimatedBackground and other components */
+@keyframes bubble {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-100vh) scale(1.2);
+  }
+  100% {
+    transform: translateY(-100vh) scale(0);
+  }
+}
+
+@keyframes gradient-xy {
+  0%, 100% {
+    background-position: left center;
+  }
+  25% {
+    background-position: center top;
+  }
+  50% {
+    background-position: right center;
+  }
+  75% {
+    background-position: center bottom;
+  }
+}
+
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: left center;
+  }
+  50% {
+    background-position: right center;
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-30px);
+  }
+}
+
+@keyframes float-medium {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes blob {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  50% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slide-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

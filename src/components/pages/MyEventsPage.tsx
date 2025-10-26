@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Card from '../shared/Card';
 import Button from '../shared/Button';
 import CopyButton from '../shared/CopyButton';
-import AnimatedBackground from '../shared/AnimatedBackground';
 import { getMyEvents, removeMyEvent, type SavedEvent } from '../../utils/myEvents';
 
 export default function MyEventsPage() {
@@ -41,8 +40,7 @@ export default function MyEventsPage() {
   };
 
   return (
-    <AnimatedBackground variant="minimal">
-      <div className="min-h-screen p-4 md:p-8">
+      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-ocean-50 to-ocean-100">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8 animate-slide-down">
@@ -165,6 +163,5 @@ export default function MyEventsPage() {
           </div>
         </div>
       </div>
-    </AnimatedBackground>
   );
 }
