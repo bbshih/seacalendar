@@ -88,8 +88,8 @@ describe('QuickAddBuilder', () => {
     const onDatesSelected = vi.fn();
     render(<QuickAddBuilder onDatesSelected={onDatesSelected} />);
 
-    // Default preview should show Fri, Sat, Sun for next 2 months
-    expect(screen.getByText(/Fri, Sat, Sun for next 2 months/i)).toBeInTheDocument();
+    // Default preview should show Fri, Sat, Sun for next 2 months with month names in parentheses
+    expect(screen.getByText(/Fri, Sat, Sun for next 2 months \([^)]+\)/i)).toBeInTheDocument();
   });
 
   it('should call onDatesSelected when Add Dates is clicked', async () => {
@@ -130,8 +130,8 @@ describe('QuickAddBuilder', () => {
     // Add Monday (default is Fri=5, Sat=6, Sun=0)
     await user.click(screen.getByRole('button', { name: 'Mon' }));
 
-    // Preview should now include Monday (days sorted: Sun=0, Mon=1, Fri=5, Sat=6)
-    expect(screen.getByText(/Sun, Mon, Fri, Sat for next 2 months/i)).toBeInTheDocument();
+    // Preview should now include Monday (days sorted: Sun=0, Mon=1, Fri=5, Sat=6) with month names
+    expect(screen.getByText(/Sun, Mon, Fri, Sat for next 2 months \([^)]+\)/i)).toBeInTheDocument();
   });
 
   it('should update preview when time range is changed', async () => {
@@ -142,7 +142,7 @@ describe('QuickAddBuilder', () => {
     // Change to "This month"
     await user.click(screen.getByRole('button', { name: 'This month' }));
 
-    // Preview should show "this month"
-    expect(screen.getByText(/Fri, Sat, Sun for this month/i)).toBeInTheDocument();
+    // Preview should show "this month" with month name in parentheses
+    expect(screen.getByText(/Fri, Sat, Sun for this month \([^)]+\)/i)).toBeInTheDocument();
   });
 });

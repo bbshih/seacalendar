@@ -74,7 +74,17 @@ export default function QuickAddBuilder({ onDatesSelected }: QuickAddBuilderProp
         (opt) => opt.value.months === timeRange.months && opt.value.count === timeRange.count
       )?.label || 'selected period';
 
-    return `${dayNames} for ${rangeLabel.toLowerCase()}`;
+    // Calculate actual month names
+    const today = new Date();
+    const monthNames = [];
+    for (let i = 0; i < timeRange.count; i++) {
+      const monthDate = new Date(today.getFullYear(), today.getMonth() + timeRange.months + i, 1);
+      const monthName = monthDate.toLocaleDateString('en-US', { month: 'long' });
+      monthNames.push(monthName);
+    }
+    const monthsText = monthNames.join(', ');
+
+    return `${dayNames} for ${rangeLabel.toLowerCase()} (${monthsText})`;
   };
 
   return (
