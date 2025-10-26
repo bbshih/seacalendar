@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   formatDateLabel,
   generateDatesInRange,
@@ -7,6 +7,12 @@ import {
   parseDate,
   formatDateFull,
   getDayName,
+  DaysOfWeek,
+  DayPatterns,
+  generateQuarterlyWeekends,
+  generateNextWeekends,
+  generateThisWeekend,
+  generateCustomPattern,
 } from './dateHelpers';
 
 describe('dateHelpers', () => {
@@ -221,6 +227,231 @@ describe('dateHelpers', () => {
     it('should return empty string for invalid day number', () => {
       expect(getDayName(7)).toBe('');
       expect(getDayName(-1)).toBe('');
+    });
+  });
+
+  describe('DayPatterns', () => {
+    it('should define WEEKENDS correctly', () => {
+      expect(DayPatterns.WEEKENDS).toEqual([DaysOfWeek.SATURDAY, DaysOfWeek.SUNDAY]);
+    });
+
+    it('should define FRI_SUN correctly', () => {
+      expect(DayPatterns.FRI_SUN).toEqual([
+        DaysOfWeek.FRIDAY,
+        DaysOfWeek.SATURDAY,
+        DaysOfWeek.SUNDAY,
+      ]);
+    });
+
+    it('should define WEEKDAYS correctly', () => {
+      expect(DayPatterns.WEEKDAYS).toEqual([1, 2, 3, 4, 5]);
+    });
+
+    it('should define ALL_DAYS correctly', () => {
+      expect(DayPatterns.ALL_DAYS).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    });
+  });
+
+  describe('generateQuarterlyWeekends', () => {
+    beforeEach(() => {
+      // Mock today as January 15, 2025 (Wednesday)
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-01-15T12:00:00Z'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should generate Fri-Sun for current + next 2 months', () => {
+      const dates = generateQuarterlyWeekends();
+
+      // Should include dates from Jan 1 to Mar 31 (3 months)
+      expect(dates.length).toBeGreaterThan(0);
+
+      // Check first and last dates are in the expected range
+      const firstDate = new Date(dates[0] + 'T00:00:00');
+      const lastDate = new Date(dates[dates.length - 1] + 'T00:00:00');
+
+      expect(firstDate.getMonth()).toBe(0); // January
+      expect(lastDate.getMonth()).toBeLessThanOrEqual(2); // March or earlier
+
+      // All dates should be Fri, Sat, or Sun
+      dates.forEach((date) => {
+        const d = new Date(date + 'T00:00:00');
+        const day = d.getDay();
+        expect([5, 6, 0]).toContain(day);
+      });
+    });
+
+    it('should return dates as ISO strings', () => {
+      const dates = generateQuarterlyWeekends();
+      dates.forEach((date) => {
+        expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      });
+    });
+  });
+
+  describe('generateNextWeekends', () => {
+    beforeEach(() => {
+      // Mock today as January 15, 2025 (Wednesday)
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-01-15T12:00:00Z'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should generate 4 weekends (Sat-Sun only)', () => {
+      const dates = generateNextWeekends(4, false);
+
+      // 4 weekends = 8 days (4 Saturdays + 4 Sundays)
+      expect(dates.length).toBe(8);
+
+      // All dates should be Sat or Sun
+      dates.forEach((date) => {
+        const d = new Date(date + 'T00:00:00');
+        const day = d.getDay();
+        expect([6, 0]).toContain(day);
+      });
+    });
+
+    it('should generate 4 weekends including Friday', () => {
+      const dates = generateNextWeekends(4, true);
+
+      // 4 weekends with Friday = 12 days (4 Fri + 4 Sat + 4 Sun)
+      expect(dates.length).toBe(12);
+
+      // All dates should be Fri, Sat, or Sun
+      dates.forEach((date) => {
+        const d = new Date(date + 'T00:00:00');
+        const day = d.getDay();
+        expect([5, 6, 0]).toContain(day);
+      });
+    });
+
+    it('should start from next Saturday', () => {
+      const dates = generateNextWeekends(1, false);
+      const firstDate = new Date(dates[0] + 'T00:00:00');
+
+      // First date should be the upcoming Saturday (Jan 18)
+      expect(firstDate.getDay()).toBe(6); // Saturday
+      expect(firstDate.getDate()).toBe(18);
+    });
+  });
+
+  describe('generateThisWeekend', () => {
+    it('should get this weekend when called on Wednesday', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-01-15T12:00:00Z')); // Wednesday
+
+      const dates = generateThisWeekend(true);
+
+      // Should include Fri Jan 17, Sat Jan 18, Sun Jan 19
+      expect(dates.length).toBe(3);
+
+      const days = dates.map((d) => new Date(d + 'T00:00:00').getDay());
+      expect(days).toEqual([5, 6, 0]); // Fri, Sat, Sun
+
+      vi.useRealTimers();
+    });
+
+    it('should get this weekend when called on Friday', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-01-17T12:00:00Z')); // Friday
+
+      const dates = generateThisWeekend(true);
+
+      // Should include Fri Jan 17, Sat Jan 18, Sun Jan 19
+      expect(dates.length).toBe(3);
+
+      const firstDate = new Date(dates[0] + 'T00:00:00');
+      expect(firstDate.getDate()).toBe(17); // Friday
+
+      vi.useRealTimers();
+    });
+
+    it('should get weekend without Friday', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-01-15T12:00:00Z')); // Wednesday
+
+      const dates = generateThisWeekend(false);
+
+      // Should include Sat Jan 18, Sun Jan 19
+      expect(dates.length).toBe(2);
+
+      const days = dates.map((d) => new Date(d + 'T00:00:00').getDay());
+      expect(days).toEqual([6, 0]); // Sat, Sun
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('generateCustomPattern', () => {
+    beforeEach(() => {
+      // Mock today as January 15, 2025
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-01-15T12:00:00Z'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should generate dates for this month with custom days', () => {
+      const dates = generateCustomPattern([DaysOfWeek.MONDAY, DaysOfWeek.FRIDAY], 0, 1);
+
+      // Should include only Mondays and Fridays in January
+      dates.forEach((date) => {
+        const d = new Date(date + 'T00:00:00');
+        expect([1, 5]).toContain(d.getDay());
+        expect(d.getMonth()).toBe(0); // January
+      });
+    });
+
+    it('should generate dates for next month', () => {
+      const dates = generateCustomPattern([DaysOfWeek.SATURDAY], 1, 1);
+
+      // Should include only Saturdays in February
+      dates.forEach((date) => {
+        const d = new Date(date + 'T00:00:00');
+        expect(d.getDay()).toBe(6); // Saturday
+        expect(d.getMonth()).toBe(1); // February
+      });
+    });
+
+    it('should generate dates for multiple months', () => {
+      const dates = generateCustomPattern([DaysOfWeek.FRIDAY], 0, 2);
+
+      // Should include Fridays from Jan and Feb
+      dates.forEach((date) => {
+        const d = new Date(date + 'T00:00:00');
+        expect(d.getDay()).toBe(5); // Friday
+        expect([0, 1]).toContain(d.getMonth()); // Jan or Feb
+      });
+
+      // Should have Fridays from both months
+      expect(dates.length).toBeGreaterThan(4); // At least 4-5 Fridays per month
+    });
+
+    it('should handle all days pattern', () => {
+      const dates = generateCustomPattern(DayPatterns.ALL_DAYS, 0, 1);
+
+      // Should have 31 days for January
+      expect(dates.length).toBe(31);
+    });
+
+    it('should handle weekdays pattern', () => {
+      const dates = generateCustomPattern(DayPatterns.WEEKDAYS, 0, 1);
+
+      // All should be weekdays (Mon-Fri)
+      dates.forEach((date) => {
+        const d = new Date(date + 'T00:00:00');
+        const day = d.getDay();
+        expect(day).toBeGreaterThanOrEqual(1);
+        expect(day).toBeLessThanOrEqual(5);
+      });
     });
   });
 });
