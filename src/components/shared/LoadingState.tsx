@@ -21,7 +21,7 @@ export default function LoadingState({
   };
 
   return (
-    <AnimatedBackground variant="waves">
+    <AnimatedBackground variant="bubbles">
       <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
         <Card>
           <div className="text-center py-8">

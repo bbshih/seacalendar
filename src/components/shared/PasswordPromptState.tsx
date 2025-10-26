@@ -35,7 +35,7 @@ export default function PasswordPromptState({
   };
 
   return (
-    <AnimatedBackground variant="waves">
+    <AnimatedBackground variant="bubbles">
       <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
         <div className="max-w-md mx-auto">
           <Card>
