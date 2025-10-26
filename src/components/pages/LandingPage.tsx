@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import AnimatedBackground from '../shared/AnimatedBackground';
 import Button from '../shared/Button';
 import Card from '../shared/Card';
 
@@ -7,8 +6,7 @@ export default function LandingPage() {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <AnimatedBackground variant="party">
-      <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-b from-ocean-50 to-ocean-100">
         <div className="text-center max-w-4xl mx-auto">
           {/* Main title with gradient and animations */}
           <div className="mb-8 animate-slide-down">
@@ -97,6 +95,5 @@ export default function LandingPage() {
           </div>
         </div>
       </div>
-    </AnimatedBackground>
   );
 }

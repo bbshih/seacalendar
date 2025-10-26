@@ -7,7 +7,6 @@ import Modal from "../shared/Modal";
 import CopyButton from "../shared/CopyButton";
 import GitHubTokenSetup from "../shared/GitHubTokenSetup";
 import CalendarMonthView from "../features/CalendarMonthView";
-import AnimatedBackground from "../shared/AnimatedBackground";
 import type { Event, DateOption } from "../../types";
 import { formatDateLabel, generateDatesInRange } from "../../utils/dateHelpers";
 import {
@@ -199,8 +198,7 @@ export default function CreateEventPage() {
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
-    <AnimatedBackground variant="bubbles">
-      <div className="min-h-screen p-4 md:p-8">
+      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-ocean-50 to-ocean-100">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8 animate-slide-down">
             <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-ocean-600 via-coral-500 to-ocean-500 bg-clip-text text-transparent animate-gradient-x bg-[length:200%_100%]"
@@ -623,6 +621,5 @@ export default function CreateEventPage() {
         </Modal>
         </div>
       </div>
-    </AnimatedBackground>
   );
 }
