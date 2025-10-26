@@ -28,9 +28,6 @@ export default function CreateEventPage() {
   const [usePassword, setUsePassword] = useState(false);
   const [password, setPassword] = useState("");
 
-  // Manual add state
-  const [manualDate, setManualDate] = useState("");
-
   // Modal state
   const [showLinksModal, setShowLinksModal] = useState(false);
   const [eventResult, setEventResult] = useState<CreateEventResult | null>(
@@ -38,28 +35,6 @@ export default function CreateEventPage() {
   );
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState("");
-
-  const handleManualAdd = () => {
-    if (!manualDate) {
-      alert("Please select a date");
-      return;
-    }
-
-    // Check for duplicates
-    if (dateOptions.some((opt) => opt.date === manualDate)) {
-      alert("This date has already been added");
-      return;
-    }
-
-    const newDateOption: DateOption = {
-      id: `date-${dateOptions.length}`,
-      date: manualDate,
-      label: formatDateLabel(manualDate),
-    };
-
-    setDateOptions([...dateOptions, newDateOption]);
-    setManualDate("");
-  };
 
   const handleCalendarAddDate = (isoDate: string) => {
     // Check for duplicates
@@ -269,23 +244,6 @@ export default function CreateEventPage() {
               {/* Quick Add Builder */}
               <div className="mb-6">
                 <QuickAddBuilder onDatesSelected={handlePatternDatesSelected} />
-              </div>
-
-              <div className="bg-sand-100 p-6 rounded-xl mb-6">
-                <h3 className="font-semibold text-ocean-700 mb-3">
-                  Add Single Date
-                </h3>
-                <div className="flex gap-3">
-                  <Input
-                    type="date"
-                    value={manualDate}
-                    onChange={(e) => setManualDate(e.target.value)}
-                    fullWidth
-                  />
-                  <Button onClick={handleManualAdd} variant="outline" size="md">
-                    ➕ Add Date
-                  </Button>
-                </div>
               </div>
 
             </div>
