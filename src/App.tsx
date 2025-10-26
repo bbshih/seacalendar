@@ -6,7 +6,6 @@ import ResultsPage from './components/pages/ResultsPage';
 import VenueSelectionPage from './components/pages/VenueSelectionPage';
 import EventSummaryPage from './components/pages/EventSummaryPage';
 import MyEventsPage from './components/pages/MyEventsPage';
-import ColorPickerTool from './components/dev/ColorPickerTool';
 
 export default function App() {
   return (
@@ -20,9 +19,6 @@ export default function App() {
         <Route path="/event" element={<EventSummaryPage />} />
         <Route path="/my-events" element={<MyEventsPage />} />
       </Routes>
-
-      {/* Development Tool - Remove before production */}
-      <ColorPickerTool />
     </HashRouter>
   );
 }

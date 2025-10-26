@@ -7,8 +7,10 @@ import Modal from "../shared/Modal";
 import CopyButton from "../shared/CopyButton";
 import GitHubTokenSetup from "../shared/GitHubTokenSetup";
 import CalendarMonthView from "../features/CalendarMonthView";
+import DatePatternPresets from "../features/DatePatternPresets";
+import QuickAddBuilder from "../features/QuickAddBuilder";
 import type { Event, DateOption } from "../../types";
-import { formatDateLabel, generateDatesInRange } from "../../utils/dateHelpers";
+import { formatDateLabel } from "../../utils/dateHelpers";
 import {
   createEventGist,
   getGitHubToken,
@@ -26,14 +28,6 @@ export default function CreateEventPage() {
   const [usePassword, setUsePassword] = useState(false);
   const [password, setPassword] = useState("");
 
-  // Quick add state
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [selectedDays, setSelectedDays] = useState<number[]>([5, 6]); // Fri, Sat by default
-
-  // Manual add state
-  const [manualDate, setManualDate] = useState("");
-
   // Modal state
   const [showLinksModal, setShowLinksModal] = useState(false);
   const [eventResult, setEventResult] = useState<CreateEventResult | null>(
@@ -41,54 +35,6 @@ export default function CreateEventPage() {
   );
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState("");
-
-  const handleQuickAdd = () => {
-    if (!startDate || !endDate) {
-      alert("Please select both start and end dates");
-      return;
-    }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (start > end) {
-      alert("Start date must be before end date");
-      return;
-    }
-
-    const dates = generateDatesInRange(start, end, selectedDays);
-    const newDateOptions: DateOption[] = dates.map((isoDate, index) => ({
-      id: `date-${dateOptions.length + index}`,
-      date: isoDate,
-      label: formatDateLabel(isoDate),
-    }));
-
-    setDateOptions([...dateOptions, ...newDateOptions]);
-    setStartDate("");
-    setEndDate("");
-  };
-
-  const handleManualAdd = () => {
-    if (!manualDate) {
-      alert("Please select a date");
-      return;
-    }
-
-    // Check for duplicates
-    if (dateOptions.some((opt) => opt.date === manualDate)) {
-      alert("This date has already been added");
-      return;
-    }
-
-    const newDateOption: DateOption = {
-      id: `date-${dateOptions.length}`,
-      date: manualDate,
-      label: formatDateLabel(manualDate),
-    };
-
-    setDateOptions([...dateOptions, newDateOption]);
-    setManualDate("");
-  };
 
   const handleCalendarAddDate = (isoDate: string) => {
     // Check for duplicates
@@ -187,15 +133,22 @@ export default function CreateEventPage() {
     }
   };
 
-  const handleToggleDay = (day: number) => {
-    if (selectedDays.includes(day)) {
-      setSelectedDays(selectedDays.filter((d) => d !== day));
-    } else {
-      setSelectedDays([...selectedDays, day].sort());
-    }
-  };
+  const handlePatternDatesSelected = (dates: string[]) => {
+    // Convert dates to DateOptions
+    const newDateOptions: DateOption[] = dates.map((isoDate, index) => ({
+      id: `date-${dateOptions.length + index}-${Date.now()}`,
+      date: isoDate,
+      label: formatDateLabel(isoDate),
+    }));
 
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    // Filter out duplicates and add new dates
+    const existingDates = new Set(dateOptions.map((opt) => opt.date));
+    const uniqueNewOptions = newDateOptions.filter(
+      (opt) => !existingDates.has(opt.date)
+    );
+
+    setDateOptions([...dateOptions, ...uniqueNewOptions]);
+  };
 
   return (
       <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-ocean-50 to-ocean-100">
@@ -283,164 +236,14 @@ export default function CreateEventPage() {
                 />
               </div>
 
-              {/* Quick Add */}
-              <div className="bg-ocean-50 p-6 rounded-xl mb-6">
-                <h3 className="font-semibold text-ocean-700 mb-3">
-                  Quick Add: Date Range
-                </h3>
-
-                {/* Quick Selection Buttons */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Quick Select Range
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => {
-                        const today = new Date();
-                        const oneMonthLater = new Date(
-                          today.getFullYear(),
-                          today.getMonth() + 1,
-                          today.getDate()
-                        );
-                        setStartDate(today.toISOString().split("T")[0]);
-                        setEndDate(oneMonthLater.toISOString().split("T")[0]);
-                      }}
-                      className="px-3 py-1.5 text-sm bg-white border-2 border-ocean-300 text-ocean-700 rounded-lg hover:bg-ocean-50 transition-colors"
-                    >
-                      Next 1 Month
-                    </button>
-                    <button
-                      onClick={() => {
-                        const today = new Date();
-                        const twoMonthsLater = new Date(
-                          today.getFullYear(),
-                          today.getMonth() + 2,
-                          today.getDate()
-                        );
-                        setStartDate(today.toISOString().split("T")[0]);
-                        setEndDate(twoMonthsLater.toISOString().split("T")[0]);
-                      }}
-                      className="px-3 py-1.5 text-sm bg-white border-2 border-ocean-300 text-ocean-700 rounded-lg hover:bg-ocean-50 transition-colors"
-                    >
-                      Next 2 Months
-                    </button>
-                    <button
-                      onClick={() => {
-                        const today = new Date();
-                        const threeMonthsLater = new Date(
-                          today.getFullYear(),
-                          today.getMonth() + 3,
-                          today.getDate()
-                        );
-                        setStartDate(today.toISOString().split("T")[0]);
-                        setEndDate(
-                          threeMonthsLater.toISOString().split("T")[0]
-                        );
-                      }}
-                      className="px-3 py-1.5 text-sm bg-white border-2 border-ocean-300 text-ocean-700 rounded-lg hover:bg-ocean-50 transition-colors"
-                    >
-                      Next 3 Months
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <Input
-                      label="Start Date"
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      fullWidth
-                    />
-                    <button
-                      onClick={() => {
-                        // Use currently selected start date, or fall back to today
-                        const referenceDate = startDate
-                          ? new Date(startDate + "T00:00:00")
-                          : new Date();
-                        const firstOfMonth = new Date(
-                          referenceDate.getFullYear(),
-                          referenceDate.getMonth(),
-                          1
-                        );
-                        setStartDate(firstOfMonth.toISOString().split("T")[0]);
-                      }}
-                      className="mt-2 px-3 py-1.5 text-sm bg-white border-2 border-ocean-300 text-ocean-700 rounded-lg hover:bg-ocean-50 transition-colors"
-                    >
-                      First of Month
-                    </button>
-                  </div>
-                  <div>
-                    <Input
-                      label="End Date"
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      fullWidth
-                    />
-                    <button
-                      onClick={() => {
-                        // Use currently selected end date, or fall back to today
-                        const referenceDate = endDate
-                          ? new Date(endDate + "T00:00:00")
-                          : new Date();
-                        const lastOfMonth = new Date(
-                          referenceDate.getFullYear(),
-                          referenceDate.getMonth() + 1,
-                          0
-                        );
-                        setEndDate(lastOfMonth.toISOString().split("T")[0]);
-                      }}
-                      className="mt-2 px-3 py-1.5 text-sm bg-white border-2 border-ocean-300 text-ocean-700 rounded-lg hover:bg-ocean-50 transition-colors"
-                    >
-                      End of Month
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Days of Week
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {dayNames.map((day, index) => (
-                      <button
-                        key={day}
-                        onClick={() => handleToggleDay(index)}
-                        className={`px-4 py-2 rounded-lg border-2 transition-colors ${
-                          selectedDays.includes(index)
-                            ? "bg-ocean-400 border-ocean-600 text-white"
-                            : "bg-white border-ocean-200 text-ocean-600 hover:border-ocean-400"
-                        }`}
-                      >
-                        {day}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <Button onClick={handleQuickAdd} variant="secondary" size="sm">
-                  ✨ Select Dates
-                </Button>
+              {/* Quick Presets */}
+              <div className="mb-6">
+                <DatePatternPresets onDatesSelected={handlePatternDatesSelected} />
               </div>
 
-              <div className="bg-sand-100 p-6 rounded-xl mb-6">
-                <h3 className="font-semibold text-ocean-700 mb-3">
-                  Add Single Date
-                </h3>
-                <div className="flex gap-3">
-                  <Input
-                    type="date"
-                    value={manualDate}
-                    onChange={(e) => setManualDate(e.target.value)}
-                    fullWidth
-                  />
-                  <Button onClick={handleManualAdd} variant="outline" size="md">
-                    ➕ Add Date
-                  </Button>
-                </div>
+              {/* Quick Add Builder */}
+              <div className="mb-6">
+                <QuickAddBuilder onDatesSelected={handlePatternDatesSelected} />
               </div>
 
             </div>
