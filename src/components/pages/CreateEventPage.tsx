@@ -6,7 +6,6 @@ import Button from "../shared/Button";
 import Modal from "../shared/Modal";
 import CopyButton from "../shared/CopyButton";
 import GitHubTokenSetup from "../shared/GitHubTokenSetup";
-import DateListView from "../features/DateListView";
 import CalendarMonthView from "../features/CalendarMonthView";
 import AnimatedBackground from "../shared/AnimatedBackground";
 import type { Event, DateOption } from "../../types";
@@ -446,18 +445,6 @@ export default function CreateEventPage() {
                 </div>
               </div>
 
-              {/* Date List */}
-              {dateOptions.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-ocean-700 mb-4">
-                    Selected Dates ({dateOptions.length} total)
-                  </h3>
-                  <DateListView
-                    dateOptions={dateOptions}
-                    onRemoveDate={handleRemoveDate}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Generate Button */}
