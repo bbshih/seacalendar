@@ -425,7 +425,7 @@ export default function CreateEventPage() {
                 </div>
 
                 <Button onClick={handleQuickAdd} variant="secondary" size="sm">
-                  ✨ Generate Dates
+                  ✨ Select Dates
                 </Button>
               </div>
 
@@ -475,8 +475,8 @@ export default function CreateEventPage() {
                 disabled={isCreating || !githubToken}
               >
                 {isCreating
-                  ? "🔄 Creating Event..."
-                  : "🚀 Generate Voting Link"}
+                  ? "🔄 Creating Poll..."
+                  : "🚀 Create Poll"}
               </Button>
             </div>
           </div>

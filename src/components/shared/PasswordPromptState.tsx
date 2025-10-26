@@ -1,0 +1,97 @@
+import Button from './Button';
+import Card from './Card';
+import Input from './Input';
+import AnimatedBackground from './AnimatedBackground';
+
+interface PasswordPromptStateProps {
+  title?: string;
+  subtitle?: string;
+  eventTitle?: string;
+  password: string;
+  onPasswordChange: (value: string) => void;
+  error?: string;
+  onSubmit: () => void;
+  isLoading?: boolean;
+}
+
+/**
+ * Reusable password prompt component for password-protected events
+ * Used across multiple pages (Voting, Results, Venue, Event Summary)
+ */
+export default function PasswordPromptState({
+  title = 'Password Protected Event',
+  subtitle = 'This event requires a password',
+  eventTitle,
+  password,
+  onPasswordChange,
+  error,
+  onSubmit,
+  isLoading = false
+}: PasswordPromptStateProps) {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isLoading) {
+      onSubmit();
+    }
+  };
+
+  return (
+    <AnimatedBackground variant="bubbles">
+      <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
+        <div className="max-w-md mx-auto">
+          <Card>
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">🔒</div>
+              <h1 className="text-2xl font-bold text-ocean-700 mb-2">
+                {title}
+              </h1>
+              <p className="text-ocean-600">{subtitle}</p>
+              {eventTitle && (
+                <p className="text-sm text-ocean-500 mt-2 italic">
+                  Event: {eventTitle}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <Input
+                label="Password"
+                type="password"
+                placeholder="Enter event password"
+                value={password}
+                onChange={(e) => onPasswordChange(e.target.value)}
+                onKeyPress={handleKeyPress}
+                fullWidth
+                autoFocus
+              />
+
+              {error && (
+                <div className="p-3 bg-red-50 border-2 border-red-200 rounded-lg text-red-700 text-sm">
+                  {error}
+                </div>
+              )}
+
+              <Button
+                onClick={onSubmit}
+                variant="primary"
+                size="lg"
+                fullWidth
+                disabled={isLoading || !password.trim()}
+              >
+                {isLoading ? '🔄 Unlocking...' : '🔓 Unlock Event'}
+              </Button>
+
+              <div className="text-center pt-4">
+                <a
+                  href="#/"
+                  className="text-sm text-ocean-600 hover:text-ocean-700 underline"
+                >
+                  ← Back to Home
+                </a>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    </AnimatedBackground>
+  );
+}

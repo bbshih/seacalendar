@@ -85,7 +85,7 @@ test.describe('SeaCalendar Complete Flow', () => {
     });
 
     // Submit the event creation form
-    await page.click('button:has-text("Generate Event Links")');
+    await page.click('button:has-text("Create Poll")');
 
     // Wait for the links modal to appear
     await expect(page.locator('text=Voting Link')).toBeVisible({ timeout: 10000 });

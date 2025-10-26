@@ -1,51 +1,17 @@
 import type { DateOption } from '../../types';
+import { groupDatesByMonth } from '../../utils/dateGrouping';
 
 interface DateListViewProps {
   dateOptions: DateOption[];
   onRemoveDate: (dateId: string) => void;
 }
 
-interface GroupedDate {
-  month: string; // "January 2025"
-  dates: {
-    dateOption: DateOption;
-    dayOfWeek: string; // "Mon", "Tue", etc.
-    dayOfMonth: number; // 15
-  }[];
-}
-
 export default function DateListView({
   dateOptions,
   onRemoveDate,
 }: DateListViewProps) {
-  // Group dates by month
-  const groupedByMonth: GroupedDate[] = [];
-
-  dateOptions.forEach((option) => {
-    const date = new Date(option.date + 'T00:00:00');
-    const monthYear = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
-    const dayOfMonth = date.getDate();
-
-    let monthGroup = groupedByMonth.find((g) => g.month === monthYear);
-    if (!monthGroup) {
-      monthGroup = { month: monthYear, dates: [] };
-      groupedByMonth.push(monthGroup);
-    }
-
-    monthGroup.dates.push({
-      dateOption: option,
-      dayOfWeek,
-      dayOfMonth,
-    });
-  });
-
-  // Sort months chronologically
-  groupedByMonth.sort((a, b) => {
-    const dateA = new Date(a.dates[0].dateOption.date);
-    const dateB = new Date(b.dates[0].dateOption.date);
-    return dateA.getTime() - dateB.getTime();
-  });
+  // Group dates by month using shared utility
+  const groupedByMonth = groupDatesByMonth(dateOptions);
 
   return (
     <div className="space-y-6">

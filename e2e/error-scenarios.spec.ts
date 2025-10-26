@@ -76,7 +76,7 @@ test.describe('Error Scenarios', () => {
 
     // Try to create event without adding any dates
     // The button should be disabled or show validation error
-    const createButton = page.locator('button:has-text("Generate Event Links"), button:has-text("Create Event")').first();
+    const createButton = page.locator('button:has-text("Create Poll"), button:has-text("Create Event")').first();
 
     // Check if button is disabled or shows error after click
     const isDisabled = await createButton.isDisabled();
