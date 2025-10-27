@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: seacalendar-dev-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: seacalendar_dev
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d seacalendar_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - seacalendar-dev
+
+volumes:
+  postgres_dev_data:
+
+networks:
+  seacalendar-dev:
+    driver: bridge

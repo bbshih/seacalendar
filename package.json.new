@@ -1,0 +1,38 @@
+{
+  "name": "seacalendar-monorepo",
+  "version": "2.0.0",
+  "private": true,
+  "description": "SeaCalendar - Ocean-themed friend group hangout organizer",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n db,api,bot,web \"npm:dev:db\" \"npm:dev:api\" \"npm:dev:bot\" \"npm:dev:web\"",
+    "dev:db": "docker-compose -f docker-compose.dev.yml up postgres",
+    "dev:api": "npm run dev -w @seacalendar/api",
+    "dev:bot": "npm run dev -w @seacalendar/discord-bot",
+    "dev:web": "npm run dev -w @seacalendar/web",
+    "watch": "node scripts/watch-claude.js",
+    "watch:auto": "AUTO_SYNC=true node scripts/watch-claude.js",
+    "db:studio": "npm run studio -w @seacalendar/database",
+    "db:migrate:dev": "npm run migrate:dev -w @seacalendar/database",
+    "db:migrate:deploy": "npm run migrate:deploy -w @seacalendar/database",
+    "db:seed": "npm run seed -w @seacalendar/database",
+    "db:reset": "npm run reset -w @seacalendar/database",
+    "db:setup": "docker-compose -f docker-compose.dev.yml up -d postgres && sleep 3 && npm run db:migrate:dev && npm run db:seed",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "npm run test:e2e -w @seacalendar/web",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist",
+    "setup": "npm install && npm run db:setup && echo '\n✅ Setup complete! Run: npm run dev'"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

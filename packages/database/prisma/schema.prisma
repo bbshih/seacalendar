@@ -1,0 +1,310 @@
+// SeaCalendar Database Schema
+// PostgreSQL database for events, votes, users, and venues
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// Core Polling System (Generic)
+// ============================================================================
+
+model Poll {
+  id          String     @id @default(uuid())
+  type        PollType   @default(EVENT)
+
+  // Basic info
+  title       String
+  description String?
+
+  // Ownership
+  creatorId   String
+  creator     User       @relation(fields: [creatorId], references: [id])
+
+  // Discord context
+  guildId     String?
+  channelId   String?
+  messageId   String?    @unique
+
+  // Timing
+  createdAt   DateTime   @default(now())
+  votingDeadline DateTime?
+  closedAt    DateTime?
+
+  // Status
+  status      PollStatus @default(VOTING)
+
+  // Relations
+  options     PollOption[]
+  votes       Vote[]
+  invites     PollInvite[]
+  reminders   EventReminder[]
+
+  // Event-specific (null for generic polls)
+  finalizedOptionId String?
+  venue       Venue?     @relation(fields: [venueId], references: [id])
+  venueId     String?
+
+  // Audit
+  auditLogs   AuditLog[]
+
+  @@index([guildId, status])
+  @@index([creatorId, status])
+  @@index([votingDeadline])
+}
+
+enum PollType {
+  EVENT
+  GENERIC
+}
+
+enum PollStatus {
+  DRAFT
+  VOTING
+  FINALIZED
+  CANCELLED
+  EXPIRED
+}
+
+model PollOption {
+  id          String   @id @default(uuid())
+  pollId      String
+  poll        Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  // Generic fields
+  label       String
+  description String?
+  order       Int      @default(0)
+
+  // Event-specific (null for generic polls)
+  date        DateTime?
+  timeStart   String?   // "19:00"
+  timeEnd     String?   // "21:00"
+
+  // Relations
+  votes       Vote[]
+
+  createdAt   DateTime @default(now())
+
+  @@index([pollId])
+}
+
+model Vote {
+  id                String   @id @default(uuid())
+  pollId            String
+  poll              Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  voterId           String
+  voter             User     @relation(fields: [voterId], references: [id])
+
+  // Voting data - store as JSON arrays for flexibility
+  availableOptionIds String[]  // Array of option IDs voter is available for
+  maybeOptionIds     String[]  // Maybe/unsure options
+  notes              String?
+
+  votedAt           DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  availableOptions  PollOption[] @relation("VoteAvailableOptions", references: [id])
+  maybeOptions      PollOption[] @relation("VoteMaybeOptions", references: [id])
+
+  @@unique([pollId, voterId])
+  @@index([pollId])
+  @@index([voterId])
+}
+
+model PollInvite {
+  id              String   @id @default(uuid())
+  pollId          String
+  poll            Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+
+  invitedAt       DateTime @default(now())
+  hasVoted        Boolean  @default(false)
+
+  // Reminder tracking
+  remindersSent   Int      @default(0)
+  lastReminderAt  DateTime?
+
+  @@unique([pollId, userId])
+  @@index([pollId, hasVoted])
+  @@index([userId])
+}
+
+// ============================================================================
+// User & Identity
+// ============================================================================
+
+model User {
+  id              String   @id @default(uuid())
+
+  // Discord identity (primary)
+  discordId       String   @unique
+  discordUsername String
+  discordAvatar   String?
+
+  // Optional contacts
+  email           String?  @unique
+  phone           String?  @unique
+
+  // Preferences
+  preferences     UserPreferences?
+
+  // Relations
+  createdPolls    Poll[]
+  votes           Vote[]
+  pollInvites     PollInvite[]
+  auditLogs       AuditLog[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([discordId])
+  @@index([email])
+}
+
+model UserPreferences {
+  id                    String   @id @default(uuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Notification settings
+  notifyViaDiscordDM    Boolean  @default(true)
+  notifyViaEmail        Boolean  @default(false)
+  notifyViaSMS          Boolean  @default(false)
+
+  // Reminder preferences
+  wantVoteReminders     Boolean  @default(true)
+  wantEventReminders    Boolean  @default(true)
+
+  // Privacy
+  showInStats           Boolean  @default(true)
+
+  updatedAt             DateTime @updatedAt
+}
+
+// ============================================================================
+// Venue Management
+// ============================================================================
+
+model Venue {
+  id              String   @id @default(uuid())
+  name            String
+  address         String?
+  googleMapsUrl   String?
+  notes           String?
+
+  // Relations
+  polls           Poll[]
+
+  // Meta
+  guildId         String
+  addedById       String
+  createdAt       DateTime @default(now())
+
+  @@index([guildId])
+  @@index([name])
+}
+
+// ============================================================================
+// Templates
+// ============================================================================
+
+model PollTemplate {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+
+  // Template data (JSON)
+  templateData    Json
+
+  // Ownership
+  creatorId       String
+  guildId         String
+
+  // Usage
+  timesUsed       Int      @default(0)
+  lastUsedAt      DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@unique([guildId, name])
+  @@index([guildId])
+}
+
+// ============================================================================
+// Reminders & Scheduling
+// ============================================================================
+
+model EventReminder {
+  id              String         @id @default(uuid())
+  pollId          String
+  poll            Poll           @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  type            ReminderType
+  scheduledFor    DateTime
+  sentAt          DateTime?
+  status          ReminderStatus @default(PENDING)
+
+  @@index([status, scheduledFor])
+}
+
+enum ReminderType {
+  VOTE_REMINDER_3DAY
+  VOTE_REMINDER_1DAY
+  EVENT_REMINDER_1WEEK
+  EVENT_REMINDER_1DAY
+  EVENT_REMINDER_2HOUR
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+// ============================================================================
+// Security & Audit
+// ============================================================================
+
+model AuditLog {
+  id              String   @id @default(uuid())
+
+  // What happened
+  action          String
+  entityType      String
+  entityId        String
+
+  // Who did it
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+
+  // Context
+  ipAddress       String?
+  userAgent       String?
+  metadata        Json?
+
+  timestamp       DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([timestamp])
+}
+
+model RateLimitLog {
+  id              String   @id @default(uuid())
+  identifier      String   // IP or userId
+  endpoint        String
+  requestCount    Int
+  windowStart     DateTime
+
+  @@index([identifier, endpoint, windowStart])
+}
