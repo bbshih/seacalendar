@@ -1,11 +1,18 @@
-import type { Event, VoteTally } from '../types';
+import type { Event, DateOption } from '../types';
+
+// Legacy VoteTally for backwards compatibility with existing web app
+export interface LegacyVoteTally {
+  dateOption: DateOption;
+  voteCount: number;
+  voters: string[];
+}
 
 /**
  * Calculates vote tallies for all date options in an event.
  * Returns an array of tallies sorted by vote count (descending).
  */
-export function calculateVoteTallies(event: Event): VoteTally[] {
-  const tallies: Map<string, VoteTally> = new Map();
+export function calculateVoteTallies(event: Event): LegacyVoteTally[] {
+  const tallies: Map<string, LegacyVoteTally> = new Map();
 
   // Initialize tallies for all date options
   event.dateOptions.forEach((dateOption) => {
@@ -51,7 +58,7 @@ export function getAttendeesForDate(event: Event, dateId: string): string[] {
  * Returns an array in case of ties.
  * Only returns dates with at least one vote.
  */
-export function getTopVotedDates(event: Event): VoteTally[] {
+export function getTopVotedDates(event: Event): LegacyVoteTally[] {
   const tallies = calculateVoteTallies(event);
 
   if (tallies.length === 0) {

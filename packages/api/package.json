@@ -1,0 +1,19 @@
+{
+  "name": "@seacalendar/api",
+  "version": "2.0.0",
+  "description": "SeaCalendar REST API server",
+  "main": "./dist/server.js",
+  "scripts": {
+    "dev": "echo 'API server not yet implemented (Phase 1)' && sleep infinity",
+    "build": "echo 'API server not yet implemented'",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@seacalendar/shared": "*",
+    "@seacalendar/database": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "typescript": "^5.9.3"
+  }
+}

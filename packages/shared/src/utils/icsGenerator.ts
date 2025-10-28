@@ -20,7 +20,7 @@ export function generateIcsFile(event: Event): string {
 
   // Parse date and time
   // venue.time is in format "7:00 PM" or "19:00"
-  const eventDate = parseDateAndTime(dateOption.date, venue.time);
+  const eventDate = parseDateAndTime(dateOption.date, venue.time || '12:00 PM');
   const dtStart = formatIcsDateTime(eventDate);
   const dtEnd = formatIcsDateTime(
     new Date(eventDate.getTime() + 2 * 60 * 60 * 1000)
@@ -129,26 +129,17 @@ function escapeIcsText(text: string): string {
     .replace(/\n/g, '\\n'); // Escape newlines
 }
 
-/**
- * Triggers a download of the .ics file for the given event
- * @param event - The finalized event to download
- */
-export function downloadIcsFile(event: Event): void {
-  const icsContent = generateIcsFile(event);
-  const blob = new Blob([icsContent], {
-    type: 'text/calendar;charset=utf-8',
-  });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-
-  // Generate filename from event title
-  const filename = `${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
-  link.download = filename;
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  // Clean up the blob URL
-  URL.revokeObjectURL(link.href);
-}
+// NOTE: downloadIcsFile function moved to web package since it uses DOM APIs
+// Web package can implement it like this:
+//
+// export function downloadIcsFile(event: Event): void {
+//   const icsContent = generateIcsFile(event);
+//   const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+//   const link = document.createElement('a');
+//   link.href = URL.createObjectURL(blob);
+//   link.download = `${event.title.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
+//   URL.revokeObjectURL(link.href);
+// }

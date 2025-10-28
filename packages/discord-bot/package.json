@@ -1,0 +1,19 @@
+{
+  "name": "@seacalendar/discord-bot",
+  "version": "2.0.0",
+  "description": "SeaCalendar Discord bot",
+  "main": "./dist/bot.js",
+  "scripts": {
+    "dev": "echo 'Discord bot not yet implemented (Phase 2)' && sleep infinity",
+    "build": "echo 'Discord bot not yet implemented'",
+    "start": "node dist/bot.js"
+  },
+  "dependencies": {
+    "@seacalendar/shared": "*",
+    "@seacalendar/database": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "typescript": "^5.9.3"
+  }
+}
