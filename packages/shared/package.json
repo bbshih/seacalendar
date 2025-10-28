@@ -1,0 +1,21 @@
+{
+  "name": "@seacalendar/shared",
+  "version": "2.0.0",
+  "description": "Shared types, utilities, and validation schemas for SeaCalendar",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
