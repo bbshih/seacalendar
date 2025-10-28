@@ -174,7 +174,8 @@ PubkeyAuthentication yes
 # Ctrl+X → Y → Enter
 
 # Restart SSH service
-systemctl restart sshd
+# Note: On Ubuntu/Debian it's "ssh", on RHEL/CentOS it's "sshd"
+systemctl restart ssh
 ```
 
 **⚠️ IMPORTANT**: Test new user login before closing root session!
