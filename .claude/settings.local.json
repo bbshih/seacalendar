@@ -36,7 +36,17 @@
       "Bash(git pull:*)",
       "Bash(git checkout:*)",
       "Bash(git log:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(git push:*)",
+      "Read(//home/deploy/.ssh/**)",
+      "Bash(ssh-keygen:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(gh pr create:*)",
+      "Bash(sudo dd:*)",
+      "Bash(sudo chmod:*)",
+      "Bash(sudo tee:*)",
+      "Read(//tmp/**)",
+      "Bash(~/bin/gh:*)"
     ],
     "deny": [],
     "ask": []
