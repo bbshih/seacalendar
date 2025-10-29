@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code when working with the SeaCalendar repository.
 
+## Communication Style
+
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
 ## Overview
 
 **SeaCalendar** is an ocean-themed React web application for organizing friend group hangouts. It's a database-less system that uses URL-based state management to handle event creation, voting, and calendar invite generation.

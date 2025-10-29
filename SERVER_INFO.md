@@ -1,6 +1,13 @@
 # SeaCalendar Production Server
 
-**⚠️ THIS IS THE HETZNER PRODUCTION SERVER - NOT A LOCAL DEVELOPMENT ENVIRONMENT**
+> **📋 DOCUMENTATION ONLY**: This file documents the Hetzner production server state.
+> **Local developers**: Ignore this file - it's a snapshot of production infrastructure, not applicable to local environments.
+
+---
+
+## Production Server Details
+
+**⚠️ This section describes the Hetzner production server only**
 
 ---
 
