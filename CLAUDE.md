@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code when working with the SeaCalendar repository.
 
+## Communication Style
+
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
+## Environment Detection
+
+**CRITICAL**: Check hostname at session start to determine environment:
+- Hostname `seacalendar-prod` = **PRODUCTION HETZNER SERVER** (exercise extreme caution)
+- Any other hostname = **LOCAL DEVELOPMENT** (safe to experiment)
+
+Use `hostname` or check system environment. Adjust behavior accordingly:
+- Production: Confirm destructive operations, no experiments
+- Local: Normal development workflow
+
 ## Overview
 
 **SeaCalendar** is an ocean-themed React web application for organizing friend group hangouts. It's a database-less system that uses URL-based state management to handle event creation, voting, and calendar invite generation.
