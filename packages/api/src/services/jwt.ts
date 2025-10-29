@@ -26,14 +26,14 @@ export interface TokenPair {
 export const generateTokens = async (payload: JwtPayload): Promise<TokenPair> => {
   // Generate access token (short-lived)
   const accessToken = jwt.sign(payload, Config.jwtSecret, {
-    expiresIn: Config.jwtExpiresIn,
+    expiresIn: Config.jwtExpiresIn as jwt.SignOptions['expiresIn'],
   });
 
   // Generate refresh token (long-lived, stored in database)
   const refreshToken = jwt.sign(
     { userId: payload.userId, type: 'refresh' },
     Config.jwtSecret,
-    { expiresIn: Config.refreshTokenExpiresIn }
+    { expiresIn: Config.refreshTokenExpiresIn as jwt.SignOptions['expiresIn'] }
   );
 
   // Calculate expiration date

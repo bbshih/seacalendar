@@ -22,8 +22,8 @@ services:
 
   api:
     build:
-      context: ./packages/api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./packages/api/Dockerfile
     container_name: seacalendar-api
     restart: unless-stopped
     env_file:
@@ -38,8 +38,8 @@ services:
 
   discord-bot:
     build:
-      context: ./packages/discord-bot
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./packages/discord-bot/Dockerfile
     container_name: seacalendar-bot
     restart: unless-stopped
     env_file:
@@ -52,8 +52,8 @@ services:
 
   web:
     build:
-      context: ./packages/web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./packages/web/Dockerfile
     container_name: seacalendar-web
     restart: unless-stopped
     ports:

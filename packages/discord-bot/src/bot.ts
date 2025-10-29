@@ -3,7 +3,7 @@
  * Main entry point for the Discord bot
  */
 
-import { Client, GatewayIntentBits, Collection, Events, REST, Routes } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, Events } from 'discord.js';
 import { Config } from './config.js';
 import { Command } from './types/command.js';
 import { readdir } from 'fs/promises';

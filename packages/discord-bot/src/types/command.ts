@@ -5,7 +5,6 @@
 import {
   SlashCommandBuilder,
   ChatInputCommandInteraction,
-  CommandInteraction,
   AutocompleteInteraction
 } from 'discord.js';
 

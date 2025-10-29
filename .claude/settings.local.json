@@ -49,7 +49,10 @@
       "Bash(~/bin/gh:*)",
       "Bash(git fetch:*)",
       "Bash(git rebase:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(git merge:*)",
+      "Read(//home/deploy/bin/**)",
+      "Bash(npx prisma generate:*)"
     ],
     "deny": [],
     "ask": []

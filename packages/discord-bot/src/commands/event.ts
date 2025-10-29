@@ -126,7 +126,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
           { name: '🔗 Voting Link', value: votingUrl, inline: false },
           { name: '📊 Status', value: 'Open for voting', inline: true },
           { name: '📅 Options', value: `${poll.options.length} dates`, inline: true },
-          { name: '⏰ Deadline', value: `<t:${Math.floor(poll.votingDeadline.getTime() / 1000)}:R>`, inline: true },
+          { name: '⏰ Deadline', value: poll.votingDeadline ? `<t:${Math.floor(poll.votingDeadline.getTime() / 1000)}:R>` : 'No deadline', inline: true },
         );
 
       // Add voting instructions

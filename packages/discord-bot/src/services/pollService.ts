@@ -6,7 +6,7 @@
 import { prisma } from '@seacalendar/database';
 import { PollType, PollStatus, User, Poll, PollOption } from '@prisma/client';
 import { Config } from '../config.js';
-import { v4 as uuidv4 } from 'uuid';
+// import { v4 as uuidv4 } from 'uuid'; // Unused
 
 export interface CreatePollInput {
   title: string;
@@ -35,6 +35,7 @@ export async function createEventPoll(input: CreatePollInput): Promise<PollWithD
     create: {
       discordId: input.creatorDiscordId,
       username: 'Discord User', // Will be updated when we get full user data
+      discriminator: '0000', // Default discriminator
     },
   });
 
@@ -45,7 +46,7 @@ export async function createEventPoll(input: CreatePollInput): Promise<PollWithD
   const poll = await prisma.poll.create({
     data: {
       type: PollType.EVENT,
-      status: PollStatus.OPEN,
+      status: PollStatus.VOTING,
       title: input.title,
       description: input.description,
       guildId: input.guildId,
@@ -78,7 +79,7 @@ export async function getPollWithDetails(pollId: string): Promise<PollWithDetail
     where: { id: pollId },
     include: {
       options: {
-        orderBy: { sortOrder: 'asc' },
+        orderBy: { order: 'asc' },
       },
       creator: true,
     },

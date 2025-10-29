@@ -43,7 +43,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     // Add polls to embed (max 10)
     for (const poll of guildPolls.slice(0, 10)) {
-      const statusEmoji = poll.status === 'OPEN'
+      const statusEmoji = poll.status === 'VOTING'
         ? '🟢'
         : poll.status === 'FINALIZED'
         ? '✅'
