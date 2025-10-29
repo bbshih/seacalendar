@@ -87,7 +87,8 @@ model PollOption {
   timeEnd     String?   // "21:00"
 
   // Relations
-  votes       Vote[]
+  votesAvailable Vote[] @relation("VoteAvailableOptions")
+  votesMaybe     Vote[] @relation("VoteMaybeOptions")
 
   createdAt   DateTime @default(now())
 
@@ -110,8 +111,8 @@ model Vote {
   votedAt           DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  availableOptions  PollOption[] @relation("VoteAvailableOptions", references: [id])
-  maybeOptions      PollOption[] @relation("VoteMaybeOptions", references: [id])
+  availableOptions  PollOption[] @relation("VoteAvailableOptions")
+  maybeOptions      PollOption[] @relation("VoteMaybeOptions")
 
   @@unique([pollId, voterId])
   @@index([pollId])
@@ -316,6 +317,10 @@ model AuditLog {
   action          String
   entityType      String
   entityId        String
+
+  // Link to poll if applicable
+  pollId          String?
+  poll            Poll?    @relation(fields: [pollId], references: [id])
 
   // Who did it
   userId          String?

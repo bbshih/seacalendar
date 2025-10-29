@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: seacalendar-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    networks:
+      - seacalendar
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./packages/api
+      dockerfile: Dockerfile
+    container_name: seacalendar-api
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - seacalendar
+    ports:
+      - "3001:3001"
+
+  discord-bot:
+    build:
+      context: ./packages/discord-bot
+      dockerfile: Dockerfile
+    container_name: seacalendar-bot
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    depends_on:
+      - postgres
+      - api
+    networks:
+      - seacalendar
+
+  web:
+    build:
+      context: ./packages/web
+      dockerfile: Dockerfile
+    container_name: seacalendar-web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - seacalendar
+
+volumes:
+  postgres_data:
+
+networks:
+  seacalendar:
+    driver: bridge
