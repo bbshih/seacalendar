@@ -46,7 +46,10 @@
       "Bash(sudo chmod:*)",
       "Bash(sudo tee:*)",
       "Read(//tmp/**)",
-      "Bash(~/bin/gh:*)"
+      "Bash(~/bin/gh:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rebase:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
