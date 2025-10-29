@@ -1,8 +1,8 @@
-# Phase 1 Progress & Next Steps
+# Phase 1 & 2 Progress & Next Steps
 
-**Last Updated**: 2025-10-28
-**Current Branch**: `claude/discord-bot-architecture-011CUVU7qwh3DSvgqPCyWWK1`
-**Status**: Ready to continue Phase 1 (API Foundation)
+**Last Updated**: 2025-10-29
+**Current Branch**: `claude/start-phase-011CUaxQ33AWXnSNazWTCfCp`
+**Status**: Phase 2 (Discord Bot Core) - In Progress
 
 ---
 
@@ -239,6 +239,143 @@ Phase 1 Success Criteria - **ALL COMPLETE ✅✅✅**
 - [x] Database schema ready (migrations pending in production)
 - [x] Test data seed file created
 - [x] **API tests passing (102/102 tests passing!)** ✅
+
+---
+
+## 🤖 Phase 2: Discord Bot Core (85% Complete)
+
+### What's Implemented
+
+**Core Infrastructure:**
+- [x] Discord bot package setup with TypeScript
+- [x] Bot client initialization and event handling
+- [x] Slash command registration system (`deploy-commands.ts`)
+- [x] Environment validation (config.ts with Zod)
+- [x] Database integration (Prisma client)
+- [x] Test infrastructure with Vitest
+
+**Natural Language Processing:**
+- [x] chrono-node integration for date parsing
+- [x] Event description parser (`parseEventDescription`)
+- [x] Date range generator
+- [x] Day of week parser
+- [x] Event validation
+- [x] 13 NLP tests passing
+
+**Commands Implemented:**
+- [x] `/event` - Create events with natural language
+  - Parse dates and times from text
+  - Confirmation UI with buttons
+  - Database integration
+  - Generate voting URLs
+  - Error handling
+- [x] `/status` - Check vote progress
+  - Display vote counts
+  - Show top dates
+  - Deadline tracking
+  - Action buttons
+- [x] `/myevents` - List user's events
+  - Filter by guild
+  - Show status and deadlines
+  - Quick links to vote/results
+- [x] `/cancel` - Cancel events
+  - Creator-only access
+  - Confirmation prompt
+  - Safety checks
+
+**Services:**
+- [x] Poll service (`pollService.ts`)
+  - Create event polls
+  - Get poll details
+  - Get guild/user polls
+  - Cancel polls
+  - Generate voting URLs
+- [x] NLP service (`nlp.ts`)
+  - Parse natural language
+  - Extract dates and times
+  - Validate events
+  - Format date options
+
+**Files Created:**
+```
+packages/discord-bot/
+├── package.json (updated with dependencies)
+├── tsconfig.json
+├── vitest.config.ts
+├── README.md
+└── src/
+    ├── bot.ts                   # Main bot entry point
+    ├── config.ts                # Environment validation
+    ├── deploy-commands.ts       # Command registration
+    ├── commands/
+    │   ├── event.ts            # /event command
+    │   ├── status.ts           # /status command
+    │   ├── myevents.ts         # /myevents command
+    │   └── cancel.ts           # /cancel command
+    ├── services/
+    │   ├── nlp.ts              # Natural language processing
+    │   ├── nlp.test.ts         # NLP tests (13 passing)
+    │   └── pollService.ts      # Poll management
+    ├── types/
+    │   └── command.ts          # Command interface
+    └── test/
+        └── setup.ts            # Test configuration
+```
+
+### Next Steps for Phase 2
+
+**Remaining Tasks:**
+- [ ] Discord emoji voting (≤5 options)
+  - React with 🅰️ 🅱️ 🅲️ 🅳️ 🅴️ emojis
+  - Track reactions as votes
+  - Update database automatically
+  - Show live vote counts
+- [ ] Real-time updates
+  - WebSocket integration with API
+  - Live vote count updates in Discord
+  - Poll status change notifications
+- [ ] Testing
+  - Command integration tests
+  - Poll service tests
+  - End-to-end bot flow tests
+
+### How to Test Phase 2
+
+1. **Set up environment:**
+   ```bash
+   cp .env.development.example .env.development
+   # Add DISCORD_BOT_TOKEN, DISCORD_CLIENT_ID, DISCORD_TEST_GUILD_ID
+   ```
+
+2. **Deploy commands to Discord:**
+   ```bash
+   npm run deploy-commands -w @seacalendar/discord-bot
+   ```
+
+3. **Start the bot:**
+   ```bash
+   npm run dev:bot
+   ```
+
+4. **Test in Discord:**
+   - Use `/event Q1 Hangout - Fridays in January at 7pm`
+   - Use `/status <event-url>` to check votes
+   - Use `/myevents` to list your events
+   - Use `/cancel <event-url>` to cancel
+
+### Phase 2 Success Criteria
+
+- [x] Bot connects to Discord successfully
+- [x] Commands are registered and visible
+- [x] `/event` parses natural language correctly
+- [x] Events are created in database
+- [x] Voting URLs are generated
+- [x] `/status` shows vote counts
+- [x] `/myevents` lists user's events
+- [x] `/cancel` works with confirmation
+- [ ] Emoji voting works (≤5 options)
+- [ ] Real-time updates working
+- [ ] All tests passing
 
 ---
 
