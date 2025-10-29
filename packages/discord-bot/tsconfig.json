@@ -3,12 +3,6 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "baseUrl": "./src",
-    "paths": {
-      "@/*": ["./*"],
-      "@seacalendar/shared": ["../../shared/src"],
-      "@seacalendar/database": ["../../database/src"]
-    },
     "module": "ESNext",
     "moduleResolution": "node",
     "target": "ES2022",
@@ -16,8 +10,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "strict": true,
+    "noImplicitAny": false,
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "types": []
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]

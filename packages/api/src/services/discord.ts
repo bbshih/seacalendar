@@ -51,7 +51,7 @@ export const exchangeCodeForToken = async (code: string): Promise<DiscordTokenRe
       throw ErrorFactory.unauthorized('Failed to exchange Discord code for token');
     }
 
-    const data: DiscordTokenResponse = await response.json();
+    const data = await response.json() as DiscordTokenResponse;
     return data;
   } catch (error) {
     logger.error('Discord OAuth error', { error });
@@ -76,7 +76,7 @@ export const fetchDiscordUser = async (accessToken: string): Promise<DiscordUser
       throw ErrorFactory.unauthorized('Failed to fetch Discord user');
     }
 
-    const user: DiscordUser = await response.json();
+    const user = await response.json() as DiscordUser;
     return user;
   } catch (error) {
     logger.error('Discord user fetch error', { error });
@@ -110,7 +110,7 @@ export const refreshDiscordToken = async (refreshToken: string): Promise<Discord
       throw ErrorFactory.unauthorized('Failed to refresh Discord token');
     }
 
-    const data: DiscordTokenResponse = await response.json();
+    const data = await response.json() as DiscordTokenResponse;
     return data;
   } catch (error) {
     logger.error('Discord token refresh error', { error });

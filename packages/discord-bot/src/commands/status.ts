@@ -70,7 +70,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     // Calculate votes per option
     const voteCounts = new Map<string, number>();
     for (const vote of votes) {
-      const available = vote.availableOptions as string[];
+      const available = vote.availableOptionIds as string[];
       for (const optionId of available) {
         voteCounts.set(optionId, (voteCounts.get(optionId) || 0) + 1);
       }
@@ -86,13 +86,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     // Create status embed
     const embed = new EmbedBuilder()
-      .setColor(poll.status === 'OPEN' ? 0x0ea5e9 : 0x6b7280) // Blue if open, gray if closed
+      .setColor(poll.status === 'VOTING' ? 0x0ea5e9 : 0x6b7280) // Blue if voting, gray if closed
       .setTitle(`📊 ${poll.title}`)
       .setDescription(poll.description || 'Vote on the dates below!')
       .addFields(
         { name: '📈 Total Voters', value: `${totalVoters}`, inline: true },
         { name: '📅 Date Options', value: `${poll.options.length}`, inline: true },
-        { name: '⏰ Deadline', value: `<t:${Math.floor(poll.votingDeadline.getTime() / 1000)}:R>`, inline: true },
+        { name: '⏰ Deadline', value: poll.votingDeadline ? `<t:${Math.floor(poll.votingDeadline.getTime() / 1000)}:R>` : 'No deadline', inline: true },
       );
 
     // Add top dates
@@ -115,7 +115,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     // Add status indicator
-    const statusText = poll.status === 'OPEN'
+    const statusText = poll.status === 'VOTING'
       ? '🟢 Open for voting'
       : poll.status === 'FINALIZED'
       ? '✅ Finalized'

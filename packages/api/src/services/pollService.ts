@@ -239,7 +239,6 @@ export const finalizePoll = async (pollId: string, userId: string, optionId: str
   // Verify ownership
   const poll = await prisma.poll.findUnique({
     where: { id: pollId },
-    select: { creatorId: true, status: true },
     include: { options: true },
   });
 

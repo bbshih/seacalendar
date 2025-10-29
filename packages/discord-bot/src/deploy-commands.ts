@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 async function deployCommands() {
-  const commands = [];
+  const commands: any[] = [];
 
   // Load all command files
   const commandsPath = join(__dirname, 'commands');

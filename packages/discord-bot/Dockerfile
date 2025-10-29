@@ -3,24 +3,32 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy root package files
+# Copy root package files first
 COPY package*.json ./
+COPY tsconfig.json ./
+
+# Copy all package.json files to establish workspace structure
 COPY packages/shared/package*.json ./packages/shared/
 COPY packages/database/package*.json ./packages/database/
 COPY packages/discord-bot/package*.json ./packages/discord-bot/
 
-# Install all dependencies (including devDependencies for building)
+# Install all dependencies (this creates workspace symlinks)
 RUN npm ci
 
-# Copy source code for shared dependencies
+# Copy all source code
 COPY packages/shared ./packages/shared
 COPY packages/database ./packages/database
 COPY packages/discord-bot ./packages/discord-bot
 
-# Build shared packages first, then bot
-RUN npm run build -w @seacalendar/shared && \
-    npm run build -w @seacalendar/database && \
-    npm run build -w @seacalendar/discord-bot
+# Generate Prisma client (required for TypeScript types)
+WORKDIR /app/packages/database
+RUN npx prisma generate
+
+# Build packages in dependency order
+WORKDIR /app
+RUN npm run build -w @seacalendar/shared
+RUN npm run build -w @seacalendar/database
+RUN npm run build -w @seacalendar/discord-bot
 
 # Stage 2: Production
 FROM node:20-alpine
