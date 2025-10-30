@@ -332,3 +332,53 @@ export const getInvitedPolls = async (userId: string) => {
 
   return invites.map((invite) => invite.poll);
 };
+
+/**
+ * Reopen a closed poll for more voting
+ */
+export const reopenPoll = async (
+  pollId: string,
+  userId: string,
+  extensionDays: number = 7
+) => {
+  // Verify ownership
+  const poll = await prisma.poll.findUnique({
+    where: { id: pollId },
+    select: { creatorId: true, status: true },
+  });
+
+  if (!poll) {
+    throw ErrorFactory.notFound('Poll not found');
+  }
+
+  if (poll.creatorId !== userId) {
+    throw ErrorFactory.forbidden('Only poll creator can reopen the poll');
+  }
+
+  if (poll.status === PollStatus.VOTING) {
+    throw ErrorFactory.badRequest('Poll is already open for voting');
+  }
+
+  // Calculate new deadline
+  const newDeadline = new Date(Date.now() + extensionDays * 24 * 60 * 60 * 1000);
+
+  // Reopen poll
+  const reopenedPoll = await prisma.poll.update({
+    where: { id: pollId },
+    data: {
+      status: PollStatus.VOTING,
+      votingDeadline: newDeadline,
+      closedAt: null,
+      finalizedOptionId: null,
+    },
+    include: {
+      options: true,
+      votes: true,
+      creator: true,
+    },
+  });
+
+  logger.info('Poll reopened', { pollId, userId, extensionDays });
+
+  return reopenedPoll;
+};
