@@ -28,7 +28,7 @@ const submitVoteSchema = z.object({
 
 /**
  * POST /api/polls/:pollId/vote
- * Submit or update vote
+ * Submit or update vote (authenticated users)
  */
 router.post(
   '/:pollId/vote',
