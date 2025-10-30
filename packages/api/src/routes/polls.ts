@@ -11,6 +11,7 @@ import {
   updatePoll,
   cancelPoll,
   finalizePoll,
+  reopenPoll,
   getUserPolls,
   getInvitedPolls,
 } from '../services/pollService';
@@ -52,6 +53,10 @@ const updatePollSchema = z.object({
 
 const finalizePollSchema = z.object({
   optionId: z.string().uuid(),
+});
+
+const reopenPollSchema = z.object({
+  days: z.number().int().min(1).max(60).optional(),
 });
 
 /**
@@ -169,6 +174,28 @@ router.post(
       success: true,
       data: { poll },
       message: 'Poll finalized successfully',
+    });
+  })
+);
+
+/**
+ * POST /api/polls/:id/reopen
+ * Reopen a closed poll for more voting
+ */
+router.post(
+  '/:id/reopen',
+  requireAuth,
+  requirePollOwnership,
+  asyncHandler(async (req, res) => {
+    const validatedData = reopenPollSchema.parse(req.body);
+    const extensionDays = validatedData.days || 7;
+
+    const poll = await reopenPoll(req.params.id, req.user!.id, extensionDays);
+
+    res.json({
+      success: true,
+      data: { poll },
+      message: 'Poll reopened successfully',
     });
   })
 );

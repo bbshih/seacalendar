@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import Card from '../shared/Card';
 import Button from '../shared/Button';
 
@@ -22,6 +23,7 @@ interface Poll {
   votingDeadline?: string;
   options: PollOption[];
   creator: {
+    id: string;
     username: string;
   };
 }
@@ -43,11 +45,13 @@ interface VoteResults {
 export default function ResultsPageDb() {
   const { pollId } = useParams<{ pollId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [poll, setPoll] = useState<Poll | null>(null);
   const [results, setResults] = useState<VoteResults | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const [isReopening, setIsReopening] = useState(false);
 
   useEffect(() => {
     if (!pollId) {
@@ -95,6 +99,38 @@ export default function ResultsPageDb() {
     }
   };
 
+  const handleReopen = async () => {
+    if (!pollId) return;
+
+    setIsReopening(true);
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/polls/${pollId}/reopen`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ days: 7 }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to reopen poll');
+      }
+
+      // Reload poll and results
+      await loadPollAndResults();
+    } catch (error) {
+      console.error('Failed to reopen poll:', error);
+      alert(error instanceof Error ? error.message : 'Failed to reopen poll');
+    } finally {
+      setIsReopening(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4 flex items-center justify-center">
@@ -125,6 +161,8 @@ export default function ResultsPageDb() {
   );
 
   const topOption = sortedResults[0];
+  const isCreator = user && poll.creator.id === user.id;
+  const canReopen = isCreator && (poll.status === 'FINALIZED' || poll.status === 'CANCELLED');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4">
@@ -259,6 +297,16 @@ export default function ResultsPageDb() {
               className="flex-1"
             >
               🗳️ Vote Now
+            </Button>
+          )}
+          {canReopen && (
+            <Button
+              onClick={handleReopen}
+              disabled={isReopening}
+              variant="primary"
+              className="flex-1"
+            >
+              {isReopening ? '⏳ Reopening...' : '🔓 Reopen Voting'}
             </Button>
           )}
           <Button
