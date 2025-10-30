@@ -52,7 +52,16 @@
       "Bash(git stash:*)",
       "Bash(git merge:*)",
       "Read(//home/deploy/bin/**)",
-      "Bash(npx prisma generate:*)"
+      "Bash(npx prisma generate:*)",
+      "Bash(NODE_ENV=production npm run deploy-commands:*)",
+      "Bash(while IFS= read -r line)",
+      "Bash(do export \"$line\")",
+      "Bash(set -a)",
+      "Bash(source .env.production.local)",
+      "Bash(set +a)",
+      "Bash(timeout 10 bash:*)",
+      "Bash(export DISCORD_TEST_GUILD_ID=\"904952731045871616\")",
+      "Bash(bash -c:*)"
     ],
     "deny": [],
     "ask": []

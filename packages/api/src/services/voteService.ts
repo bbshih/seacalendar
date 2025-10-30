@@ -308,3 +308,4 @@ export const getUserVoteStats = async (userId: string) => {
     participationRate: parseFloat(participationRate),
   };
 };
+
