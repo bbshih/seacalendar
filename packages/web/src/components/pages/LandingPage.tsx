@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Button from '../shared/Button';
 import Card from '../shared/Card';
 
@@ -68,7 +69,7 @@ export default function LandingPage() {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            <a href="#/create">
+            <Link to="/create">
               <Button
                 variant="gradient"
                 size="lg"
@@ -76,7 +77,7 @@ export default function LandingPage() {
               >
                 ⚓ Create Your Event
               </Button>
-            </a>
+            </Link>
           </div>
 
           {/* Fun tagline */}
@@ -86,12 +87,12 @@ export default function LandingPage() {
 
           {/* My Events link */}
           <div className="mt-6 animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <a
-              href="#/my-events"
+            <Link
+              to="/my-events"
               className="text-ocean-600 hover:text-ocean-700 underline text-sm"
             >
               📋 View My Events
-            </a>
+            </Link>
           </div>
         </div>
       </div>

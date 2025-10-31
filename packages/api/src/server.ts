@@ -33,8 +33,17 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(requestLogger); // Request logging
 app.use(generalLimiter); // Rate limiting
 
-// Health check endpoint
+// Health check endpoint (both paths for compatibility)
 app.get('/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'SeaCalendar API is running',
+    timestamp: new Date().toISOString(),
+    environment: Config.nodeEnv,
+  });
+});
+
+app.get('/api/health', (req, res) => {
   res.json({
     success: true,
     message: 'SeaCalendar API is running',

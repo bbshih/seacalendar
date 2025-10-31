@@ -37,7 +37,11 @@ async function loadCommands() {
 
   try {
     const files = await readdir(commandsPath);
-    commandFiles = files.filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+    commandFiles = files.filter(file =>
+      (file.endsWith('.js') || file.endsWith('.ts')) &&
+      !file.includes('.test.') &&
+      !file.includes('.e2e.')
+    );
   } catch (error) {
     console.warn('⚠️  No commands directory found. Creating placeholder...');
     return;

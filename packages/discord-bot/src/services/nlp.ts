@@ -20,6 +20,7 @@ export interface ParsedEvent {
  * - "Q1 2025 Hangout - Fridays and Saturdays in January"
  * - "Movie night next Friday and Saturday at 7pm"
  * - "Dinner on Jan 10, Jan 17, and Jan 24 at 7:30pm"
+ * - "Boys Night every weekend in December"
  */
 export function parseEventDescription(text: string): ParsedEvent {
   const parsed: ParsedEvent = {
@@ -30,42 +31,90 @@ export function parseEventDescription(text: string): ParsedEvent {
     raw: text,
   };
 
-  // Parse dates using chrono-node
-  const chronoResults = chrono.parse(text);
+  // Check for "every [day(s)] in [month/year]" pattern
+  const everyPattern = /every\s+(weekend|weekday|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\s+in\s+(\w+)/i;
+  const everyMatch = text.match(everyPattern);
 
-  if (chronoResults.length > 0) {
-    // Extract dates
-    for (const result of chronoResults) {
-      const date = result.start.date();
-      parsed.dates.push(date);
+  if (everyMatch) {
+    const dayType = everyMatch[1].toLowerCase();
+    const monthText = everyMatch[2];
 
-      // Extract time if present
-      if (result.start.isCertain('hour')) {
-        const time = format(date, 'h:mm a');
-        if (!parsed.times.includes(time)) {
-          parsed.times.push(time);
+    // Parse the month/year
+    const monthResult = chrono.parse(monthText);
+    if (monthResult.length > 0) {
+      const targetDate = monthResult[0].start.date();
+      const year = targetDate.getFullYear();
+      const month = targetDate.getMonth();
+
+      // Determine which days of week to include
+      let daysOfWeek: number[] = [];
+      if (dayType === 'weekend') {
+        daysOfWeek = [0, 6]; // Saturday and Sunday
+      } else if (dayType === 'weekday') {
+        daysOfWeek = [1, 2, 3, 4, 5]; // Monday-Friday
+      } else {
+        // Parse specific day
+        daysOfWeek = parseDayOfWeek(dayType);
+      }
+
+      // Generate all matching dates in the month
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      parsed.dates = generateDateRange(firstDay, lastDay, daysOfWeek);
+    }
+  } else {
+    // Parse dates using chrono-node
+    const chronoResults = chrono.parse(text);
+
+    if (chronoResults.length > 0) {
+      // Extract dates, filtering out vague time references
+      for (const result of chronoResults) {
+        // Skip vague references like "night", "morning", "evening" without specific dates
+        if (result.text.match(/^(night|morning|evening|afternoon)$/i) && !result.start.isCertain('day')) {
+          continue;
+        }
+
+        const date = result.start.date();
+        parsed.dates.push(date);
+
+        // Extract time if present
+        if (result.start.isCertain('hour')) {
+          const time = format(date, 'h:mm a');
+          if (!parsed.times.includes(time)) {
+            parsed.times.push(time);
+          }
         }
       }
-    }
 
-    // Remove duplicate dates
-    parsed.dates = Array.from(new Set(parsed.dates.map(d => d.toISOString())))
-      .map(iso => new Date(iso))
-      .sort((a, b) => a.getTime() - b.getTime());
+      // Remove duplicate dates
+      parsed.dates = Array.from(new Set(parsed.dates.map(d => d.toISOString())))
+        .map(iso => new Date(iso))
+        .sort((a, b) => a.getTime() - b.getTime());
+    }
   }
 
-  // Try to extract title (text before first date mention)
-  if (chronoResults.length > 0) {
-    const firstDateIndex = chronoResults[0].index;
-    const titleCandidate = text.substring(0, firstDateIndex).trim();
+  // Try to extract title
+  if (everyMatch) {
+    // For "every X in Y" pattern, title is everything before "every"
+    const titleCandidate = text.substring(0, everyMatch.index).trim();
+    if (titleCandidate.length > 0 && titleCandidate.length < 100) {
+      parsed.title = titleCandidate;
+    }
+  } else {
+    // For explicit dates, title is before first date mention
+    const chronoResults = chrono.parse(text);
+    if (chronoResults.length > 0) {
+      const firstDateIndex = chronoResults[0].index;
+      const titleCandidate = text.substring(0, firstDateIndex).trim();
 
-    // Remove common prefixes
-    const cleanTitle = titleCandidate
-      .replace(/^(event|hangout|gathering|meeting|dinner|lunch)[\s:]*-?[\s:]*/i, '')
-      .trim();
+      // Remove common prefixes
+      const cleanTitle = titleCandidate
+        .replace(/^(event|hangout|gathering|meeting|dinner|lunch)[\s:]*-?[\s:]*/i, '')
+        .trim();
 
-    if (cleanTitle.length > 0 && cleanTitle.length < 100) {
-      parsed.title = cleanTitle;
+      if (cleanTitle.length > 0 && cleanTitle.length < 100) {
+        parsed.title = cleanTitle;
+      }
     }
   }
 
@@ -73,17 +122,6 @@ export function parseEventDescription(text: string): ParsedEvent {
   if (!parsed.title) {
     const words = text.split(/\s+/).slice(0, 5);
     parsed.title = words.join(' ');
-  }
-
-  // Extract description (everything after dates)
-  if (chronoResults.length > 0) {
-    const lastResult = chronoResults[chronoResults.length - 1];
-    const lastDateEnd = lastResult.index + lastResult.text.length;
-    const descCandidate = text.substring(lastDateEnd).trim();
-
-    if (descCandidate.length > 0 && descCandidate.length < 500) {
-      parsed.description = descCandidate;
-    }
   }
 
   return parsed;

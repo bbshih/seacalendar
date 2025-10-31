@@ -6,6 +6,12 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: "/", // Changed from "/seacalendar/" for Vercel deployment
+  server: {
+    port: 3000,
+    strictPort: true,
+    host: true,
+    allowedHosts: ['cal.billyeatstofu.com', 'localhost'],
+  },
   test: {
     globals: true,
     environment: "jsdom",

@@ -1,4 +1,4 @@
-import { HTMLAttributes, ReactNode, useState } from 'react';
+import { HTMLAttributes, ReactNode } from 'react';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
@@ -15,28 +15,6 @@ export default function Card({
   className = '',
   ...props
 }: CardProps) {
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!hover3d || variant === 'glass') return;
-
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    // Reduced from 10 to 2 degrees for subtle effect
-    const rotateX = ((y - centerY) / centerY) * -2;
-    const rotateY = ((x - centerX) / centerX) * 2;
-
-    setRotation({ x: rotateX, y: rotateY });
-  };
-
-  const handleMouseLeave = () => {
-    setRotation({ x: 0, y: 0 });
-  };
-
   const variantStyles = {
     default: 'bg-white rounded-2xl shadow-xl border-t-4 border-ocean-400 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1',
     glass: 'bg-white/30 backdrop-blur-md rounded-2xl shadow-xl border border-white/50 transition-all duration-300 hover:bg-white/40 hover:shadow-2xl',
@@ -45,19 +23,9 @@ export default function Card({
 
   const paddingStyles = noPadding ? '' : 'p-6 md:p-8';
 
-  const style3d = hover3d && variant !== 'glass'
-    ? {
-        transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) translateZ(0)`,
-        transition: 'transform 0.1s ease-out',
-      }
-    : {};
-
   return (
     <div
       className={`${variantStyles[variant]} ${paddingStyles} ${className}`}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={style3d}
       {...props}
     >
       {children}

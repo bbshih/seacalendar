@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import Button from './Button';
 import Card from './Card';
 
@@ -18,11 +19,13 @@ export default function ErrorState({
   onRetry,
   onGoHome
 }: ErrorStateProps) {
+  const navigate = useNavigate();
+
   const handleGoHome = () => {
     if (onGoHome) {
       onGoHome();
     } else {
-      window.location.hash = '/';
+      navigate('/');
     }
   };
 

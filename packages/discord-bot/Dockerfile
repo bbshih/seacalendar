@@ -1,6 +1,9 @@
 # Stage 1: Builder
 FROM node:20-alpine AS builder
 
+# Install openssl for Prisma
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 # Copy root package files first
@@ -33,6 +36,9 @@ RUN npm run build -w @seacalendar/discord-bot
 # Stage 2: Production
 FROM node:20-alpine
 
+# Install openssl for Prisma
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 # Copy root package files
@@ -49,6 +55,12 @@ COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
 COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
 COPY --from=builder /app/packages/discord-bot/dist ./packages/discord-bot/dist
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# Generate Prisma client in production stage
+WORKDIR /app/packages/database
+RUN npx prisma generate
 
 # Set working directory to bot package
 WORKDIR /app/packages/discord-bot

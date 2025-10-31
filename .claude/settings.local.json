@@ -61,7 +61,18 @@
       "Bash(set +a)",
       "Bash(timeout 10 bash:*)",
       "Bash(export DISCORD_TEST_GUILD_ID=\"904952731045871616\")",
-      "Bash(bash -c:*)"
+      "Bash(bash -c:*)",
+      "Bash(npx prisma migrate status:*)",
+      "Bash(docker exec:*)",
+      "Bash(DATABASE_URL=\"postgresql://dev:dev@localhost:5432/seacalendar_dev\" npx prisma migrate dev:*)",
+      "Read(//etc/caddy/**)",
+      "Bash(systemctl is-active:*)",
+      "Bash(crontab:*)",
+      "Bash(ss:*)",
+      "Read(//var/log/**)",
+      "Bash(docker stop:*)",
+      "Bash(docker start:*)",
+      "Bash(docker logs:*)"
     ],
     "deny": [],
     "ask": []
