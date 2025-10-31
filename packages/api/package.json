@@ -14,7 +14,7 @@
   "dependencies": {
     "@seacalendar/shared": "*",
     "@seacalendar/database": "*",
-    "express": "^4.18.2",
+    "express": "^5.1.0",
     "cors": "^2.8.5",
     "helmet": "^7.1.0",
     "express-rate-limit": "^7.1.5",
