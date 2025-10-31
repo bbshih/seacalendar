@@ -18,103 +18,110 @@ Use `hostname` or check system environment. Adjust behavior accordingly:
 
 ## Overview
 
-**SeaCalendar** is an ocean-themed React web application for organizing friend group hangouts. It's a database-less system that uses URL-based state management to handle event creation, voting, and calendar invite generation.
+**SeaCalendar** is a full-stack event coordination platform for organizing friend hangouts through Discord and web interfaces.
 
-See [TECHNICAL_SPEC.md](TECHNICAL_SPEC.md) for complete technical specification.
+**Architecture:**
+- Discord bot with natural language event creation
+- REST API with PostgreSQL database backend
+- React web app with calendar integration
+- Real-time updates via WebSockets
+
+See [README.md](README.md) for project overview and [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development guide.
 
 ## Development Commands
 
 ```bash
-# Development
-npm run dev              # Start dev server on http://localhost:5173
+# Start all services
+npm run dev              # Web app + API + Discord bot + Database
+
+# Individual services
+npm run dev:db           # PostgreSQL only
+npm run dev:api          # API server only (port 3001)
+npm run dev:bot          # Discord bot only
+npm run dev:web          # React web app only (port 5173)
+
+# Database
+npm run db:studio        # Visual database editor (port 5555)
+npm run db:migrate:dev   # Create new migration
+npm run db:seed          # Seed test data
+npm run db:reset         # Reset database
 
 # Testing
-npm test                 # Run unit tests with Vitest
-npm run test:ui          # Open Vitest UI
+npm test                 # Run all unit tests (Vitest)
 npm run test:e2e         # Run Playwright e2e tests
 npm run test:e2e:ui      # Open Playwright UI
 
 # Build
-npm run build            # Build for production
-npm run preview          # Preview production build
+npm run build            # Build all packages
+npm run clean            # Clean all dependencies
 ```
 
 ## Architecture
 
+### Monorepo Structure
+
+```
+seacalendar/
+├── packages/
+│   ├── shared/              # Shared types & utilities (TypeScript)
+│   ├── database/            # Prisma schema & migrations
+│   ├── api/                 # Express REST API
+│   ├── discord-bot/         # Discord.js bot
+│   └── web/                 # React app (Vite)
+├── scripts/
+│   └── watch-claude.js      # Branch watcher
+├── docker-compose.dev.yml   # Local PostgreSQL
+└── package.json             # Root workspace (npm workspaces)
+```
+
 ### Tech Stack
-- **React 19** + **TypeScript** + **Vite**
-- **Tailwind CSS** with ocean theme (blues, corals, teals)
-- **React Router v6** (hash routing)
-- **LZ-String** for URL compression
-- **Vitest** + **Testing Library** for unit tests
-- **Playwright** for e2e tests
 
-### Project Structure
+**Frontend:**
+- React 19 + TypeScript + Vite
+- Tailwind CSS with ocean theme
+- React Router v7
+- Socket.io Client (real-time updates)
 
-```
-src/
-├── components/
-│   ├── pages/          # Page components (CreateEventPage, VotingPage, etc.)
-│   ├── shared/         # Reusable UI components (Button, Card, Input, etc.)
-│   └── features/       # Feature-specific components (DateSelector, etc.)
-├── utils/              # Utility functions
-│   ├── urlState.ts     # ✅ URL encoding/decoding (23 tests)
-│   ├── dateHelpers.ts  # ✅ Date formatting/generation (26 tests)
-│   ├── voteHelpers.ts  # ✅ Vote tallying/statistics (31 tests)
-│   └── icsGenerator.ts # ✅ Calendar file generation (19 tests)
-├── types/              # ✅ TypeScript type definitions
-├── hooks/              # Custom React hooks
-└── test/               # ✅ Test setup and utilities
-```
+**Backend:**
+- Express (REST API)
+- Prisma ORM + PostgreSQL 15
+- discord.js v14
+- Socket.io (WebSocket server)
+
+**Development:**
+- npm workspaces (monorepo)
+- TypeScript (strict mode)
+- Vitest (unit tests)
+- Playwright (E2E tests)
+- Docker Compose (local database)
 
 ### Current Status
 
-**Phase 1 Progress (Core Voting System):**
-- ✅ Project setup & configuration
-- ✅ Type definitions (Event, Vote, DateOption, etc.)
-- ✅ URL state utilities with tests (23 passing)
-- ✅ Date helpers with tests (26 passing)
-- ✅ Vote helpers with tests (31 passing)
-- ✅ React Router setup with hash routing (all pages implemented)
-- ✅ Shared UI components (Button, Card, Input, Modal, CopyButton)
-- ✅ CreateEventPage implementation with date selection & password protection
-- ✅ Custom hooks (useEventFromUrl, useOrganizerKey)
-- ✅ GitHub Gist storage with AES-GCM encryption
-- ✅ GitHubTokenSetup component for PAT management
-- ✅ VotingPage implementation with password support
-- ✅ ResultsPage implementation with vote tallies & organizer controls
-- ✅ Security improvements (sessionStorage, PBKDF2 password protection)
-- ✅ Serverless vote submission (Vercel API endpoint)
+**✅ Completed:**
+- Monorepo structure with npm workspaces
+- Database schema (Prisma + PostgreSQL)
+- Express REST API with Discord OAuth
+- Discord bot with natural language processing
+  - `/event` - Create events from natural language
+  - `/status` - Check vote progress
+  - `/myevents` - List your events
+  - `/cancel` - Cancel events
+  - `/share` - Share polls to channels
+  - `/reopen` - Reopen closed polls
+- React web app (original Gist-based version)
+- Comprehensive test coverage (102 API tests, E2E tests)
 
-**Phase 1 Status: COMPLETE** ✅
+**🚧 In Progress:**
+- Web app migration to use new API backend
+- Discord emoji voting for simple polls (≤5 options)
+- Real-time vote updates via WebSockets
 
-**Phase 2 Progress (Calendar Integration):**
-- ✅ VenueSelectionPage with date selection & venue form
-- ✅ ICS file generator utility with tests (19 passing)
-- ✅ EventSummaryPage with calendar download & sharing
-- ✅ Email template generation (mailto: links)
-- ✅ Google Maps integration for venue address
-- ✅ Venue requirements checklist with OpenTable link
-- ✅ Event finalization workflow (results → venue → summary)
-
-**Phase 2 Status: COMPLETE** ✅
-
-**E2E Tests:**
-- ✅ Complete flow test (create → vote → finalize → download)
-- ✅ Landing page and navigation tests
-- ✅ Error scenarios and edge cases
-- ✅ Responsive design tests
-
-**Total: 99 unit tests passing + 3 E2E test suites**
-
-### Storage Architecture
-
-**GitHub Gist Backend (Private & Encrypted):**
-- Private Gists store event data
-- AES-GCM client-side encryption (256-bit keys)
-- Encryption keys embedded in URLs, never stored on GitHub
-- Organizer can delete event data anytime
-- Requires GitHub Personal Access Token (gist scope)
+**📋 Planned:**
+- Event and vote reminder system (cron jobs)
+- Venue tracking and recommendations
+- Poll templates for recurring events
+- Analytics and insights
+- Production deployment to Hetzner VPS
 
 ### Design System
 
@@ -129,47 +136,80 @@ src/
 - `animate-float` - Floating effect
 - `animate-ripple` - Click ripples
 
+### Database Schema
+
+**Key models** (see `packages/database/prisma/schema.prisma`):
+- **Poll** - Event polls with options and metadata
+- **PollOption** - Date/time options for polls
+- **Vote** - User votes with available/maybe selections
+- **User** - Discord identity with preferences
+- **Venue** - Venue history and details
+- **PollTemplate** - Reusable event templates
+- **EventReminder** - Scheduled reminders
+- **AuditLog** - Security audit trail
+
 ### Key Implementation Details
 
-1. **URL-based State:** All event data is compressed and stored in URL hash parameters using LZ-String. No backend required.
+1. **Database-backed**: All data persisted in PostgreSQL via Prisma ORM
+2. **Discord OAuth**: Web authentication uses Discord OAuth 2.0
+3. **JWT Tokens**: API uses JWT with refresh tokens for auth
+4. **Natural Language Processing**: Bot uses chrono-node for date parsing
+5. **Testing**: All features require unit tests (Vitest) and E2E tests (Playwright)
+6. **Git Commits**: Make reasonably-sized commits with descriptive messages
 
-2. **Organizer Key:** Simple base64-encoded key (not cryptographically secure) to prevent accidental edits. Format: `btoa(eventId).substring(0, 8)`
+### Package-Specific Notes
 
-3. **Testing:** All features must have unit tests and e2e tests. Use Vitest for unit tests, Playwright for e2e.
+**packages/api:**
+- Express server with comprehensive middleware (auth, rate limiting, logging)
+- JWT authentication service
+- Discord OAuth integration
+- WebSocket support via Socket.io
+- 102 passing unit tests
 
-4. **Git Commits:** Make reasonably-sized commits with descriptive messages. Include emoji footer for Claude-generated code.
+**packages/discord-bot:**
+- Natural language event creation
+- Slash command registration system
+- Poll service integration with database
+- 13 NLP tests passing
+
+**packages/web:**
+- Original Gist-based React app (v1.0)
+- Needs migration to use new API backend (v2.0)
+- Ocean-themed UI with Tailwind CSS
+- Complete E2E test coverage
+
+**packages/shared:**
+- Shared TypeScript types
+- Common utility functions
+- Used by all packages
+
+**packages/database:**
+- Prisma schema and migrations
+- Database client generation
+- Seed data for testing
 
 ### Next Steps
 
-Phase 1, 2, and E2E tests are complete! ✅ Next priorities:
-1. **Phase 3 features** (optional enhancements):
-   - Past venues tracker (localStorage)
-   - Date pattern helpers (quick presets)
-   - Enhanced venue checklist features
-2. **Polish & improvements**:
-   - Additional animations and ocean theme enhancements
-   - Better mobile responsiveness
-   - Accessibility improvements
-   - Performance optimizations
-   - User documentation/help pages
-3. **Deployment**:
-   - Deploy to Vercel/GitHub Pages
-   - Set up environment variables
-   - Monitor and optimize performance
+**Priority 1: Web App Migration**
+- Update web app to use new API backend instead of GitHub Gist
+- Implement Discord OAuth login flow
+- Add real-time vote updates via WebSockets
 
-### Serverless Voting
+**Priority 2: Enhanced Discord Integration**
+- Discord emoji voting for simple polls
+- Real-time vote count updates in Discord messages
+- Channel notifications for events
 
-**✅ IMPLEMENTED** - Voters can now vote without GitHub tokens!
+**Priority 3: Advanced Features**
+- Event and vote reminder system
+- Venue tracking and recommendations
+- Poll templates
+- Analytics dashboard
 
-The app uses a Vercel serverless function (`/api/submit-vote`) to handle Gist updates server-side. This means:
-- Voters don't need GitHub accounts or tokens
-- Only the organizer needs to set up a GitHub PAT in Vercel environment variables
-- Event data is encrypted client-side before being sent to the serverless function
-- The serverless function securely updates Gists using the server-side token
+**Priority 4: Production Deployment**
+- Deploy to Hetzner VPS
+- Set up CI/CD with GitHub Actions
+- Configure Caddy reverse proxy with SSL
+- Set up automated backups
 
-**Setup Requirements:**
-1. Deploy to Vercel (or compatible serverless platform)
-2. Set `GITHUB_TOKEN` environment variable in Vercel dashboard
-3. See DEPLOYMENT.md for detailed setup instructions
-
-Refer to TECHNICAL_SPEC.md for detailed requirements for Phase 2 components.
+See [README.md](README.md) for current status and [DEVELOPMENT.md](DEVELOPMENT.md) for development workflow.
