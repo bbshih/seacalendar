@@ -3,7 +3,7 @@ import { HTMLAttributes, ReactNode, useState } from 'react';
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   noPadding?: boolean;
-  variant?: 'default' | 'glass' | '3d';
+  variant?: 'default' | 'glass' | '3d' | 'glossy' | 'chrome' | 'plastic';
   hover3d?: boolean;
 }
 
@@ -38,9 +38,12 @@ export default function Card({
   };
 
   const variantStyles = {
-    default: 'bg-white rounded-2xl shadow-xl border-t-4 border-ocean-400 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1',
-    glass: 'bg-white/30 backdrop-blur-md rounded-2xl shadow-xl border border-white/50 transition-all duration-300 hover:bg-white/40 hover:shadow-2xl',
-    '3d': 'bg-gradient-to-br from-white to-ocean-50 rounded-2xl shadow-2xl border-t-4 border-ocean-400 transition-all duration-500',
+    default: 'bg-white rounded-2xl shadow-glossy border-t-4 border-ocean-400 transition-all duration-300 hover:shadow-glossy-hover hover:-translate-y-1',
+    glass: 'bg-gradient-to-br from-white/50 to-white/30 backdrop-blur-lg rounded-2xl shadow-plastic border-2 border-white/60 transition-all duration-300 hover:from-white/60 hover:to-white/40 hover:shadow-gel',
+    '3d': 'bg-gradient-to-br from-white via-ocean-50 to-ocean-100 rounded-2xl shadow-gel border-t-4 border-l-2 border-ocean-400 border-r border-b transition-all duration-500',
+    glossy: 'bg-gradient-to-br from-ocean-50 to-white rounded-2xl shadow-glossy hover:shadow-glossy-hover border-t-2 border-l border-ocean-200 transition-all duration-300 hover:-translate-y-1',
+    chrome: 'bg-gradient-to-br from-chrome-100 via-chrome-200 to-chrome-300 rounded-2xl shadow-chrome border border-chrome-400 transition-all duration-300 hover:from-chrome-200 hover:via-chrome-300 hover:to-chrome-400',
+    plastic: 'bg-gradient-to-br from-white to-ocean-100 rounded-3xl shadow-plastic border-t-4 border-ocean-300 transition-all duration-300 hover:shadow-gel hover:-translate-y-1',
   };
 
   const paddingStyles = noPadding ? '' : 'p-6 md:p-8';
@@ -54,13 +57,26 @@ export default function Card({
 
   return (
     <div
-      className={`${variantStyles[variant]} ${paddingStyles} ${className}`}
+      className={`${variantStyles[variant]} ${paddingStyles} ${className} relative overflow-hidden`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={style3d}
       {...props}
     >
-      {children}
+      {/* Glossy highlight overlay for certain variants */}
+      {(variant === 'glossy' || variant === 'plastic' || variant === '3d') && (
+        <div
+          className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent pointer-events-none rounded-2xl"
+          style={{ height: '60%', width: '80%' }}
+        />
+      )}
+
+      {/* Chrome reflection effect */}
+      {variant === 'chrome' && (
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none rounded-2xl" />
+      )}
+
+      <div className="relative z-10">{children}</div>
     </div>
   );
 }

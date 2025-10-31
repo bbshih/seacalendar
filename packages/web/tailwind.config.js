@@ -31,7 +31,21 @@ export default {
         seaweed: {
           500: '#10b981',  // Sea green
           600: '#059669',
-        }
+        },
+        // Y2K chrome/metallic colors
+        chrome: {
+          100: '#f0f0f5',
+          200: '#e1e1ea',
+          300: '#c7c7d4',
+          400: '#adadbe',
+          500: '#8989a8',
+        },
+        holographic: {
+          pink: '#ff6ec7',
+          blue: '#00d4ff',
+          purple: '#bd00ff',
+          yellow: '#ffed4e',
+        },
       },
       animation: {
         // Original animations
@@ -213,7 +227,34 @@ export default {
       backdropBlur: {
         xs: '2px',
       },
+      // Y2K skeumorphic effects
+      boxShadow: {
+        'glossy': 'inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.3)',
+        'glossy-hover': 'inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(0,0,0,0.25), 0 6px 16px rgba(0,0,0,0.4)',
+        'inset-deep': 'inset 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 2px rgba(0,0,0,0.4)',
+        'bevel': '0 1px 0 rgba(255,255,255,0.5), 0 -1px 0 rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2)',
+        'plastic': 'inset 0 1px 2px rgba(255,255,255,0.9), 0 8px 16px rgba(0,0,0,0.25)',
+        'gel': 'inset 0 -2px 8px rgba(0,0,0,0.15), inset 0 2px 8px rgba(255,255,255,0.8), 0 4px 12px rgba(0,0,0,0.3)',
+        'chrome': 'inset 0 1px 1px rgba(255,255,255,0.95), inset 0 -1px 1px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.25)',
+      },
+      textShadow: {
+        'emboss': '0 1px 0 rgba(255,255,255,0.8), 0 -1px 0 rgba(0,0,0,0.3)',
+        'glow': '0 0 10px currentColor, 0 0 20px currentColor',
+        'neon': '0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor',
+        'glossy': '0 1px 2px rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.3)',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ matchUtilities, theme }) {
+      matchUtilities(
+        {
+          'text-shadow': (value) => ({
+            textShadow: value,
+          }),
+        },
+        { values: theme('textShadow') }
+      )
+    },
+  ],
 }
