@@ -14,13 +14,13 @@
   "dependencies": {
     "@seacalendar/shared": "*",
     "@seacalendar/database": "*",
-    "discord.js": "^14.14.1",
+    "discord.js": "^14.24.2",
     "chrono-node": "^2.7.5",
-    "node-cron": "^3.0.3",
-    "dotenv": "^16.4.1",
-    "zod": "^3.22.4",
-    "date-fns": "^3.0.0",
-    "uuid": "^9.0.1"
+    "node-cron": "^4.2.1",
+    "dotenv": "^17.2.3",
+    "zod": "^4.1.12",
+    "date-fns": "^4.1.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
