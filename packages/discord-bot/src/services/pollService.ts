@@ -55,10 +55,11 @@ export async function createEventPoll(input: CreatePollInput): Promise<PollWithD
       votingDeadline: deadline,
       options: {
         create: input.dateOptions.map((date, index) => ({
-          type: 'DATE',
-          value: date.toISOString(),
+          date: date,
           label: formatDateOption(date, input.times?.[0]), // Use first time if available
-          sortOrder: index,
+          order: index,
+          timeStart: input.times?.[0] || null,
+          timeEnd: input.times?.[1] || null,
         })),
       },
     },

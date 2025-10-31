@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import Button from './Button';
 import Card from './Card';
 import Input from './Input';
@@ -79,12 +80,12 @@ export default function PasswordPromptState({
               </Button>
 
               <div className="text-center pt-4">
-                <a
-                  href="#/"
+                <Link
+                  to="/"
                   className="text-sm text-ocean-600 hover:text-ocean-700 underline"
                 >
                   ← Back to Home
-                </a>
+                </Link>
               </div>
             </div>
           </Card>

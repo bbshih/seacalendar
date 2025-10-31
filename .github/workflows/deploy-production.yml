@@ -1,0 +1,73 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 5.78.132.232 >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        run: |
+          ssh deploy@5.78.132.232 << 'ENDSSH'
+          set -e
+
+          echo "🚀 Starting deployment..."
+          cd /opt/seacalendar
+
+          echo "📦 Pulling latest code..."
+          git fetch origin
+          git checkout main
+          git pull origin main
+
+          echo "🔨 Installing dependencies..."
+          npm install
+
+          echo "🐳 Checking deployment mode..."
+          if docker ps | grep -q "seacalendar-api\|seacalendar-web\|seacalendar-bot"; then
+            echo "Production Docker mode detected"
+            echo "🔄 Rebuilding containers..."
+            docker compose -f docker-compose.prod.yml up -d --build
+
+            echo "⏳ Waiting for services..."
+            sleep 10
+
+            echo "✅ Deployment complete!"
+            docker compose -f docker-compose.prod.yml ps
+          else
+            echo "Dev mode detected (npm)"
+            echo "Services will auto-restart via watch mode"
+            echo "✅ Code updated!"
+          fi
+          ENDSSH
+
+      - name: Verify deployment
+        run: |
+          echo "🔍 Verifying deployment..."
+          sleep 5
+          curl -f https://cal.billyeatstofu.com || exit 1
+          echo "✅ Site is responding!"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Check the logs above for details"

@@ -27,7 +27,8 @@ services:
     container_name: seacalendar-api
     restart: unless-stopped
     env_file:
-      - .env.production
+      - .env.production           # Template (committed to git)
+      - .env.production.local     # Actual secrets (gitignored, takes priority)
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,7 +44,8 @@ services:
     container_name: seacalendar-bot
     restart: unless-stopped
     env_file:
-      - .env.production
+      - .env.production           # Template (committed to git)
+      - .env.production.local     # Actual secrets (gitignored, takes priority)
     depends_on:
       - postgres
       - api

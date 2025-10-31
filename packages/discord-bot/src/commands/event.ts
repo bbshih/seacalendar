@@ -29,12 +29,20 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
   const description = interaction.options.getString('description', true);
 
-  // Show thinking indicator
-  await interaction.deferReply();
+  // Show thinking indicator (ephemeral - only visible to user)
+  await interaction.deferReply({ ephemeral: true });
 
   try {
     // Parse the natural language description
     const parsed = parseEventDescription(description);
+
+    // Debug logging
+    console.log('📝 Parsed event:', {
+      title: parsed.title,
+      dateCount: parsed.dates.length,
+      firstDate: parsed.dates[0]?.toISOString(),
+      lastDate: parsed.dates[parsed.dates.length - 1]?.toISOString(),
+    });
 
     // Validate the parsed event
     const validation = validateParsedEvent(parsed);
@@ -157,7 +165,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setURL(`${Config.webAppUrl}/results/${poll.id}`),
         );
 
-      await confirmation.editReply({
+      // Delete ephemeral message and send public announcement
+      await confirmation.deleteReply();
+      await interaction.channel?.send({
         content: `<@${interaction.user.id}> created an event!`,
         embeds: [successEmbed],
         components: [actionButtons],
@@ -191,7 +201,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     if (interaction.deferred) {
       await interaction.editReply(errorMessage);
     } else {
-      await interaction.reply(errorMessage);
+      await interaction.reply({ ...errorMessage, ephemeral: true });
     }
   }
 }
