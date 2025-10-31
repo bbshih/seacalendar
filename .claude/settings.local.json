@@ -69,7 +69,10 @@
       "Bash(systemctl is-active:*)",
       "Bash(crontab:*)",
       "Bash(ss:*)",
-      "Read(//var/log/**)"
+      "Read(//var/log/**)",
+      "Bash(docker stop:*)",
+      "Bash(docker start:*)",
+      "Bash(docker logs:*)"
     ],
     "deny": [],
     "ask": []

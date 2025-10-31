@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import Card from '../shared/Card';
 import Input from '../shared/Input';
 import Button from '../shared/Button';
@@ -10,7 +9,6 @@ import CalendarMonthView from '../features/CalendarMonthView';
 import type { DateOption } from '../../types';
 
 export default function CreateEventPage() {
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [eventTitle, setEventTitle] = useState('');

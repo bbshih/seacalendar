@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Card from '../shared/Card';
-import Input from '../shared/Input';
 import Button from '../shared/Button';
 import Modal from '../shared/Modal';
 

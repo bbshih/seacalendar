@@ -167,11 +167,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
       // Delete ephemeral message and send public announcement
       await confirmation.deleteReply();
-      await interaction.channel?.send({
-        content: `<@${interaction.user.id}> created an event!`,
-        embeds: [successEmbed],
-        components: [actionButtons],
-      });
+      if (interaction.channel && 'send' in interaction.channel) {
+        await interaction.channel.send({
+          content: `<@${interaction.user.id}> created an event!`,
+          embeds: [successEmbed],
+          components: [actionButtons],
+        });
+      }
 
       // TODO: If ≤5 options, set up emoji voting
 
