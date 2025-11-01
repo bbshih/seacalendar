@@ -40,6 +40,12 @@ code {
 /* Ensure button text is always visible */
 button {
   color: inherit !important;
+  cursor: pointer;
+}
+
+/* Pointer cursor for all interactive elements */
+a, button, [role="button"], input[type="submit"], input[type="button"] {
+  cursor: pointer;
 }
 
 /* Animation keyframes for AnimatedBackground and other components */
