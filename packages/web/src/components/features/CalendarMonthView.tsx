@@ -42,15 +42,15 @@ const CalendarDay = memo(function CalendarDay({
       className={`
         aspect-square ${padding} rounded-lg transition-all
         flex items-center justify-center
-        ${fontSize} font-medium
-        ${isToday ? 'ring-2 ring-coral-400 ring-offset-1' : ''}
+        ${fontSize} font-bold
+        ${isToday ? 'ring-2 ring-cyan-400 shadow-[0_0_10px_rgba(14,165,233,0.5)]' : ''}
         ${isPast
-          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+          ? 'bg-gray-900/20 text-gray-700 cursor-not-allowed border border-gray-800/30'
           : isSelected
-          ? 'bg-ocean-500 text-white hover:bg-ocean-600 shadow-md'
+          ? 'bg-gradient-to-br from-cyan-500 to-cyan-600 text-white hover:from-cyan-600 hover:to-cyan-700 shadow-[0_0_15px_rgba(14,165,233,0.5)] border-2 border-cyan-400'
           : isWeekend
-          ? 'bg-sand-50 text-ocean-700 hover:bg-sand-100'
-          : 'bg-white text-gray-600 hover:bg-ocean-50 hover:text-ocean-700'
+          ? 'bg-gray-800/50 text-cyan-400 hover:bg-gray-800/70 border border-cyan-500/30'
+          : 'bg-gray-900/40 text-cyan-300 hover:bg-cyan-500/20 hover:text-cyan-200 border border-cyan-500/20 hover:border-cyan-400/50'
         }
       `}
       aria-label={`${formatDateLabel(isoDate)}${isSelected ? ' (selected)' : ''}`}

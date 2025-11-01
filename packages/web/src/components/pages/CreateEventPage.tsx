@@ -105,25 +105,44 @@ export default function CreateEventPage() {
     : '';
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-ocean-50 to-ocean-100">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-gray-950 via-ocean-950 to-gray-950 relative overflow-hidden">
+      {/* Grid overlay */}
+      <div
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(14, 165, 233, 0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(14, 165, 233, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+        }}
+      />
+
+      <div className="max-w-4xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-8 animate-slide-down">
-          <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-ocean-600 via-coral-500 to-ocean-500 bg-clip-text text-transparent animate-gradient-x bg-[length:200%_100%]"
+          <div className="inline-block mb-4">
+            <span className="font-mono text-cyan-500 text-sm block mb-2">&lt;Event.Create /&gt;</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-ocean-400 to-cyan-400"
             style={{
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
+              textShadow: '0 0 40px rgba(14, 165, 233, 0.3)',
             }}>
             ⚓ Create Event
           </h1>
-          <p className="text-lg text-ocean-700 font-semibold animate-slide-up">
-            Plan your next hangout with friends
+          <p className="text-lg text-cyan-400 font-semibold animate-slide-up font-mono">
+            [ Initialize hangout protocol ]
           </p>
         </div>
 
         {/* Event Details */}
-        <Card className="mb-6 animate-fade-in">
-          <h2 className="text-xl font-bold text-ocean-700 mb-4">📋 Event Details</h2>
+        <div className="mb-6 animate-fade-in bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-md border-2 border-cyan-500/30 rounded-lg p-6 shadow-2xl">
+          <h2 className="text-xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+            <span className="font-mono text-cyan-500 text-sm">STEP_1</span>
+            <span>📋 Event Details</span>
+          </h2>
 
           <div className="space-y-4">
             <Input
@@ -136,7 +155,7 @@ export default function CreateEventPage() {
             />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-cyan-400 mb-2">
                 Description (optional)
               </label>
               <textarea
@@ -144,16 +163,18 @@ export default function CreateEventPage() {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Add any additional details..."
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-ocean-500"
+                className="w-full px-3 py-2 bg-gray-900/50 border-2 border-cyan-500/30 text-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400 placeholder-cyan-700"
               />
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Date Selection */}
-        <Card className="mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-          <h2 className="text-xl font-bold text-ocean-700 mb-4">
-            📅 Pick Dates ({dateOptions.length} selected)
+        <div className="mb-6 animate-fade-in bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-md border-2 border-cyan-500/30 rounded-lg p-6 shadow-2xl" style={{ animationDelay: '0.1s' }}>
+          <h2 className="text-xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+            <span className="font-mono text-cyan-500 text-sm">STEP_2</span>
+            <span>📅 Pick Dates</span>
+            <span className="ml-auto text-sm font-mono text-cyan-500">({dateOptions.length} selected)</span>
           </h2>
 
           <CalendarMonthView
@@ -163,13 +184,13 @@ export default function CreateEventPage() {
           />
 
           {dateOptions.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-ocean-200">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Selected Dates:</h3>
+            <div className="mt-4 pt-4 border-t border-cyan-500/30">
+              <h3 className="text-sm font-medium text-cyan-400 mb-2 font-mono">[ SELECTED_DATES ]:</h3>
               <div className="flex flex-wrap gap-2">
                 {dateOptions.map((opt, i) => (
                   <span
                     key={i}
-                    className="px-3 py-1 bg-ocean-100 text-ocean-700 rounded-full text-sm font-medium"
+                    className="px-3 py-1 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-lg text-sm font-medium"
                   >
                     {opt.label}
                   </span>
@@ -177,32 +198,30 @@ export default function CreateEventPage() {
               </div>
             </div>
           )}
-        </Card>
+        </div>
 
         {/* Error */}
         {createError && (
-          <Card className="mb-6 bg-red-50 border-red-200 animate-fade-in">
-            <p className="text-red-700">{createError}</p>
-          </Card>
+          <div className="mb-6 bg-red-950/90 border-2 border-red-500/50 rounded-lg p-4 animate-fade-in">
+            <p className="text-red-400 font-mono text-sm">ERROR: {createError}</p>
+          </div>
         )}
 
         {/* Actions */}
         <div className="flex gap-3 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-          <Button
-            variant="outline"
+          <button
             onClick={() => navigate('/my-events')}
-            className="flex-1"
+            className="flex-1 px-6 py-3 rounded-lg border-2 border-cyan-500/30 text-cyan-300 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(14,165,233,0.3)] transition-all duration-300 font-bold"
           >
             📋 My Events
-          </Button>
-          <Button
-            variant="gradient"
+          </button>
+          <button
             onClick={handleCreateEvent}
             disabled={isCreating}
-            className="flex-1"
+            className="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-ocean-500 to-ocean-600 text-white border-2 border-ocean-400 shadow-[0_0_30px_rgba(14,165,233,0.4)] hover:shadow-[0_0_50px_rgba(14,165,233,0.8)] transition-all duration-500 hover:scale-105 font-black disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCreating ? '⏳ Creating...' : '🌊 Create Event'}
-          </Button>
+          </button>
         </div>
 
         {/* Success Modal */}
