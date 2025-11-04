@@ -72,7 +72,21 @@
       "Read(//var/log/**)",
       "Bash(docker stop:*)",
       "Bash(docker start:*)",
-      "Bash(docker logs:*)"
+      "Bash(docker logs:*)",
+      "Bash(npx --version:*)",
+      "Bash(echo:*)",
+      "Bash(snap list:*)",
+      "Bash(apt list:*)",
+      "Bash(bash)",
+      "Bash(export NVM_DIR=\"$HOME/.nvm\")",
+      "Bash([ -s \"$NVM_DIR/nvm.sh\" ])",
+      "Bash(. \"$NVM_DIR/nvm.sh\")",
+      "Bash(nvm:*)",
+      "Bash(DATABASE_URL=\"$DATABASE_URL\" npx prisma migrate dev:*)",
+      "Bash(docker cp:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(/opt/seacalendar/packages/database/prisma/schema.prisma)"
     ],
     "deny": [],
     "ask": []

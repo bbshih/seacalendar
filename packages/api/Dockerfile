@@ -53,7 +53,8 @@ RUN npm ci --omit=dev --workspace=@seacalendar/api
 # Copy built files from builder
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
-COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
+COPY --from=builder /app/packages/database/prisma/schema.prisma ./packages/database/prisma/schema.prisma
+COPY --from=builder /app/packages/database/prisma/migrations ./packages/database/prisma/migrations
 COPY --from=builder /app/packages/api/dist ./packages/api/dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
