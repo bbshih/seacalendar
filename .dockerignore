@@ -73,7 +73,7 @@ packages/*/out
 .turbo
 
 # Prisma
-packages/database/prisma/migrations
+# packages/database/prisma/migrations  # REMOVED: migrations needed in production
 
 # Temporary files
 tmp

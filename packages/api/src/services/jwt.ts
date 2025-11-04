@@ -36,9 +36,9 @@ export const generateTokens = async (payload: JwtPayload): Promise<TokenPair> =>
     { expiresIn: Config.refreshTokenExpiresIn as jwt.SignOptions['expiresIn'] }
   );
 
-  // Calculate expiration date
+  // Calculate expiration date (365 days to match refresh token)
   const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+  expiresAt.setDate(expiresAt.getDate() + 365);
 
   // Store refresh token in database
   await prisma.refreshToken.create({
