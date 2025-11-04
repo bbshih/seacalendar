@@ -28,6 +28,11 @@ const envSchema = z.object({
   DISCORD_CLIENT_SECRET: z.string().min(1, 'DISCORD_CLIENT_SECRET is required'),
   DISCORD_REDIRECT_URI: z.string().url('DISCORD_REDIRECT_URI must be a valid URL'),
 
+  // Google OAuth (optional for now)
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_REDIRECT_URI: z.string().optional(),
+
   // Web App
   WEB_APP_URL: z.string().url('WEB_APP_URL must be a valid URL'),
 
@@ -39,10 +44,10 @@ const envSchema = z.object({
 });
 
 // Parse and validate environment variables
-let config: z.infer<typeof envSchema>;
+let env: z.infer<typeof envSchema>;
 
 try {
-  config = envSchema.parse(process.env);
+  env = envSchema.parse(process.env);
 } catch (error) {
   if (error instanceof z.ZodError) {
     console.error('❌ Invalid environment variables:');
@@ -55,40 +60,51 @@ try {
 }
 
 // Export validated config
-export const Config = {
+export const config = {
   // Server
-  nodeEnv: config.NODE_ENV,
-  port: config.API_PORT,
-  isDevelopment: config.NODE_ENV === 'development',
-  isProduction: config.NODE_ENV === 'production',
-  isTest: config.NODE_ENV === 'test',
+  nodeEnv: env.NODE_ENV,
+  port: env.API_PORT,
+  isDevelopment: env.NODE_ENV === 'development',
+  isProduction: env.NODE_ENV === 'production',
+  isTest: env.NODE_ENV === 'test',
 
   // Database
-  databaseUrl: config.DATABASE_URL,
+  databaseUrl: env.DATABASE_URL,
 
   // JWT
-  jwtSecret: config.JWT_SECRET,
-  jwtExpiresIn: config.JWT_EXPIRES_IN,
-  refreshTokenExpiresIn: config.REFRESH_TOKEN_EXPIRES_IN,
+  jwtSecret: env.JWT_SECRET,
+  jwtExpiresIn: env.JWT_EXPIRES_IN,
+  refreshTokenExpiresIn: env.REFRESH_TOKEN_EXPIRES_IN,
 
   // Discord
   discord: {
-    clientId: config.DISCORD_CLIENT_ID,
-    clientSecret: config.DISCORD_CLIENT_SECRET,
-    redirectUri: config.DISCORD_REDIRECT_URI,
+    clientId: env.DISCORD_CLIENT_ID,
+    clientSecret: env.DISCORD_CLIENT_SECRET,
+    redirectUri: env.DISCORD_REDIRECT_URI,
     authUrl: 'https://discord.com/api/oauth2/authorize',
     tokenUrl: 'https://discord.com/api/oauth2/token',
     userUrl: 'https://discord.com/api/users/@me',
     scopes: ['identify', 'email'],
   },
 
+  // Google
+  google: {
+    clientId: env.GOOGLE_CLIENT_ID || '',
+    clientSecret: env.GOOGLE_CLIENT_SECRET || '',
+    redirectUri: env.GOOGLE_REDIRECT_URI || `${env.WEB_APP_URL}/api/auth/google/callback`,
+    scopes: {
+      basic: ['openid', 'email', 'profile'],
+      calendar: ['https://www.googleapis.com/auth/calendar.readonly'],
+    },
+  },
+
   // Web App
-  webAppUrl: config.WEB_APP_URL,
+  webAppUrl: env.WEB_APP_URL,
 
   // CORS
   corsOrigins: [
-    config.WEB_APP_URL,
-    ...(config.NODE_ENV === 'development' ? ['http://localhost:5173'] : []),
+    env.WEB_APP_URL,
+    ...(env.NODE_ENV === 'development' ? ['http://localhost:5173'] : []),
   ],
 
   // Rate Limiting
@@ -101,17 +117,20 @@ export const Config = {
 
   // Logging
   logging: {
-    level: config.NODE_ENV === 'production' ? 'info' : 'debug',
+    level: env.NODE_ENV === 'production' ? 'info' : 'debug',
   },
 };
 
 // Log configuration on startup (hide secrets)
-if (!Config.isTest) {
+if (!config.isTest) {
   console.log('📋 Configuration loaded:');
-  console.log(`  Environment: ${Config.nodeEnv}`);
-  console.log(`  Port: ${Config.port}`);
-  console.log(`  Database: ${Config.databaseUrl.replace(/:[^:@]+@/, ':***@')}`);
-  console.log(`  JWT Secret: ${Config.jwtSecret.substring(0, 8)}...`);
-  console.log(`  Discord Client ID: ${Config.discord.clientId}`);
-  console.log(`  Web App URL: ${Config.webAppUrl}`);
+  console.log(`  Environment: ${config.nodeEnv}`);
+  console.log(`  Port: ${config.port}`);
+  console.log(`  Database: ${config.databaseUrl.replace(/:[^:@]+@/, ':***@')}`);
+  console.log(`  JWT Secret: ${config.jwtSecret.substring(0, 8)}...`);
+  console.log(`  Discord Client ID: ${config.discord.clientId}`);
+  console.log(`  Web App URL: ${config.webAppUrl}`);
 }
+
+// Backwards compatibility
+export const Config = config;
