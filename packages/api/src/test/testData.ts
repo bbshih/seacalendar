@@ -3,7 +3,20 @@
  * Provides mock data for testing
  */
 
-import type { User, Poll, PollOption, Vote, PollType, PollStatus } from '@seacalendar/database';
+import type {
+  User,
+  Poll,
+  PollOption,
+  Vote,
+  PollType,
+  PollStatus,
+  AuthProvider,
+  AuthProviderType,
+  CalendarConnection,
+  CalendarProvider,
+  SyncStatus,
+  CalendarEvent,
+} from '@seacalendar/database';
 
 /**
  * Create a mock user
@@ -144,4 +157,92 @@ export const createMockDiscordUser = () => ({
   avatar: 'abc123',
   email: 'test@example.com',
   verified: true,
+});
+
+/**
+ * Create mock AuthProvider
+ */
+export const createMockAuthProvider = (overrides?: Partial<AuthProvider>): AuthProvider => ({
+  id: 'auth-123',
+  userId: 'user-123',
+  provider: 'DISCORD' as AuthProviderType,
+  providerId: '123456789012345678',
+  accessToken: 'mock-access-token',
+  refreshToken: 'mock-refresh-token',
+  expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  scope: 'identify email',
+  providerData: null,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  ...overrides,
+});
+
+/**
+ * Create mock Google OAuth response
+ */
+export const createMockGoogleOAuthResponse = () => ({
+  access_token: 'mock-google-access-token',
+  refresh_token: 'mock-google-refresh-token',
+  expires_in: 3600,
+  scope: 'openid email profile',
+  token_type: 'Bearer',
+});
+
+/**
+ * Create mock Google user response
+ */
+export const createMockGoogleUser = () => ({
+  id: 'google-user-123',
+  email: 'test@gmail.com',
+  verified_email: true,
+  name: 'Test User',
+  given_name: 'Test',
+  family_name: 'User',
+  picture: 'https://example.com/picture.jpg',
+  locale: 'en',
+});
+
+/**
+ * Create mock CalendarConnection
+ */
+export const createMockCalendarConnection = (
+  overrides?: Partial<CalendarConnection>
+): CalendarConnection => ({
+  id: 'cal-123',
+  userId: 'user-123',
+  provider: 'GOOGLE' as CalendarProvider,
+  providerAccountId: 'google-cal-123',
+  accessToken: 'mock-calendar-access-token',
+  refreshToken: 'mock-calendar-refresh-token',
+  expiresAt: new Date(Date.now() + 3600 * 1000),
+  syncEnabled: true,
+  showBusyTimes: true,
+  showEventTitles: false,
+  lastSyncAt: new Date('2024-01-01'),
+  syncStatus: 'SUCCESS' as SyncStatus,
+  syncError: null,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  ...overrides,
+});
+
+/**
+ * Create mock CalendarEvent
+ */
+export const createMockCalendarEvent = (overrides?: Partial<CalendarEvent>): CalendarEvent => ({
+  id: 'event-123',
+  connectionId: 'cal-123',
+  providerEventId: 'google-event-123',
+  title: 'Test Meeting',
+  description: 'A test calendar event',
+  location: 'Conference Room A',
+  startTime: new Date('2024-06-15T14:00:00Z'),
+  endTime: new Date('2024-06-15T15:00:00Z'),
+  isAllDay: false,
+  timezone: 'America/Los_Angeles',
+  status: 'confirmed',
+  transparency: 'opaque',
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  ...overrides,
 });
