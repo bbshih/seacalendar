@@ -3,7 +3,7 @@
  * Business logic for poll operations
  */
 
-import { prisma, PollType, PollStatus } from '@seacalendar/database';
+import { prisma, PollType, PollStatus, PollOptionType } from '@seacalendar/database';
 import { ErrorFactory } from '../middleware/errorHandler';
 import { logger } from '../middleware/logger';
 
@@ -15,6 +15,7 @@ export interface CreatePollData {
   guildId?: string;
   channelId?: string;
   options: {
+    optionType?: 'DATE' | 'TEXT';
     label: string;
     description?: string;
     date?: Date;
@@ -58,6 +59,7 @@ export const createPoll = async (userId: string, data: CreatePollData) => {
         status: PollStatus.VOTING,
         options: {
           create: data.options.map((option, index) => ({
+            optionType: option.optionType === 'TEXT' ? PollOptionType.TEXT : PollOptionType.DATE,
             label: option.label,
             description: option.description,
             date: option.date,
