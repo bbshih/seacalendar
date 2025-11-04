@@ -6,6 +6,8 @@
 import { Config } from '../config';
 import { ErrorFactory } from '../middleware/errorHandler';
 import { logger } from '../middleware/logger';
+import { prisma } from '@seacalendar/database';
+import { ApiError } from '../utils/errors';
 
 export interface DiscordTokenResponse {
   access_token: string;
@@ -134,4 +136,205 @@ export const getAuthorizationUrl = (state?: string): string => {
   }
 
   return `${Config.discord.authUrl}?${params.toString()}`;
+};
+
+/**
+ * Create or link Discord account
+ * Similar to Google OAuth but for Discord
+ */
+export const createOrLinkAccount = async (
+  code: string,
+  existingUserId?: string
+): Promise<{ user: any; isNewUser: boolean }> => {
+  // Exchange code for tokens
+  const tokens = await exchangeCodeForToken(code);
+
+  // Get Discord user info
+  const discordUser = await fetchDiscordUser(tokens.access_token);
+
+  const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
+
+  // If linking to existing account
+  if (existingUserId) {
+    // Check if Discord account already linked to another user
+    const existingProvider = await prisma.authProvider.findUnique({
+      where: {
+        provider_providerId: {
+          provider: 'DISCORD',
+          providerId: discordUser.id,
+        },
+      },
+    });
+
+    if (existingProvider && existingProvider.userId !== existingUserId) {
+      throw new ApiError(
+        'This Discord account is already linked to another user',
+        400,
+        'DISCORD_ALREADY_LINKED'
+      );
+    }
+
+    // Create or update Discord auth provider
+    await prisma.authProvider.upsert({
+      where: {
+        userId_provider: {
+          userId: existingUserId,
+          provider: 'DISCORD',
+        },
+      },
+      create: {
+        userId: existingUserId,
+        provider: 'DISCORD',
+        providerId: discordUser.id,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresAt,
+        scope: tokens.scope,
+        providerData: discordUser,
+      },
+      update: {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresAt,
+        scope: tokens.scope,
+        providerData: discordUser,
+      },
+    });
+
+    // Update user with Discord info
+    const user = await prisma.user.update({
+      where: { id: existingUserId },
+      data: {
+        discordId: discordUser.id,
+        avatar: discordUser.avatar || undefined,
+        requireDiscordLink: false, // No longer need to link
+        discordLinkDeadline: null,
+      },
+      include: {
+        preferences: true,
+        authProviders: true,
+      },
+    });
+
+    // Also store in legacy DiscordToken table for backward compatibility
+    await prisma.discordToken.upsert({
+      where: { userId: existingUserId },
+      create: {
+        userId: existingUserId,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresAt,
+      },
+      update: {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresAt,
+      },
+    });
+
+    return { user, isNewUser: false };
+  }
+
+  // Check if Discord account already exists
+  const existingProvider = await prisma.authProvider.findUnique({
+    where: {
+      provider_providerId: {
+        provider: 'DISCORD',
+        providerId: discordUser.id,
+      },
+    },
+    include: {
+      user: {
+        include: {
+          preferences: true,
+          authProviders: true,
+        },
+      },
+    },
+  });
+
+  if (existingProvider) {
+    // Update tokens
+    await prisma.authProvider.update({
+      where: { id: existingProvider.id },
+      data: {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresAt,
+        scope: tokens.scope,
+      },
+    });
+
+    // Update legacy DiscordToken table
+    await prisma.discordToken.upsert({
+      where: { userId: existingProvider.userId },
+      create: {
+        userId: existingProvider.userId,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresAt,
+      },
+      update: {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresAt,
+      },
+    });
+
+    return { user: existingProvider.user, isNewUser: false };
+  }
+
+  // Create new user
+  const username = discordUser.username.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+  // Ensure unique username
+  let finalUsername = username;
+  let counter = 1;
+  while (await prisma.user.findUnique({ where: { username: finalUsername } })) {
+    finalUsername = `${username}${counter}`;
+    counter++;
+  }
+
+  const user = await prisma.user.create({
+    data: {
+      username: finalUsername,
+      discordId: discordUser.id,
+      displayName: discordUser.username,
+      email: discordUser.email,
+      emailVerified: discordUser.verified || false,
+      avatar: discordUser.avatar,
+      discriminator: discordUser.discriminator,
+      requireDiscordLink: false, // Already has Discord
+      preferences: {
+        create: {},
+      },
+      authProviders: {
+        create: {
+          provider: 'DISCORD',
+          providerId: discordUser.id,
+          accessToken: tokens.access_token,
+          refreshToken: tokens.refresh_token,
+          expiresAt,
+          scope: tokens.scope,
+          providerData: discordUser,
+        },
+      },
+    },
+    include: {
+      preferences: true,
+      authProviders: true,
+    },
+  });
+
+  // Also store in legacy DiscordToken table for backward compatibility
+  await prisma.discordToken.create({
+    data: {
+      userId: user.id,
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiresAt,
+    },
+  });
+
+  return { user, isNewUser: true };
 };

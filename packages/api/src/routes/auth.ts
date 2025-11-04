@@ -6,7 +6,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '@seacalendar/database';
-import { exchangeCodeForToken, fetchDiscordUser, getAuthorizationUrl } from '../services/discord';
+import { getAuthorizationUrl, createOrLinkAccount as createOrLinkDiscordAccount } from '../services/discord';
 import { localAuthService } from '../services/localAuth';
 import { googleService } from '../services/google';
 import { generateTokens, refreshAccessToken, revokeRefreshToken } from '../services/jwt';
@@ -273,64 +273,19 @@ router.get(
       throw ErrorFactory.badRequest('Authorization code required');
     }
 
-    // Exchange code for Discord access token
-    const tokenData = await exchangeCodeForToken(code);
-
-    // Fetch Discord user profile
-    const discordUser = await fetchDiscordUser(tokenData.access_token);
-
-    // Find or create user in database
-    let user = await prisma.user.findUnique({
-      where: { discordId: discordUser.id },
-    });
-
-    if (!user) {
-      // Create new user
-      user = await prisma.user.create({
-        data: {
-          discordId: discordUser.id,
-          username: discordUser.username,
-          discriminator: discordUser.discriminator,
-          avatar: discordUser.avatar,
-          email: discordUser.email,
-        },
-      });
-      logger.info('New user created', { userId: user.id, discordId: user.discordId });
-    } else {
-      // Update existing user info
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          username: discordUser.username,
-          discriminator: discordUser.discriminator,
-          avatar: discordUser.avatar,
-          email: discordUser.email || user.email,
-        },
-      });
-      logger.info('User updated', { userId: user.id });
-    }
-
-    // Store Discord refresh token (encrypted in production)
-    await prisma.discordToken.upsert({
-      where: { userId: user.id },
-      create: {
-        userId: user.id,
-        accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token,
-        expiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
-      },
-      update: {
-        accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token,
-        expiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
-      },
-    });
+    // Create or link Discord account
+    const { user, isNewUser } = await createOrLinkDiscordAccount(code);
 
     // Generate JWT tokens
     const tokens = await generateTokens({
       userId: user.id,
-      discordId: user.discordId,
+      discordId: user.discordId || undefined,
       email: user.email || undefined,
+    });
+
+    logger.info(isNewUser ? 'New user created with Discord' : 'User logged in with Discord', {
+      userId: user.id,
+      discordId: user.discordId,
     });
 
     // Redirect to web app with tokens

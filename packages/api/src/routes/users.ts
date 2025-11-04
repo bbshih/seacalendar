@@ -15,6 +15,7 @@ import {
   deleteUser,
 } from '../services/userService';
 import { googleService } from '../services/google';
+import { createOrLinkAccount as createOrLinkDiscordAccount } from '../services/discord';
 import { requireAuth } from '../middleware/auth';
 import { asyncHandler, ErrorFactory } from '../middleware/errorHandler';
 import { authLimiter } from '../middleware/rateLimit';
@@ -258,17 +259,32 @@ router.post(
 /**
  * POST /api/users/me/link/discord
  * Link Discord account to current user
- * (This would be implemented similar to Discord OAuth flow)
  */
 router.post(
   '/me/link/discord',
   requireAuth,
   authLimiter,
   asyncHandler(async (req, res) => {
-    // TODO: Implement Discord linking
-    // This will be similar to the Discord OAuth callback
-    // but will link to existing user instead of creating new one
-    throw ErrorFactory.notFound('Discord linking not yet implemented');
+    const { code } = req.body;
+
+    if (!code) {
+      throw ErrorFactory.badRequest('Authorization code required');
+    }
+
+    // Link Discord account
+    const { user } = await createOrLinkDiscordAccount(code, req.user!.id);
+
+    res.json({
+      success: true,
+      message: 'Discord account linked successfully',
+      data: {
+        user: {
+          id: user.id,
+          username: user.username,
+          discordId: user.discordId,
+        },
+      },
+    });
   })
 );
 
