@@ -32,15 +32,15 @@ export default function Button({
   };
 
   const baseStyles =
-    "font-semibold rounded-full shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden active:scale-95";
+    "font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden active:translate-y-1 active:shadow-md";
 
   const variantStyles = {
-    primary: "bg-ocean-500 hover:bg-ocean-600 transform hover:scale-105 hover:shadow-xl",
-    secondary: "bg-coral-400 hover:bg-coral-500 transform hover:scale-105 hover:shadow-xl",
-    outline: "bg-white border-2 border-ocean-400 hover:bg-ocean-50 transform hover:scale-105",
-    gradient: "bg-gradient-to-r from-ocean-500 via-ocean-400 to-coral-400 hover:from-ocean-600 hover:via-ocean-500 hover:to-coral-500 transform hover:scale-105 hover:shadow-2xl animate-gradient-x bg-[length:200%_100%]",
-    glass: "bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 transform hover:scale-105 hover:shadow-xl",
-    glow: "bg-ocean-500 hover:bg-ocean-600 transform hover:scale-105 animate-pulse-glow",
+    primary: "bg-ocean-500 hover:bg-ocean-600 transform hover:-translate-y-0.5 shadow-[0_6px_0_rgb(3,105,161)] hover:shadow-[0_8px_0_rgb(3,105,161)] active:shadow-[0_2px_0_rgb(3,105,161)]",
+    secondary: "bg-coral-400 hover:bg-coral-500 transform hover:-translate-y-0.5 shadow-[0_6px_0_rgb(234,88,12)] hover:shadow-[0_8px_0_rgb(234,88,12)] active:shadow-[0_2px_0_rgb(234,88,12)]",
+    outline: "bg-white border-2 border-ocean-400 hover:bg-ocean-50 transform hover:-translate-y-0.5 shadow-[0_6px_0_rgb(56,189,248)] hover:shadow-[0_8px_0_rgb(56,189,248)] active:shadow-[0_2px_0_rgb(56,189,248)]",
+    gradient: "bg-gradient-to-r from-ocean-500 via-ocean-400 to-coral-400 hover:from-ocean-600 hover:via-ocean-500 hover:to-coral-500 transform hover:-translate-y-0.5 shadow-[0_6px_0_rgb(3,105,161)] hover:shadow-[0_8px_0_rgb(3,105,161)] active:shadow-[0_2px_0_rgb(3,105,161)] animate-gradient-x bg-[length:200%_100%]",
+    glass: "bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 transform hover:-translate-y-0.5 shadow-[0_6px_0_rgba(255,255,255,0.2)] hover:shadow-[0_8px_0_rgba(255,255,255,0.2)] active:shadow-[0_2px_0_rgba(255,255,255,0.2)]",
+    glow: "bg-ocean-500 hover:bg-ocean-600 transform hover:-translate-y-0.5 shadow-[0_6px_0_rgb(3,105,161)] hover:shadow-[0_8px_0_rgb(3,105,161)] active:shadow-[0_2px_0_rgb(3,105,161)] animate-pulse-glow",
   };
 
   const variantTextColors = {
