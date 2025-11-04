@@ -5,6 +5,7 @@
 
 import { Router } from 'express';
 import { z } from 'zod';
+import { prisma } from '@seacalendar/database';
 import {
   getUser,
   updateUser,
@@ -13,8 +14,10 @@ import {
   getUserStats,
   deleteUser,
 } from '../services/userService';
+import { googleService } from '../services/google';
 import { requireAuth } from '../middleware/auth';
-import { asyncHandler } from '../middleware/errorHandler';
+import { asyncHandler, ErrorFactory } from '../middleware/errorHandler';
+import { authLimiter } from '../middleware/rateLimit';
 
 const router = Router();
 
@@ -154,6 +157,181 @@ router.get(
     res.json({
       success: true,
       data: { stats },
+    });
+  })
+);
+
+// ============================================================================
+// Auth Provider Linking
+// ============================================================================
+
+/**
+ * GET /api/users/me/providers
+ * Get list of linked auth providers
+ */
+router.get(
+  '/me/providers',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      include: {
+        authProviders: {
+          select: {
+            id: true,
+            provider: true,
+            providerId: true,
+            scope: true,
+            createdAt: true,
+            // Don't include tokens for security
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw ErrorFactory.notFound('User not found');
+    }
+
+    // Determine which providers are linked
+    const linkedProviders = user.authProviders.map((ap) => ap.provider);
+    const hasDiscord = linkedProviders.includes('DISCORD');
+    const hasGoogle = linkedProviders.includes('GOOGLE');
+    const hasLocal = linkedProviders.includes('LOCAL');
+
+    // Calculate days until Discord link deadline
+    let daysUntilDeadline: number | null = null;
+    if (user.requireDiscordLink && user.discordLinkDeadline && !hasDiscord) {
+      const now = new Date();
+      const deadline = new Date(user.discordLinkDeadline);
+      daysUntilDeadline = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    res.json({
+      success: true,
+      data: {
+        providers: user.authProviders,
+        summary: {
+          hasDiscord,
+          hasGoogle,
+          hasLocal,
+          requireDiscordLink: user.requireDiscordLink,
+          discordLinkDeadline: user.discordLinkDeadline,
+          daysUntilDeadline,
+        },
+      },
+    });
+  })
+);
+
+/**
+ * POST /api/users/me/link/google
+ * Link Google account to current user
+ */
+router.post(
+  '/me/link/google',
+  requireAuth,
+  authLimiter,
+  asyncHandler(async (req, res) => {
+    const { code } = req.body;
+
+    if (!code) {
+      throw ErrorFactory.badRequest('Authorization code required');
+    }
+
+    // Link Google account
+    const { user } = await googleService.createOrLinkAccount(code, req.user!.id);
+
+    res.json({
+      success: true,
+      message: 'Google account linked successfully',
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+        },
+      },
+    });
+  })
+);
+
+/**
+ * POST /api/users/me/link/discord
+ * Link Discord account to current user
+ * (This would be implemented similar to Discord OAuth flow)
+ */
+router.post(
+  '/me/link/discord',
+  requireAuth,
+  authLimiter,
+  asyncHandler(async (req, res) => {
+    // TODO: Implement Discord linking
+    // This will be similar to the Discord OAuth callback
+    // but will link to existing user instead of creating new one
+    throw ErrorFactory.notFound('Discord linking not yet implemented');
+  })
+);
+
+/**
+ * DELETE /api/users/me/unlink/:provider
+ * Unlink an auth provider
+ */
+router.delete(
+  '/me/unlink/:provider',
+  requireAuth,
+  authLimiter,
+  asyncHandler(async (req, res) => {
+    const { provider } = req.params;
+    const providerUpper = provider.toUpperCase();
+
+    // Validate provider
+    if (!['DISCORD', 'GOOGLE', 'LOCAL'].includes(providerUpper)) {
+      throw ErrorFactory.badRequest('Invalid provider');
+    }
+
+    // Get user's auth providers
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      include: {
+        authProviders: true,
+      },
+    });
+
+    if (!user) {
+      throw ErrorFactory.notFound('User not found');
+    }
+
+    // Prevent unlinking the last provider
+    if (user.authProviders.length <= 1) {
+      throw ErrorFactory.badRequest('Cannot unlink the last auth provider. You must have at least one way to sign in.');
+    }
+
+    // Find and delete the provider
+    const authProvider = user.authProviders.find((ap) => ap.provider === providerUpper);
+
+    if (!authProvider) {
+      throw ErrorFactory.notFound(`${provider} account not linked`);
+    }
+
+    await prisma.authProvider.delete({
+      where: { id: authProvider.id },
+    });
+
+    // If unlinking Discord, clear Discord-related fields
+    if (providerUpper === 'DISCORD') {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          discordId: null,
+          requireDiscordLink: false,
+          discordLinkDeadline: null,
+        },
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `${provider} account unlinked successfully`,
     });
   })
 );

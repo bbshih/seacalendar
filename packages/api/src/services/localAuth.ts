@@ -7,7 +7,7 @@ const DISCORD_LINK_DAYS = 7; // Days to link Discord account
 
 interface RegisterData {
   username: string;
-  email: string;
+  email?: string;
   password: string;
 }
 
