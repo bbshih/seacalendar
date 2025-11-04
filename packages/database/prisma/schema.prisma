@@ -71,17 +71,23 @@ enum PollStatus {
   EXPIRED
 }
 
+enum PollOptionType {
+  DATE
+  TEXT
+}
+
 model PollOption {
   id          String   @id @default(uuid())
   pollId      String
   poll        Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
 
   // Generic fields
+  optionType  PollOptionType @default(DATE)
   label       String
   description String?
   order       Int      @default(0)
 
-  // Event-specific (null for generic polls)
+  // Event-specific (null for generic polls or TEXT options)
   date        DateTime?
   timeStart   String?   // "19:00"
   timeEnd     String?   // "21:00"
@@ -146,15 +152,29 @@ model PollInvite {
 model User {
   id              String   @id @default(uuid())
 
-  // Discord identity (primary)
-  discordId       String   @unique
-  username        String   // Discord username
-  discriminator   String   // Discord discriminator
-  avatar          String?  // Discord avatar hash
+  // Primary identity (can be Discord username or local username)
+  username        String
+  displayName     String?  // Custom display name (overrides provider username)
+  avatar          String?  // Avatar URL or hash
 
-  // Optional contacts
+  // Local auth (username/password)
+  passwordHash    String?  // bcrypt hash, null if using OAuth only
+
+  // Discord identity (required but can be linked later)
+  discordId       String?  @unique
+  discordUsername String?  // Snapshot of Discord username
+  discriminator   String?  // Discord discriminator
+  discordLinkedAt DateTime? // When Discord was linked
+  discordLinkDeadline DateTime? // Deadline to link Discord (for local auth users)
+
+  // Contacts
   email           String?  @unique
   phone           String?  @unique
+
+  // Account status
+  emailVerified   Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  requireDiscordLink Boolean @default(false) // Must link Discord within deadline
 
   // Preferences
   preferences     UserPreferences?
@@ -165,13 +185,17 @@ model User {
   pollInvites     PollInvite[]
   auditLogs       AuditLog[]
   refreshTokens   RefreshToken[]
-  discordToken    DiscordToken?
+  authProviders   AuthProvider[]
+  calendarConnections CalendarConnection[]
+  discordToken    DiscordToken?  // Backwards compatibility
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@unique([username])
   @@index([discordId])
   @@index([email])
+  @@index([username])
 }
 
 model UserPreferences {
@@ -293,6 +317,40 @@ model RefreshToken {
   @@index([token, revoked])
 }
 
+// Generic OAuth provider storage
+model AuthProvider {
+  id           String       @id @default(uuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider     AuthProviderType
+  providerId   String       // User ID from the provider (e.g., Discord ID, Google ID)
+
+  // OAuth tokens
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+  scope        String?      // OAuth scopes granted
+
+  // Provider-specific data
+  providerData Json?        // Store profile info, extra fields
+
+  linkedAt     DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@unique([provider, providerId])
+  @@unique([userId, provider])
+  @@index([userId])
+  @@index([provider, providerId])
+}
+
+enum AuthProviderType {
+  DISCORD
+  GOOGLE
+  LOCAL  // Username/password
+}
+
+// Backwards compatibility - kept for existing Discord OAuth flows
 model DiscordToken {
   id           String   @id @default(uuid())
   userId       String   @unique
@@ -304,6 +362,86 @@ model DiscordToken {
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+// Google Calendar integration
+model CalendarConnection {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider        CalendarProvider @default(GOOGLE)
+
+  // OAuth tokens
+  accessToken     String
+  refreshToken    String
+  expiresAt       DateTime
+  scope           String
+
+  // Calendar settings
+  calendarId      String   @default("primary") // Which calendar to sync
+  syncEnabled     Boolean  @default(true)
+  showBusyTimes   Boolean  @default(true)      // Show on voting UI
+  showEventTitles Boolean  @default(false)     // Show event names vs just "Busy"
+
+  // Sync metadata
+  lastSyncAt      DateTime?
+  syncStatus      SyncStatus @default(ACTIVE)
+  syncError       String?
+
+  connectedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  cachedEvents    CalendarEvent[]
+
+  @@unique([userId, provider])
+  @@index([userId, syncEnabled])
+}
+
+enum CalendarProvider {
+  GOOGLE
+  // Future: MICROSOFT, APPLE
+}
+
+enum SyncStatus {
+  ACTIVE
+  ERROR
+  DISABLED
+  EXPIRED
+}
+
+// Cached calendar events for quick lookups during voting
+model CalendarEvent {
+  id                  String    @id @default(uuid())
+  calendarConnectionId String
+  connection          CalendarConnection @relation(fields: [calendarConnectionId], references: [id], onDelete: Cascade)
+
+  // Event identifiers
+  providerEventId     String    // Event ID from Google Calendar
+  calendarId          String    // Which calendar this event is on
+
+  // Event details
+  title               String
+  description         String?
+  location            String?
+
+  // Timing
+  startTime           DateTime
+  endTime             DateTime
+  isAllDay            Boolean   @default(false)
+  timezone            String?
+
+  // Status
+  status              String?   // confirmed, tentative, cancelled
+  transparency        String?   // opaque (busy) or transparent (free)
+
+  // Metadata
+  fetchedAt           DateTime  @default(now())
+
+  @@unique([calendarConnectionId, providerEventId])
+  @@index([calendarConnectionId, startTime, endTime])
+  @@index([startTime, endTime])
 }
 
 // ============================================================================

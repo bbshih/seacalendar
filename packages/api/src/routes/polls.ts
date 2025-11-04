@@ -32,6 +32,7 @@ const createPollSchema = z.object({
   options: z
     .array(
       z.object({
+        optionType: z.enum(['DATE', 'TEXT']).optional(),
         label: z.string().min(1).max(200),
         description: z.string().max(500).optional(),
         date: z.string().datetime().optional(),
