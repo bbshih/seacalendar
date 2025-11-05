@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CalendarMonthView from './CalendarMonthView';
-import type { DateOption } from '../../types';
+import type { DateOption } from '../../types/local';
 
 describe('CalendarMonthView', () => {
   const mockOnAddDate = vi.fn();
@@ -108,14 +108,15 @@ describe('CalendarMonthView', () => {
       fireEvent.click(nextButton);
     }
 
-    // Find the button for the selected day and check if it has selected styling
-    const dayButtons = screen.getAllByText(dayOfMonth.toString());
-    const selectedButton = dayButtons.find((button) =>
-      button.className.includes('bg-ocean-500')
-    );
+    // Verify at least one selected day button exists with correct data attribute
+    const selectedButtons = screen.queryAllByTestId('calendar-day-selected');
+    expect(selectedButtons.length).toBeGreaterThan(0);
 
-    expect(selectedButton).toBeTruthy();
-    expect(selectedButton?.className).toContain('bg-ocean-500');
+    // Verify the button has the proper aria-label format with "(selected)" suffix
+    const hasSelectedLabel = selectedButtons.some(btn =>
+      btn.getAttribute('aria-label')?.includes('(selected)')
+    );
+    expect(hasSelectedLabel).toBe(true);
   });
 
   it('calls onAddDate when clicking an unselected date', () => {

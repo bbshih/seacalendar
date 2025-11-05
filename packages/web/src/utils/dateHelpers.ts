@@ -1,4 +1,4 @@
-import { DateOption } from '../types';
+import { DateOption } from '../types/local';
 
 /**
  * Format an ISO date string into a display label

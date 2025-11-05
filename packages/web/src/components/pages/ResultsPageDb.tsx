@@ -1,32 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePoll } from '../../hooks/usePoll';
+import { api } from '../../utils/api';
 import Card from '../shared/Card';
 import Button from '../shared/Button';
-
-interface PollOption {
-  id: string;
-  label: string;
-  description?: string;
-  date?: string;
-  timeStart?: string;
-  timeEnd?: string;
-  order: number;
-}
-
-interface Poll {
-  id: string;
-  title: string;
-  description?: string;
-  type: string;
-  status: string;
-  votingDeadline?: string;
-  options: PollOption[];
-  creator: {
-    id: string;
-    username: string;
-  };
-}
+import LoadingState from '../shared/LoadingState';
+import ErrorState from '../shared/ErrorState';
 
 interface OptionResult {
   optionId: string;
@@ -46,56 +26,35 @@ export default function ResultsPageDb() {
   const { pollId } = useParams<{ pollId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { poll, loading: pollLoading, error: pollError } = usePoll(pollId);
 
-  const [poll, setPoll] = useState<Poll | null>(null);
   const [results, setResults] = useState<VoteResults | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState('');
+  const [resultsLoading, setResultsLoading] = useState(true);
+  const [resultsError, setResultsError] = useState('');
   const [isReopening, setIsReopening] = useState(false);
 
   useEffect(() => {
-    if (!pollId) {
-      setLoadError('Invalid poll ID');
-      setIsLoading(false);
-      return;
+    if (pollId) {
+      loadResults();
     }
-
-    loadPollAndResults();
   }, [pollId]);
 
-  const loadPollAndResults = async () => {
+  const loadResults = async () => {
     if (!pollId) return;
 
-    setIsLoading(true);
-    setLoadError('');
+    setResultsLoading(true);
+    setResultsError('');
 
     try {
-      // Load poll data
-      const pollResponse = await fetch(`/api/polls/${pollId}`);
-      const pollData = await pollResponse.json();
-
-      if (!pollData.success) {
-        throw new Error(pollData.message || 'Failed to load poll');
-      }
-
-      setPoll(pollData.data.poll);
-
-      // Load results
-      const resultsResponse = await fetch(`/api/polls/${pollId}/results`);
-      const resultsData = await resultsResponse.json();
-
-      if (!resultsData.success) {
-        throw new Error(resultsData.message || 'Failed to load results');
-      }
-
-      setResults(resultsData.data.results);
+      const data = await api.get<{ success: boolean; data: { results: VoteResults } }>(`/polls/${pollId}/results`);
+      setResults(data.data.results);
     } catch (error) {
-      console.error('Failed to load poll:', error);
-      setLoadError(
-        error instanceof Error ? error.message : 'Failed to load poll'
+      console.error('Failed to load results:', error);
+      setResultsError(
+        error instanceof Error ? error.message : 'Failed to load results'
       );
     } finally {
-      setIsLoading(false);
+      setResultsLoading(false);
     }
   };
 
@@ -105,24 +64,10 @@ export default function ResultsPageDb() {
     setIsReopening(true);
 
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/polls/${pollId}/reopen`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ days: 7 }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to reopen poll');
-      }
-
-      // Reload poll and results
-      await loadPollAndResults();
+      await api.post(`/polls/${pollId}/reopen`, { days: 7 }, true);
+      // Reload results
+      await loadResults();
+      window.location.reload(); // Force refresh to show updated poll status
     } catch (error) {
       console.error('Failed to reopen poll:', error);
       alert(error instanceof Error ? error.message : 'Failed to reopen poll');
@@ -131,27 +76,19 @@ export default function ResultsPageDb() {
     }
   };
 
+  const isLoading = pollLoading || resultsLoading;
+  const loadError = pollError || resultsError;
+
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4 flex items-center justify-center">
-        <Card className="max-w-md w-full text-center">
-          <div className="animate-wave text-4xl mb-4">🌊</div>
-          <p className="text-gray-600">Loading results...</p>
-        </Card>
-      </div>
-    );
+    return <LoadingState message="Loading results..." />;
   }
 
   if (loadError || !poll || !results) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4 flex items-center justify-center">
-        <Card className="max-w-md w-full text-center">
-          <div className="text-4xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Error Loading Results</h2>
-          <p className="text-gray-600 mb-4">{loadError}</p>
-          <Button onClick={() => navigate('/')}>Return Home</Button>
-        </Card>
-      </div>
+      <ErrorState
+        error={loadError || 'Results not found'}
+        onGoHome={() => navigate('/')}
+      />
     );
   }
 
@@ -161,7 +98,7 @@ export default function ResultsPageDb() {
   );
 
   const topOption = sortedResults[0];
-  const isCreator = user && poll.creator.id === user.id;
+  const isCreator = user && poll.creatorId === user.id;
   const canReopen = isCreator && (poll.status === 'FINALIZED' || poll.status === 'CANCELLED');
 
   return (
@@ -177,7 +114,7 @@ export default function ResultsPageDb() {
                 <p className="text-gray-600 mb-2">{poll.description}</p>
               )}
               <p className="text-sm text-gray-500">
-                Created by {poll.creator.username}
+                Created by {poll.creatorName}
               </p>
               <div className="mt-3 flex items-center gap-4 text-sm">
                 <span className="text-seaweed-600 font-medium">

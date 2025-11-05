@@ -1,5 +1,5 @@
 import { useState, useMemo, memo, useEffect } from 'react';
-import type { DateOption } from '../../types';
+import type { DateOption } from '../../types/local';
 import { formatDateLabel } from '../../utils/dateHelpers';
 
 interface CalendarMonthViewProps {
@@ -39,6 +39,7 @@ const CalendarDay = memo(function CalendarDay({
     <button
       onClick={onClick}
       disabled={isPast}
+      data-testid={isSelected ? 'calendar-day-selected' : 'calendar-day'}
       className={`
         aspect-square ${padding} rounded-lg transition-all
         flex items-center justify-center

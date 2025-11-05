@@ -1,4 +1,4 @@
-import type { DateOption } from '../../types';
+import type { DateOption } from '../../types/local';
 import { groupDatesByMonth } from '../../utils/dateGrouping';
 
 interface DateListViewProps {

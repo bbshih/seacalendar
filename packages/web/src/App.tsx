@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Navbar from './components/shared/Navbar';
 import LandingPage from './components/pages/LandingPage';
 import LoginPage from './components/pages/LoginPage';
 import AuthCallbackPage from './components/pages/AuthCallbackPage';
@@ -13,36 +14,41 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          <Route
-            path="/create"
-            element={
-              <ProtectedRoute>
-                <CreateEventPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/vote/:pollId"
-            element={
-              <ProtectedRoute>
-                <VotingPageDb />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/results/:pollId" element={<ResultsPageDb />} />
-          <Route
-            path="/my-events"
-            element={
-              <ProtectedRoute>
-                <MyEventsPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        <div className="min-h-screen flex flex-col">
+          <Navbar />
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              <Route
+                path="/create"
+                element={
+                  <ProtectedRoute>
+                    <CreateEventPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/vote/:pollId"
+                element={
+                  <ProtectedRoute>
+                    <VotingPageDb />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/results/:pollId" element={<ResultsPageDb />} />
+              <Route
+                path="/my-events"
+                element={
+                  <ProtectedRoute>
+                    <MyEventsPage />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
+        </div>
       </AuthProvider>
     </BrowserRouter>
   );
