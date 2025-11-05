@@ -239,8 +239,7 @@ docker compose -f docker-compose.prod.yml config
 
 ## 📚 Related Docs
 
-- **Deployment:** `DEPLOYMENT.md`
-- **Server Setup:** `SERVER_INFO.md`
+- **Server Info:** `SERVER_INFO.md`
 
 ---
 

@@ -26,7 +26,7 @@ Use `hostname` or check system environment. Adjust behavior accordingly:
 - React web app with calendar integration
 - Real-time updates via WebSockets
 
-See [README.md](README.md) for project overview and [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development guide.
+See [README.md](README.md) for project overview. Use skills for setup/deployment procedures.
 
 ## Development Commands
 
@@ -215,4 +215,4 @@ seacalendar/
 - Build calendar sync service & API routes
 - Add frontend UI for auth & calendar features
 
-See [README.md](README.md) for current status and [DEVELOPMENT.md](DEVELOPMENT.md) for development workflow.
+See [README.md](README.md) for current status. Use skills for operational procedures.
