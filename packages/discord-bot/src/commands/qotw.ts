@@ -14,7 +14,7 @@ import {
   PermissionFlagsBits,
   ChannelType,
   type TextChannel,
-  PollBuilder,
+  type GuildMember,
 } from 'discord.js';
 import * as qotwService from '../services/qotwService.js';
 import { DateTime } from 'luxon';
@@ -158,8 +158,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   // Admin command check
   const adminCommands = ['setup', 'schedule', 'next', 'asknow', 'poll', 'enable', 'disable'];
   if (adminCommands.includes(subcommand)) {
-    const member = interaction.member;
-    if (!member || !('permissions' in member) || !member.permissions.has(PermissionFlagsBits.Administrator)) {
+    const member = interaction.member as GuildMember | null;
+    if (!member || !member.permissions.has(PermissionFlagsBits.Administrator)) {
       await interaction.reply({
         content: '❌ Only administrators can use this command.',
         ephemeral: true,
@@ -359,8 +359,8 @@ async function handleEdit(interaction: ChatInputCommandInteraction) {
       return;
     }
 
-    const isAdmin = interaction.member && 'permissions' in interaction.member &&
-      interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+    const member = interaction.member as GuildMember | null;
+    const isAdmin = member?.permissions.has(PermissionFlagsBits.Administrator) || false;
 
     if (!qotwService.canModifyQuestion(question, interaction.user.id, isAdmin)) {
       await interaction.editReply({ content: '❌ You can only edit questions you submitted' });
@@ -446,8 +446,8 @@ async function handleDelete(interaction: ChatInputCommandInteraction) {
       return;
     }
 
-    const isAdmin = interaction.member && 'permissions' in interaction.member &&
-      interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+    const member = interaction.member as GuildMember | null;
+    const isAdmin = member?.permissions.has(PermissionFlagsBits.Administrator) || false;
 
     if (!qotwService.canModifyQuestion(question, interaction.user.id, isAdmin)) {
       await interaction.editReply({ content: '❌ You can only delete questions you submitted' });
@@ -719,7 +719,7 @@ export async function postQuestion(guildId: string, channel: TextChannel): Promi
   if (!hasQs) {
     // No questions available - post default and request more
     const defaultQuestion = qotwService.getDefaultQuestion();
-    const message = await channel.send({
+    await channel.send({
       content: `🌊 **QUESTION OF THE WEEK** 🌊\n\n${defaultQuestion}\n\n_Submitted by SeaCalendar Bot_\n\n⚠️ **We're out of questions!** Submit yours with \`/qotw submit\``,
     });
     return;
@@ -747,19 +747,23 @@ export async function postSelectionPoll(guildId: string, channel: TextChannel): 
     return;
   }
 
-  // Create Discord poll
-  const pollBuilder = new PollBuilder()
-    .setQuestion({ text: '🌊 Vote for next week\'s question!' })
-    .setDuration(3); // 3 days
-
-  questions.forEach((q, i) => {
+  // Create Discord poll using message API
+  const pollAnswers = questions.map((q, i) => {
     const truncated = q.question.length > 55 ? q.question.substring(0, 52) + '...' : q.question;
-    pollBuilder.addAnswer({ text: truncated, emoji: ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'][i] });
+    return {
+      text: truncated,
+      emoji: ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'][i]
+    };
   });
 
   await channel.send({
-    poll: pollBuilder,
     content: questions.map((q, i) => `**${i + 1}.** ${q.question} _(by ${q.submitterUsername})_`).join('\n\n'),
+    poll: {
+      question: { text: '🌊 Vote for next week\'s question!' },
+      answers: pollAnswers,
+      duration: 72, // 3 days in hours
+      allowMultiselect: false
+    }
   });
 
   await qotwService.updatePollTimestamp(guildId);
