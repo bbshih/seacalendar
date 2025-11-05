@@ -5,9 +5,22 @@
 
 import { z } from 'zod';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 
-// Load environment variables
-dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development' });
+// Load environment variables from workspace root
+let rootDir = process.cwd();
+while (rootDir !== '/') {
+  const pkgPath = path.join(rootDir, 'package.json');
+  if (fs.existsSync(pkgPath)) {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+    if (pkg.workspaces) break;
+  }
+  rootDir = path.dirname(rootDir);
+}
+
+dotenv.config({ path: path.join(rootDir, '.env.development') });
+dotenv.config({ path: path.join(rootDir, '.env.development.local') });
 
 // Environment variable schema with validation
 const envSchema = z.object({
