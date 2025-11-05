@@ -4,8 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { prisma } from '@seacalendar/database';
-import { PollType, PollStatus } from '@prisma/client';
+import { prisma, PollType, PollStatus } from '@seacalendar/database';
 import { createEventPoll, getPollWithDetails } from './services/pollService';
 
 describe('Complete Event Flow E2E', () => {

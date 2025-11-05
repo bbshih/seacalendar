@@ -5,8 +5,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
-import { prisma } from '@seacalendar/database';
-import { PollType, PollStatus } from '@prisma/client';
+import { prisma, PollType, PollStatus } from '@seacalendar/database';
 
 describe('/event command E2E', () => {
   let mockInteraction: Partial<ChatInputCommandInteraction>;

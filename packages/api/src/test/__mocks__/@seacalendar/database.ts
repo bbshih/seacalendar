@@ -24,6 +24,11 @@ export enum PollStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum PollOptionType {
+  DATE = 'DATE',
+  TEXT = 'TEXT',
+}
+
 // Export types that might be used
 export type User = any;
 export type Poll = any;
