@@ -364,10 +364,8 @@ ssh deploy@5.78.132.232 "cd /opt/seacalendar && docker compose -f docker-compose
 
 ## 📚 Related Documentation
 
-- **Development Setup:** `DEV_PROD_ENVIRONMENTS.md`
 - **Production Status:** `SERVER_INFO.md`
 - **Server Setup:** `PRODUCTION_SETUP.md`
-- **Complete Status:** `SETUP_COMPLETE.md`
 
 ---
 

@@ -240,7 +240,6 @@ docker compose -f docker-compose.prod.yml config
 ## 📚 Related Docs
 
 - **Deployment:** `DEPLOYMENT.md`
-- **Dev vs Prod:** `DEV_PROD_ENVIRONMENTS.md`
 - **Server Setup:** `SERVER_INFO.md`
 
 ---
