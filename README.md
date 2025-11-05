@@ -124,8 +124,12 @@ npm run clean           # Clean all dependencies
 - [x] React web app (original Gist-based version)
 - [x] Comprehensive test coverage (102 API tests, E2E tests)
 - [x] Development workflow and tooling
+- [x] Production deployment to Hetzner VPS (LIVE at https://cal.billyeatstofu.com)
+- [x] Multi-provider auth foundation (database schema, backend services)
 
 ### 🚧 In Progress
+- [ ] Multi-provider authentication (local auth, Google OAuth routes pending)
+- [ ] Google Calendar sync integration (API routes & frontend pending)
 - [ ] Web app migration to use new API backend
 - [ ] Discord emoji voting for simple polls (≤5 options)
 - [ ] Real-time vote updates via WebSockets
@@ -135,7 +139,6 @@ npm run clean           # Clean all dependencies
 - [ ] Venue tracking and recommendations
 - [ ] Poll templates for recurring events
 - [ ] Analytics and insights
-- [ ] Production deployment to Hetzner VPS
 
 ---
 

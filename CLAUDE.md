@@ -110,8 +110,12 @@ seacalendar/
   - `/reopen` - Reopen closed polls
 - React web app (original Gist-based version)
 - Comprehensive test coverage (102 API tests, E2E tests)
+- Production deployment to Hetzner VPS (LIVE at https://cal.billyeatstofu.com)
+- Multi-provider auth foundation (database schema, backend services)
 
 **🚧 In Progress:**
+- Multi-provider authentication (local auth, Google OAuth routes pending)
+- Google Calendar sync integration (API routes & frontend pending)
 - Web app migration to use new API backend
 - Discord emoji voting for simple polls (≤5 options)
 - Real-time vote updates via WebSockets
@@ -121,7 +125,6 @@ seacalendar/
 - Venue tracking and recommendations
 - Poll templates for recurring events
 - Analytics and insights
-- Production deployment to Hetzner VPS
 
 ### Design System
 
@@ -206,10 +209,10 @@ seacalendar/
 - Poll templates
 - Analytics dashboard
 
-**Priority 4: Production Deployment**
-- Deploy to Hetzner VPS
-- Set up CI/CD with GitHub Actions
-- Configure Caddy reverse proxy with SSL
-- Set up automated backups
+**Priority 4: Multi-Provider Auth & Calendar Sync**
+- Complete Phase 2-4 of multi-auth implementation (see MULTI_AUTH_CALENDAR_IMPLEMENTATION_PLAN.md)
+- Implement local auth & Google OAuth routes
+- Build calendar sync service & API routes
+- Add frontend UI for auth & calendar features
 
 See [README.md](README.md) for current status and [DEVELOPMENT.md](DEVELOPMENT.md) for development workflow.
