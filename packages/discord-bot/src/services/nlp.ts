@@ -4,7 +4,7 @@
  */
 
 import * as chrono from 'chrono-node';
-import { addDays, startOfDay, format } from 'date-fns';
+import { addDays, addWeeks, addMonths, startOfDay, endOfWeek, startOfWeek, format } from 'date-fns';
 
 export interface ParsedEvent {
   title: string;
@@ -21,6 +21,8 @@ export interface ParsedEvent {
  * - "Movie night next Friday and Saturday at 7pm"
  * - "Dinner on Jan 10, Jan 17, and Jan 24 at 7:30pm"
  * - "Boys Night every weekend in December"
+ * - "Hangout weekends for the next 3 months"
+ * - "Every friday and saturday this and next week"
  */
 export function parseEventDescription(text: string): ParsedEvent {
   const parsed: ParsedEvent = {
@@ -31,11 +33,75 @@ export function parseEventDescription(text: string): ParsedEvent {
     raw: text,
   };
 
+  // Check for "weekends? (for|over) (the )?next X (months?|weeks?)" pattern
+  const weekendsNextPattern = /weekends?\s+(?:for|over)\s+(?:the\s+)?next\s+(\d+)\s+(months?|weeks?)/i;
+  const weekendsNextMatch = text.match(weekendsNextPattern);
+
+  // Check for "every [day(s)] (this|next) (and next )?(week|month)" pattern
+  const everyDayWeekPattern = /every\s+((?:friday|saturday|sunday|monday|tuesday|wednesday|thursday)(?:\s+and\s+(?:friday|saturday|sunday|monday|tuesday|wednesday|thursday))*)\s+(this|next)\s+(?:and\s+next\s+)?(week|month)/i;
+  const everyDayWeekMatch = text.match(everyDayWeekPattern);
+
   // Check for "every [day(s)] in [month/year]" pattern
   const everyPattern = /every\s+(weekend|weekday|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\s+in\s+(\w+)/i;
   const everyMatch = text.match(everyPattern);
 
-  if (everyMatch) {
+  if (weekendsNextMatch) {
+    const count = parseInt(weekendsNextMatch[1]);
+    const unit = weekendsNextMatch[2].toLowerCase();
+    const daysOfWeek = [6, 0]; // Saturday and Sunday
+
+    const now = startOfDay(new Date());
+    let endDate: Date;
+
+    if (unit.startsWith('month')) {
+      endDate = addMonths(now, count);
+    } else {
+      endDate = addWeeks(now, count);
+    }
+
+    parsed.dates = generateDateRange(now, endDate, daysOfWeek);
+
+    // Extract title
+    const titleCandidate = text.substring(0, weekendsNextMatch.index).trim();
+    if (titleCandidate.length > 0 && titleCandidate.length < 100) {
+      parsed.title = titleCandidate;
+    }
+  } else if (everyDayWeekMatch) {
+    const daysText = everyDayWeekMatch[1];
+    const timeframe = everyDayWeekMatch[2]; // "this" or "next"
+    const hasNext = text.includes('and next');
+
+    // Parse all mentioned days
+    const daysOfWeek = parseDayOfWeek(daysText);
+
+    // Use chrono to parse "this week" or "next week"
+    const chronoResult = chrono.parse(`${timeframe} week`);
+    if (chronoResult.length > 0) {
+      const weekDate = chronoResult[0].start.date();
+      const startDate = startOfWeek(weekDate, { weekStartsOn: 0 }); // Week starts Sunday
+      const endDate = endOfWeek(weekDate, { weekStartsOn: 0 });
+
+      parsed.dates = generateDateRange(startDate, endDate, daysOfWeek);
+
+      // If "this and next week", add next week too
+      if (hasNext) {
+        const nextWeekResult = chrono.parse('next week');
+        if (nextWeekResult.length > 0) {
+          const nextWeekDate = nextWeekResult[0].start.date();
+          const nextWeekStart = startOfWeek(nextWeekDate, { weekStartsOn: 0 });
+          const nextWeekEnd = endOfWeek(nextWeekDate, { weekStartsOn: 0 });
+          const nextWeekDates = generateDateRange(nextWeekStart, nextWeekEnd, daysOfWeek);
+          parsed.dates = [...parsed.dates, ...nextWeekDates].sort((a, b) => a.getTime() - b.getTime());
+        }
+      }
+    }
+
+    // Extract title
+    const titleCandidate = text.substring(0, everyDayWeekMatch.index).trim();
+    if (titleCandidate.length > 0 && titleCandidate.length < 100) {
+      parsed.title = titleCandidate;
+    }
+  } else if (everyMatch) {
     const dayType = everyMatch[1].toLowerCase();
     const monthText = everyMatch[2];
 
@@ -49,7 +115,7 @@ export function parseEventDescription(text: string): ParsedEvent {
       // Determine which days of week to include
       let daysOfWeek: number[] = [];
       if (dayType === 'weekend') {
-        daysOfWeek = [0, 6]; // Saturday and Sunday
+        daysOfWeek = [6, 0]; // Saturday and Sunday
       } else if (dayType === 'weekday') {
         daysOfWeek = [1, 2, 3, 4, 5]; // Monday-Friday
       } else {
@@ -94,7 +160,9 @@ export function parseEventDescription(text: string): ParsedEvent {
   }
 
   // Try to extract title
-  if (everyMatch) {
+  if (weekendsNextMatch || everyDayWeekMatch) {
+    // Title already extracted above
+  } else if (everyMatch) {
     // For "every X in Y" pattern, title is everything before "every"
     const titleCandidate = text.substring(0, everyMatch.index).trim();
     if (titleCandidate.length > 0 && titleCandidate.length < 100) {
