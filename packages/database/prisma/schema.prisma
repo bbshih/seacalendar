@@ -445,6 +445,72 @@ model CalendarEvent {
 }
 
 // ============================================================================
+// Question of the Week (QOTW)
+// ============================================================================
+
+model QotwQuestion {
+  id                String    @id @default(uuid())
+  question          String    // Max 1000 chars, validated in app layer
+
+  // Ownership
+  submitterId       String
+  submitterUsername String    // Cached Discord username
+
+  // Metadata
+  submittedAt       DateTime  @default(now())
+  timesAsked        Int       @default(0)
+  lastAskedAt       DateTime?
+  isDeleted         Boolean   @default(false)
+
+  // Relations
+  guildId           String
+  history           QotwHistory[]
+
+  @@index([guildId, isDeleted, timesAsked])
+  @@index([guildId, submittedAt])
+}
+
+model QotwConfig {
+  id              String    @id @default(uuid())
+  guildId         String    @unique
+
+  // Channel configuration
+  channelId       String?   // Where to post questions
+
+  // Schedule configuration
+  cronSchedule    String    @default("0 21 * * 0") // Sunday 9pm
+  timezone        String    @default("America/Los_Angeles")
+  enabled         Boolean   @default(true)
+
+  // State tracking
+  lastAskedAt     DateTime?
+  lastPollAt      DateTime? // When selection poll was posted
+  nextQuestionId  String?   // Manual override for next question
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([guildId, enabled])
+}
+
+model QotwHistory {
+  id          String    @id @default(uuid())
+  questionId  String
+  question    QotwQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  // Context
+  guildId     String
+  channelId   String
+  messageId   String    // Discord message ID
+
+  // Timing
+  askedAt     DateTime  @default(now())
+
+  @@index([questionId])
+  @@index([guildId, askedAt])
+}
+
+// ============================================================================
 // Security & Audit
 // ============================================================================
 
