@@ -21,7 +21,11 @@ async function deployCommands() {
 
   try {
     const files = await readdir(commandsPath);
-    commandFiles = files.filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+    commandFiles = files.filter(file =>
+      (file.endsWith('.js') || file.endsWith('.ts')) &&
+      !file.includes('.test.') &&
+      !file.includes('.spec.')
+    );
   } catch (error) {
     console.error('❌ Commands directory not found');
     process.exit(1);
