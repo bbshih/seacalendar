@@ -11,6 +11,17 @@ export default defineConfig({
     strictPort: true,
     host: true,
     allowedHosts: ['cal.billyeatstofu.com', 'localhost'],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+      '/socket.io': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        ws: true,
+      },
+    },
   },
   test: {
     globals: true,

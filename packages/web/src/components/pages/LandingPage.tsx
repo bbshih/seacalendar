@@ -84,16 +84,6 @@ export default function LandingPage() {
           <p className="mt-8 text-ocean-600 text-sm md:text-base animate-fade-in" style={{ animationDelay: '0.4s' }}>
             No login. No ads. Just vibes. ✨
           </p>
-
-          {/* My Events link */}
-          <div className="mt-6 animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <Link
-              to="/my-events"
-              className="text-ocean-600 hover:text-ocean-700 underline text-sm"
-            >
-              📋 View My Events
-            </Link>
-          </div>
         </div>
       </div>
   );

@@ -1,41 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePoll } from '../../hooks/usePoll';
+import { api } from '../../utils/api';
 import Card from '../shared/Card';
 import Button from '../shared/Button';
 import Modal from '../shared/Modal';
-
-interface PollOption {
-  id: string;
-  label: string;
-  description?: string;
-  date?: string;
-  timeStart?: string;
-  timeEnd?: string;
-  order: number;
-}
-
-interface Poll {
-  id: string;
-  title: string;
-  description?: string;
-  type: string;
-  status: string;
-  votingDeadline?: string;
-  options: PollOption[];
-  creator: {
-    username: string;
-  };
-}
+import LoadingState from '../shared/LoadingState';
+import ErrorState from '../shared/ErrorState';
 
 export default function VotingPageDb() {
   const { pollId } = useParams<{ pollId: string }>();
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
-
-  const [poll, setPoll] = useState<Poll | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState('');
+  const { poll, loading: isLoading, error: loadError } = usePoll(pollId);
 
   // Voting state
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
@@ -52,44 +30,6 @@ export default function VotingPageDb() {
     }
   }, [authLoading, user, navigate, pollId]);
 
-  // Load poll data
-  useEffect(() => {
-    if (!pollId) {
-      setLoadError('Invalid voting link - missing poll ID');
-      setIsLoading(false);
-      return;
-    }
-
-    if (user) {
-      loadPoll();
-    }
-  }, [pollId, user]);
-
-  const loadPoll = async () => {
-    if (!pollId) return;
-
-    setIsLoading(true);
-    setLoadError('');
-
-    try {
-      const response = await fetch(`/api/polls/${pollId}`);
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to load poll');
-      }
-
-      setPoll(data.data.poll);
-    } catch (error) {
-      console.error('Failed to load poll:', error);
-      setLoadError(
-        error instanceof Error ? error.message : 'Failed to load poll'
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleSubmitVote = async () => {
     if (!user) {
       setSubmitError('Please log in to vote');
@@ -105,25 +45,15 @@ export default function VotingPageDb() {
     setSubmitError('');
 
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/polls/${pollId}/vote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      await api.post(
+        `/polls/${pollId}/vote`,
+        {
           availableOptionIds: selectedOptions,
           maybeOptionIds: maybeOptions,
           notes: notes.trim() || undefined,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to submit vote');
-      }
+        },
+        true // requireAuth
+      );
 
       setShowSuccessModal(true);
     } catch (error) {
@@ -157,26 +87,15 @@ export default function VotingPageDb() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4 flex items-center justify-center">
-        <Card className="max-w-md w-full text-center">
-          <div className="animate-wave text-4xl mb-4">🌊</div>
-          <p className="text-gray-600">Loading poll...</p>
-        </Card>
-      </div>
-    );
+    return <LoadingState message="Loading poll..." />;
   }
 
   if (loadError || !poll) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4 flex items-center justify-center">
-        <Card className="max-w-md w-full text-center">
-          <div className="text-4xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Error Loading Poll</h2>
-          <p className="text-gray-600 mb-4">{loadError}</p>
-          <Button onClick={() => navigate('/')}>Return Home</Button>
-        </Card>
-      </div>
+      <ErrorState
+        error={loadError || 'Poll not found'}
+        onGoHome={() => navigate('/')}
+      />
     );
   }
 
@@ -208,7 +127,7 @@ export default function VotingPageDb() {
                 <p className="text-gray-600 mb-2">{poll.description}</p>
               )}
               <p className="text-sm text-gray-500">
-                Created by {poll.creator.username}
+                Created by {poll.creatorName}
               </p>
               {poll.votingDeadline && (
                 <p className="text-sm text-coral-500 mt-1">

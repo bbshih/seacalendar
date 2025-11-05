@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes, ReactNode, useState } from "react";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "gradient" | "glass" | "glow";
+  variant?: "primary" | "secondary" | "outline" | "gradient" | "glass" | "glow" | "ghost";
   size?: "sm" | "md" | "lg";
   fullWidth?: boolean;
   children: ReactNode;
@@ -32,15 +32,16 @@ export default function Button({
   };
 
   const baseStyles =
-    "font-semibold rounded-full shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden active:scale-95";
+    "font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-visible active:translate-y-1 active:brightness-90";
 
   const variantStyles = {
-    primary: "bg-ocean-500 hover:bg-ocean-600 transform hover:scale-105 hover:shadow-xl",
-    secondary: "bg-coral-400 hover:bg-coral-500 transform hover:scale-105 hover:shadow-xl",
-    outline: "bg-white border-2 border-ocean-400 hover:bg-ocean-50 transform hover:scale-105",
-    gradient: "bg-gradient-to-r from-ocean-500 via-ocean-400 to-coral-400 hover:from-ocean-600 hover:via-ocean-500 hover:to-coral-500 transform hover:scale-105 hover:shadow-2xl animate-gradient-x bg-[length:200%_100%]",
-    glass: "bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 transform hover:scale-105 hover:shadow-xl",
-    glow: "bg-ocean-500 hover:bg-ocean-600 transform hover:scale-105 animate-pulse-glow",
+    primary: "bg-gradient-to-br from-ocean-400 to-ocean-600 hover:brightness-110 border-[3px] border-ocean-200/60 transform hover:-translate-y-1 shadow-[0_8px_32px_0_rgba(14,116,144,0.5),0_6px_0_0_rgb(7,89,133),inset_0_3px_8px_0_rgba(255,255,255,0.6),inset_0_-3px_8px_0_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_0_rgba(14,116,144,0.7),0_8px_0_0_rgb(7,89,133),inset_0_4px_10px_0_rgba(255,255,255,0.7),inset_0_-4px_10px_0_rgba(0,0,0,0.4)]",
+    secondary: "bg-gradient-to-br from-orange-300 via-coral-400 to-orange-500 hover:brightness-110 border-[3px] border-orange-200/70 transform hover:-translate-y-1 shadow-[0_8px_32px_0_rgba(249,115,22,0.5),0_6px_0_0_rgb(194,65,12),inset_0_3px_8px_0_rgba(255,255,255,0.6),inset_0_-3px_8px_0_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_0_rgba(249,115,22,0.7),0_8px_0_0_rgb(194,65,12),inset_0_4px_10px_0_rgba(255,255,255,0.7),inset_0_-4px_10px_0_rgba(0,0,0,0.4)]",
+    outline: "bg-gradient-to-br from-white via-ocean-50/50 to-ocean-100/60 border-[3px] border-ocean-400 hover:brightness-105 transform hover:-translate-y-1 shadow-[0_8px_32px_0_rgba(14,116,144,0.4),0_6px_0_0_rgb(14,116,144),inset_0_3px_8px_0_rgba(255,255,255,1),inset_0_-3px_8px_0_rgba(14,116,144,0.25)] hover:shadow-[0_12px_40px_0_rgba(14,116,144,0.6),0_8px_0_0_rgb(14,116,144),inset_0_4px_10px_0_rgba(255,255,255,1),inset_0_-4px_10px_0_rgba(14,116,144,0.35)]",
+    gradient: "bg-gradient-to-br from-ocean-400 via-ocean-500 to-coral-400 hover:brightness-110 border-[3px] border-ocean-200/60 transform hover:-translate-y-1 shadow-[0_8px_32px_0_rgba(14,116,144,0.5),0_6px_0_0_rgb(7,89,133),inset_0_3px_8px_0_rgba(255,255,255,0.6),inset_0_-3px_8px_0_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_0_rgba(14,116,144,0.7),0_8px_0_0_rgb(7,89,133),inset_0_4px_10px_0_rgba(255,255,255,0.7),inset_0_-4px_10px_0_rgba(0,0,0,0.4)] animate-gradient-x bg-[length:200%_200%]",
+    glass: "bg-gradient-to-br from-white/50 to-white/10 backdrop-blur-xl border-[3px] border-white/70 hover:brightness-110 transform hover:-translate-y-1 shadow-[0_8px_32px_0_rgba(31,38,135,0.4),0_6px_0_0_rgba(255,255,255,0.4),inset_0_3px_8px_0_rgba(255,255,255,0.9),inset_0_-3px_8px_0_rgba(31,38,135,0.2)] hover:shadow-[0_12px_40px_0_rgba(31,38,135,0.6),0_8px_0_0_rgba(255,255,255,0.5),inset_0_4px_10px_0_rgba(255,255,255,1),inset_0_-4px_10px_0_rgba(31,38,135,0.3)]",
+    glow: "bg-gradient-to-br from-ocean-400 to-ocean-600 hover:brightness-110 border-[3px] border-ocean-200/60 transform hover:-translate-y-1 shadow-[0_8px_32px_0_rgba(14,116,144,0.7),0_6px_0_0_rgb(7,89,133),inset_0_3px_8px_0_rgba(255,255,255,0.6),inset_0_-3px_8px_0_rgba(0,0,0,0.3)] hover:shadow-[0_0_50px_10px_rgba(14,116,144,0.9),0_8px_0_0_rgb(7,89,133),inset_0_4px_10px_0_rgba(255,255,255,0.7),inset_0_-4px_10px_0_rgba(0,0,0,0.4)] animate-pulse-glow",
+    ghost: "bg-gradient-to-br from-white/15 to-transparent hover:from-white/25 hover:to-white/5 hover:brightness-110 border-[3px] border-current/40 hover:border-current/60 shadow-[inset_0_3px_8px_0_rgba(255,255,255,0.4),inset_0_-3px_8px_0_rgba(0,0,0,0.2)]",
   };
 
   const variantTextColors = {
@@ -50,6 +51,7 @@ export default function Button({
     gradient: "#ffffff",
     glass: "#ffffff",
     glow: "#f0f9ff",
+    ghost: "inherit",
   };
 
   const sizeStyles = {
@@ -73,13 +75,21 @@ export default function Button({
       }}
       {...props}
     >
-      {children}
+      {/* Glass reflection highlight - applied to all variants */}
+      <span
+        className="absolute inset-0 rounded-full bg-gradient-to-br from-white/80 via-white/20 to-transparent pointer-events-none"
+        style={{
+          clipPath: "ellipse(45% 35% at 30% 20%)",
+        }}
+      />
+
+      <span className="relative z-10">{children}</span>
 
       {/* Ripple effects */}
       {ripples.map((ripple) => (
         <span
           key={ripple.id}
-          className="absolute bg-white/30 rounded-full animate-ripple pointer-events-none"
+          className="absolute bg-white/30 rounded-full animate-ripple pointer-events-none z-0"
           style={{
             left: ripple.x,
             top: ripple.y,
