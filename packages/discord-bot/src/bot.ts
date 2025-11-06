@@ -3,13 +3,17 @@
  * Main entry point for the Discord bot
  */
 
-import { Client, GatewayIntentBits, Collection, Events } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, Events, type TextChannel } from 'discord.js';
 import { Config } from './config.js';
 import { Command } from './types/command.js';
 import { readdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { prisma } from '@seacalendar/database';
+import cron from 'node-cron';
+import { DateTime } from 'luxon';
+import * as qotwService from './services/qotwService.js';
+import { postQuestion, postSelectionPoll } from './commands/qotw.js';
 
 // Get __dirname equivalent in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -167,12 +171,84 @@ function setupDefaultHandlers() {
 }
 
 /**
- * Initialize cron jobs for reminders
+ * Initialize cron jobs for reminders and QOTW
  */
 async function initializeCronJobs() {
-  // Cron jobs will be implemented in Phase 4
-  // Placeholder for now
-  console.log('⏰ Cron jobs initialization (Phase 4)');
+  console.log('⏰ Initializing cron jobs...');
+
+  // QOTW: Check every minute if questions need to be posted
+  // Each guild has its own schedule configuration
+  cron.schedule('* * * * *', async () => {
+    try {
+      const configs = await prisma.qotwConfig.findMany({
+        where: { enabled: true },
+      });
+
+      for (const config of configs) {
+        if (!config.channelId) continue;
+
+        // Parse cron schedule and check if it's time
+        const now = DateTime.now().setZone(config.timezone);
+        const [minute, hour, , , dayOfWeek] = config.cronSchedule.split(' ');
+
+        // Check if current time matches schedule
+        const matchesMinute = minute === '*' || parseInt(minute) === now.minute;
+        const matchesHour = hour === '*' || parseInt(hour) === now.hour;
+        const matchesDayOfWeek = dayOfWeek === '*' || parseInt(dayOfWeek) === now.weekday % 7;
+
+        if (matchesMinute && matchesHour && matchesDayOfWeek) {
+          // Check if we already posted today
+          if (config.lastAskedAt) {
+            const lastAsked = DateTime.fromJSDate(config.lastAskedAt).setZone(config.timezone);
+            if (lastAsked.hasSame(now, 'day')) {
+              continue; // Already posted today
+            }
+          }
+
+          // Post question
+          try {
+            const guild = await client.guilds.fetch(config.guildId);
+            const channel = await guild.channels.fetch(config.channelId) as TextChannel;
+            await postQuestion(config.guildId, channel);
+            console.log(`✅ Posted QOTW for guild ${config.guildId}`);
+          } catch (error) {
+            console.error(`❌ Failed to post QOTW for guild ${config.guildId}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error in QOTW cron job:', error);
+    }
+  });
+
+  // QOTW: Check daily if selection polls need to be posted (3 days after last question)
+  cron.schedule('0 * * * *', async () => {
+    try {
+      const configs = await prisma.qotwConfig.findMany({
+        where: { enabled: true },
+      });
+
+      for (const config of configs) {
+        if (!config.channelId) continue;
+
+        const shouldPost = await qotwService.shouldPostSelectionPoll(config.guildId);
+        if (shouldPost) {
+          try {
+            const guild = await client.guilds.fetch(config.guildId);
+            const channel = await guild.channels.fetch(config.channelId) as TextChannel;
+            await postSelectionPoll(config.guildId, channel);
+            console.log(`✅ Posted selection poll for guild ${config.guildId}`);
+          } catch (error) {
+            console.error(`❌ Failed to post selection poll for guild ${config.guildId}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error in selection poll cron job:', error);
+    }
+  });
+
+  console.log('✅ Cron jobs initialized');
 }
 
 /**
