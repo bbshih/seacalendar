@@ -28,7 +28,7 @@
     "setup": "npm install && npm run db:setup && echo '\n✅ Setup complete! Run: npm run dev'"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
+    "concurrently": "^9.2.1",
     "typescript": "^5.9.3"
   },
   "engines": {
