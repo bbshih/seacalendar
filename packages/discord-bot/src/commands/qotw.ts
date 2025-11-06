@@ -20,7 +20,7 @@ import * as qotwService from '../services/qotwService.js';
 import { DateTime } from 'luxon';
 
 export const data = new SlashCommandBuilder()
-  .setName('qotw')
+  .setName('question')
   .setDescription('Question of the Week commands')
   // User commands
   .addSubcommand(sub =>
@@ -44,6 +44,11 @@ export const data = new SlashCommandBuilder()
           .setDescription('Page number (default: 1)')
           .setMinValue(1)
       )
+  )
+  .addSubcommand(sub =>
+    sub
+      .setName('mine')
+      .setDescription('View and manage your submitted questions')
   )
   .addSubcommand(sub =>
     sub
@@ -153,6 +158,15 @@ export const data = new SlashCommandBuilder()
   );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
+  // Enforce guild-only commands
+  if (!interaction.guildId) {
+    await interaction.reply({
+      content: '❌ This command can only be used in a server.',
+      ephemeral: true,
+    });
+    return;
+  }
+
   const subcommand = interaction.options.getSubcommand();
 
   // Admin command check
@@ -174,6 +188,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       break;
     case 'list':
       await handleList(interaction);
+      break;
+    case 'mine':
+      await handleMine(interaction);
       break;
     case 'edit':
       await handleEdit(interaction);
@@ -249,11 +266,21 @@ async function handleSubmit(interaction: ChatInputCommandInteraction) {
     });
 
     // Wait for confirmation
-    const confirmation = await response.awaitMessageComponent({
-      componentType: ComponentType.Button,
-      time: 60_000,
-      filter: (i) => i.user.id === interaction.user.id,
-    });
+    let confirmation;
+    try {
+      confirmation = await response.awaitMessageComponent({
+        componentType: ComponentType.Button,
+        time: 60_000,
+        filter: (i) => i.user.id === interaction.user.id,
+      });
+    } catch (error) {
+      await interaction.editReply({
+        content: '❌ Confirmation timed out. Please try again.',
+        embeds: [],
+        components: [],
+      });
+      return;
+    }
 
     if (confirmation.customId === 'qotw_cancel') {
       await confirmation.update({
@@ -291,9 +318,8 @@ async function handleSubmit(interaction: ChatInputCommandInteraction) {
 
   } catch (error) {
     console.error('Error submitting question:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     await interaction.editReply({
-      content: `❌ Error: ${errorMessage}`,
+      content: '❌ Failed to submit question. Please try again.',
     });
   }
 }
@@ -309,7 +335,7 @@ async function handleList(interaction: ChatInputCommandInteraction) {
 
     if (result.total === 0) {
       await interaction.editReply({
-        content: '❌ No questions submitted yet. Use `/qotw submit` to add one!',
+        content: '❌ No questions submitted yet. Use `/question submit` to add one!',
       });
       return;
     }
@@ -321,10 +347,11 @@ async function handleList(interaction: ChatInputCommandInteraction) {
 
     // Format questions (show first 10 per page for embed limit)
     const questionsToShow = result.questions.slice(0, 10);
-    const description = questionsToShow.map((q) => {
+    const description = questionsToShow.map((q, idx) => {
       const truncated = q.question.length > 100 ? q.question.substring(0, 97) + '...' : q.question;
       const askedCount = q.timesAsked > 0 ? ` (asked ${q.timesAsked}x)` : '';
-      return `**${q.id.substring(0, 8)}...** - ${truncated}\n_By ${q.submitterUsername} on ${DateTime.fromJSDate(q.submittedAt).toFormat('MMM d, yyyy')}${askedCount}_\n`;
+      const isYours = q.submitterId === interaction.user.id ? ' ✏️' : '';
+      return `**${idx + 1}.** ${truncated}${isYours}\n_By ${q.submitterUsername} on ${DateTime.fromJSDate(q.submittedAt).toFormat('MMM d, yyyy')}${askedCount}_\n`;
     }).join('\n');
 
     embed.setDescription(description || 'No questions to display');
@@ -336,11 +363,184 @@ async function handleList(interaction: ChatInputCommandInteraction) {
       });
     }
 
-    await interaction.editReply({ embeds: [embed] });
+    // Add delete buttons for user's own questions (up to 5)
+    const userQuestions = questionsToShow.filter(q => q.submitterId === interaction.user.id).slice(0, 5);
+    const components: ActionRowBuilder<ButtonBuilder>[] = [];
+
+    if (userQuestions.length > 0) {
+      const buttons = new ActionRowBuilder<ButtonBuilder>();
+      userQuestions.forEach((q) => {
+        const idx = questionsToShow.findIndex(qs => qs.id === q.id) + 1;
+        buttons.addComponents(
+          new ButtonBuilder()
+            .setCustomId(`qotw_delete_${q.id}`)
+            .setLabel(`Delete #${idx}`)
+            .setStyle(ButtonStyle.Danger)
+        );
+      });
+      components.push(buttons);
+    }
+
+    const response = await interaction.editReply({
+      embeds: [embed],
+      components
+    });
+
+    // Handle button clicks
+    if (userQuestions.length > 0) {
+      const collector = response.createMessageComponentCollector({
+        componentType: ComponentType.Button,
+        time: 300_000, // 5 minutes
+        filter: (i) => i.user.id === interaction.user.id,
+      });
+
+      collector.on('collect', async (i) => {
+        const questionId = i.customId.replace('qotw_delete_', '');
+        await i.deferUpdate();
+
+        try {
+          // Validate ownership before deleting
+          const question = await qotwService.getQuestion(questionId, guildId);
+          if (!question || question.submitterId !== i.user.id) {
+            await i.followUp({
+              content: '❌ You can only delete your own questions',
+              ephemeral: true
+            });
+            return;
+          }
+
+          await qotwService.deleteQuestion(questionId, guildId);
+          await i.followUp({
+            content: `✅ Question deleted`,
+            ephemeral: true
+          });
+
+          // Refresh the list
+          collector.stop();
+          await handleList(interaction);
+        } catch (error) {
+          await i.followUp({
+            content: '❌ Error deleting question',
+            ephemeral: true
+          });
+        }
+      });
+    }
 
   } catch (error) {
     console.error('Error listing questions:', error);
     await interaction.editReply({ content: '❌ Error loading questions' });
+  }
+}
+
+async function handleMine(interaction: ChatInputCommandInteraction) {
+  const guildId = interaction.guildId!;
+  const userId = interaction.user.id;
+
+  await interaction.deferReply({ ephemeral: true });
+
+  try {
+    // Get all questions by this user
+    const allQuestions = await qotwService.listQuestions(guildId, 1, 1000);
+    const myQuestions = allQuestions.questions.filter(q => q.submitterId === userId);
+
+    if (myQuestions.length === 0) {
+      await interaction.editReply({
+        content: '❌ You haven\'t submitted any questions yet. Use `/question submit` to add one!',
+      });
+      return;
+    }
+
+    const embed = new EmbedBuilder()
+      .setColor(0x0ea5e9)
+      .setTitle('🌊 Your Questions')
+      .setFooter({ text: `${myQuestions.length} total` });
+
+    // Show first 10 questions
+    const questionsToShow = myQuestions.slice(0, 10);
+    const description = questionsToShow.map((q, idx) => {
+      const truncated = q.question.length > 100 ? q.question.substring(0, 97) + '...' : q.question;
+      const askedCount = q.timesAsked > 0 ? ` (asked ${q.timesAsked}x)` : '';
+      return `**${idx + 1}.** ${truncated}\n_Submitted ${DateTime.fromJSDate(q.submittedAt).toFormat('MMM d, yyyy')}${askedCount}_\n`;
+    }).join('\n');
+
+    embed.setDescription(description);
+
+    if (myQuestions.length > 10) {
+      embed.addFields({
+        name: 'Note',
+        value: `Showing first 10 of ${myQuestions.length} questions`,
+      });
+    }
+
+    // Add delete buttons (up to 5 per row, max 25 total across 5 rows)
+    const components: ActionRowBuilder<ButtonBuilder>[] = [];
+    const questionsForButtons = questionsToShow.slice(0, 25);
+
+    for (let i = 0; i < questionsForButtons.length; i += 5) {
+      const row = new ActionRowBuilder<ButtonBuilder>();
+      const chunk = questionsForButtons.slice(i, i + 5);
+
+      chunk.forEach((q, idx) => {
+        const questionNum = i + idx + 1;
+        row.addComponents(
+          new ButtonBuilder()
+            .setCustomId(`qotw_delete_mine_${q.id}`)
+            .setLabel(`Delete #${questionNum}`)
+            .setStyle(ButtonStyle.Danger)
+        );
+      });
+
+      components.push(row);
+    }
+
+    const response = await interaction.editReply({
+      embeds: [embed],
+      components
+    });
+
+    // Handle button clicks
+    const collector = response.createMessageComponentCollector({
+      componentType: ComponentType.Button,
+      time: 300_000, // 5 minutes
+      filter: (i) => i.user.id === interaction.user.id,
+    });
+
+    collector.on('collect', async (i) => {
+      const questionId = i.customId.replace('qotw_delete_mine_', '');
+      await i.deferUpdate();
+
+      try {
+        // Validate ownership before deleting
+        const question = await qotwService.getQuestion(questionId, guildId);
+        if (!question || question.submitterId !== i.user.id) {
+          await i.followUp({
+            content: '❌ You can only delete your own questions',
+            ephemeral: true
+          });
+          return;
+        }
+
+        await qotwService.deleteQuestion(questionId, guildId);
+        await i.followUp({
+          content: `✅ Question deleted`,
+          ephemeral: true
+        });
+
+        // Refresh the list
+        collector.stop();
+        await handleMine(interaction);
+      } catch (error) {
+        await i.followUp({
+          content: '❌ Error deleting question',
+          ephemeral: true
+        });
+      }
+    });
+
+  } catch (error) {
+    console.error('Error loading user questions:', error);
+    await interaction.editReply({ content: '❌ Error loading your questions' });
   }
 }
 
@@ -428,8 +628,7 @@ async function handleEdit(interaction: ChatInputCommandInteraction) {
 
   } catch (error) {
     console.error('Error editing question:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    await interaction.editReply({ content: `❌ Error: ${errorMessage}` });
+    await interaction.editReply({ content: '❌ Failed to edit question. Please try again.' });
   }
 }
 
@@ -505,8 +704,7 @@ async function handleDelete(interaction: ChatInputCommandInteraction) {
 
   } catch (error) {
     console.error('Error deleting question:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    await interaction.editReply({ content: `❌ Error: ${errorMessage}` });
+    await interaction.editReply({ content: '❌ Failed to delete question. Please try again.' });
   }
 }
 
@@ -611,8 +809,7 @@ async function handleNext(interaction: ChatInputCommandInteraction) {
 
   } catch (error) {
     console.error('Error handling next question:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    await interaction.editReply({ content: `❌ Error: ${errorMessage}` });
+    await interaction.editReply({ content: '❌ Failed to set next question. Please try again.' });
   }
 }
 
@@ -645,8 +842,7 @@ async function handleAskNow(interaction: ChatInputCommandInteraction) {
 
   } catch (error) {
     console.error('Error posting question now:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    await interaction.editReply({ content: `❌ Error: ${errorMessage}` });
+    await interaction.editReply({ content: '❌ Failed to post question. Please try again.' });
   }
 }
 
@@ -679,8 +875,7 @@ async function handlePoll(interaction: ChatInputCommandInteraction) {
 
   } catch (error) {
     console.error('Error posting selection poll:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    await interaction.editReply({ content: `❌ Error: ${errorMessage}` });
+    await interaction.editReply({ content: '❌ Failed to post poll. Please try again.' });
   }
 }
 

@@ -269,6 +269,12 @@ export async function updateQuestion(
     throw new Error(`Question must be ${MAX_QUESTION_LENGTH} characters or less`);
   }
 
+  // Verify question belongs to this guild before updating
+  const existing = await getQuestion(questionId, guildId);
+  if (!existing) {
+    throw new Error('Question not found');
+  }
+
   return prisma.qotwQuestion.update({
     where: { id: questionId },
     data: { question: newQuestion.trim() },
