@@ -9,25 +9,11 @@ on:
 jobs:
   deploy:
     name: Deploy to Production Server
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Add server to known hosts
+      - name: Deploy
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H 5.78.132.232 >> ~/.ssh/known_hosts
-
-      - name: Deploy to server
-        run: |
-          ssh deploy@5.78.132.232 << 'ENDSSH'
           set -e
 
           echo "🚀 Starting deployment..."
@@ -40,6 +26,9 @@ jobs:
 
           echo "🔨 Installing dependencies..."
           npm install
+
+          echo "🏗️ Building packages..."
+          npm run build
 
           echo "🐳 Checking deployment mode..."
           if docker ps | grep -q "seacalendar-api\|seacalendar-web\|seacalendar-bot"; then
@@ -57,7 +46,6 @@ jobs:
             echo "Services will auto-restart via watch mode"
             echo "✅ Code updated!"
           fi
-          ENDSSH
 
       - name: Verify deployment
         run: |
