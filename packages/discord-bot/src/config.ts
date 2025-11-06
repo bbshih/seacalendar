@@ -19,8 +19,11 @@ while (rootDir !== '/') {
   rootDir = path.dirname(rootDir);
 }
 
-dotenv.config({ path: path.join(rootDir, '.env.development') });
-dotenv.config({ path: path.join(rootDir, '.env.development.local') });
+// Load .env files in order of priority (later overrides earlier)
+const env = process.env.NODE_ENV || 'development';
+dotenv.config({ path: path.join(rootDir, '.env') }); // Base config
+dotenv.config({ path: path.join(rootDir, `.env.${env}`) }); // Environment-specific
+dotenv.config({ path: path.join(rootDir, `.env.${env}.local`) }); // Local overrides
 
 // Environment variable schema with validation
 const envSchema = z.object({
@@ -31,9 +34,9 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
 
   // Discord Bot
-  DISCORD_BOT_TOKEN: z.string().min(1, 'DISCORD_BOT_TOKEN is required'),
+  DISCORD_TOKEN: z.string().min(1, 'DISCORD_TOKEN is required'),
   DISCORD_CLIENT_ID: z.string().min(1, 'DISCORD_CLIENT_ID is required'),
-  DISCORD_TEST_GUILD_ID: z.string().optional(), // For faster command deployment in dev
+  DISCORD_GUILD_ID: z.string().optional(), // For faster command deployment in dev
 
   // Web App
   WEB_APP_URL: z.string().url('WEB_APP_URL must be a valid URL'),
@@ -72,9 +75,9 @@ export const Config = {
 
   // Discord
   discord: {
-    token: config.DISCORD_BOT_TOKEN,
+    token: config.DISCORD_TOKEN,
     clientId: config.DISCORD_CLIENT_ID,
-    testGuildId: config.DISCORD_TEST_GUILD_ID,
+    testGuildId: config.DISCORD_GUILD_ID,
   },
 
   // Web App
