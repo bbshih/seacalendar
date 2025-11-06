@@ -30,6 +30,23 @@ vi.mock('@seacalendar/database', () => ({
       findMany: vi.fn(),
     },
   },
+  PollType: {
+    DATE: 'DATE',
+    VENUE: 'VENUE',
+    GENERIC: 'GENERIC',
+    EVENT: 'EVENT',
+  },
+  PollStatus: {
+    DRAFT: 'DRAFT',
+    ACTIVE: 'ACTIVE',
+    VOTING: 'VOTING',
+    FINALIZED: 'FINALIZED',
+    CANCELLED: 'CANCELLED',
+  },
+  PollOptionType: {
+    DATE: 'DATE',
+    TEXT: 'TEXT',
+  },
 }));
 
 // Mock Discord.js Client
