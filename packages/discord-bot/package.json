@@ -5,11 +5,11 @@
   "main": "./dist/bot.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/bot.ts",
+    "dev": "dotenv -e ../../.env.development -e ../../.env.development.local -- tsx watch src/bot.ts",
     "build": "tsc && tsc-alias",
     "start": "node dist/bot.js",
     "test": "vitest",
-    "deploy-commands": "tsx src/deploy-commands.ts"
+    "deploy-commands": "dotenv -e ../../.env.development -e ../../.env.development.local -- tsx src/deploy-commands.ts"
   },
   "dependencies": {
     "@seacalendar/shared": "*",
@@ -26,6 +26,7 @@
     "@types/node": "^20.11.5",
     "@types/node-cron": "^3.0.11",
     "@types/uuid": "^9.0.7",
+    "dotenv-cli": "^7.3.0",
     "typescript": "^5.9.3",
     "tsx": "^4.7.1",
     "tsc-alias": "^1.8.8",
