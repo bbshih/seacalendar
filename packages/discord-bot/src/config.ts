@@ -21,9 +21,19 @@ while (rootDir !== '/') {
 
 // Load .env files in order of priority (later overrides earlier)
 const env = process.env.NODE_ENV || 'development';
-dotenv.config({ path: path.join(rootDir, '.env') }); // Base config
-dotenv.config({ path: path.join(rootDir, `.env.${env}`) }); // Environment-specific
-dotenv.config({ path: path.join(rootDir, `.env.${env}.local`) }); // Local overrides
+const envFiles = [
+  path.join(rootDir, '.env'),
+  path.join(rootDir, `.env.${env}`),
+  path.join(rootDir, `.env.${env}.local`)
+];
+
+console.log('🔍 Loading env files from root:', rootDir);
+envFiles.forEach(filePath => {
+  const result = dotenv.config({ path: filePath });
+  const exists = fs.existsSync(filePath);
+  console.log(`  ${exists ? '✅' : '❌'} ${path.basename(filePath)} - ${exists ? 'loaded' : 'not found'}`);
+});
+console.log('');
 
 // Environment variable schema with validation
 const envSchema = z.object({
