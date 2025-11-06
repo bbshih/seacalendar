@@ -5,9 +5,10 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "generate": "dotenv -e ../../.env.development -e ../../.env.development.local -- prisma generate",
+    "generate": "prisma generate",
+    "generate:dev": "dotenv -e ../../.env.development -e ../../.env.development.local -- prisma generate",
     "migrate:dev": "dotenv -e ../../.env.development -e ../../.env.development.local -- prisma migrate dev",
-    "migrate:deploy": "dotenv -e ../../.env.production -e ../../.env.production.local -- prisma migrate deploy",
+    "migrate:deploy": "prisma migrate deploy",
     "migrate:reset": "dotenv -e ../../.env.development -e ../../.env.development.local -- prisma migrate reset --force",
     "studio": "dotenv -e ../../.env.development -e ../../.env.development.local -- prisma studio",
     "seed": "dotenv -e ../../.env.development -e ../../.env.development.local -- tsx prisma/seed.ts",
