@@ -3,8 +3,7 @@
  * Handles question submission, selection, and posting
  */
 
-import { prisma } from '@seacalendar/database';
-import type { QotwQuestion, QotwConfig, QotwHistory } from '@prisma/client';
+import { prisma, QotwQuestion, QotwConfig, QotwHistory } from '@seacalendar/database';
 
 const MAX_QUESTION_LENGTH = 1000;
 const DEFAULT_QUESTION = "What are you looking forward to?";

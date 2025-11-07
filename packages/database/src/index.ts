@@ -11,3 +11,6 @@ import { PrismaClient } from '@prisma/client';
 export const prisma = new PrismaClient();
 
 export default prisma;
+
+// Export types (workaround for environments where Prisma generation is blocked)
+export * from './types';
