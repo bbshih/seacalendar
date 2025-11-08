@@ -15,6 +15,7 @@ import {
   getUserPolls,
   getInvitedPolls,
 } from '../services/pollService';
+import { PollType, PollStatus, PollOptionType } from '@seacalendar/database';
 import { requireAuth, optionalAuth, requirePollOwnership } from '../middleware/auth';
 import { asyncHandler, ErrorFactory } from '../middleware/errorHandler';
 import { pollCreationLimiter } from '../middleware/rateLimit';
@@ -25,14 +26,14 @@ const router = Router();
 const createPollSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(1000).optional(),
-  type: z.enum(['EVENT', 'GENERIC']).optional(),
+  type: z.nativeEnum(PollType).optional(),
   votingDeadline: z.string().datetime().optional(),
   guildId: z.string().optional(),
   channelId: z.string().optional(),
   options: z
     .array(
       z.object({
-        optionType: z.enum(['DATE', 'TEXT']).optional(),
+        optionType: z.nativeEnum(PollOptionType).optional(),
         label: z.string().min(1).max(200),
         description: z.string().max(500).optional(),
         date: z.string().datetime().optional(),
@@ -49,7 +50,7 @@ const updatePollSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(1000).optional(),
   votingDeadline: z.string().datetime().optional(),
-  status: z.enum(['DRAFT', 'VOTING', 'FINALIZED', 'CANCELLED', 'EXPIRED']).optional(),
+  status: z.nativeEnum(PollStatus).optional(),
 });
 
 const finalizePollSchema = z.object({

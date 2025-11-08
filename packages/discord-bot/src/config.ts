@@ -29,7 +29,7 @@ const envFiles = [
 
 console.log('🔍 Loading env files from root:', rootDir);
 envFiles.forEach(filePath => {
-  const result = dotenv.config({ path: filePath, override: true });
+  dotenv.config({ path: filePath, override: true });
   const exists = fs.existsSync(filePath);
   console.log(`  ${exists ? '✅' : '❌'} ${path.basename(filePath)} - ${exists ? 'loaded' : 'not found'}`);
 });

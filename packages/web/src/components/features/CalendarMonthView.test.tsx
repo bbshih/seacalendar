@@ -84,7 +84,6 @@ describe('CalendarMonthView', () => {
     const selectedDate = new Date(today);
     selectedDate.setDate(selectedDate.getDate() + 10);
     const isoDate = selectedDate.toISOString().split('T')[0];
-    const dayOfMonth = selectedDate.getDate();
 
     const dateOptions: DateOption[] = [
       {

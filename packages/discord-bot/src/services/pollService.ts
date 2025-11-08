@@ -3,8 +3,7 @@
  * Handles poll/event creation and management
  */
 
-import { prisma } from '@seacalendar/database';
-import { PollType, PollStatus, User, Poll, PollOption } from '@prisma/client';
+import { prisma, PollType, PollStatus, User, Poll, PollOption } from '@seacalendar/database';
 import { Config } from '../config.js';
 // import { v4 as uuidv4 } from 'uuid'; // Unused
 
