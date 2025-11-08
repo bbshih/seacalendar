@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from './Button';
+import { IconList, IconPlus } from '@tabler/icons-react';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -17,7 +18,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo/Brand */}
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-black text-white">🌊 SeaCalendar</span>
+            <span className="text-2xl font-black text-white">SeaCalendar</span>
           </Link>
 
           {/* Navigation Links */}
@@ -28,7 +29,7 @@ export default function Navbar() {
                 variant="glass"
                 size="sm"
               >
-                📋 My Events
+                <IconList size={18} className="inline mr-1" /> My Events
               </Button>
             </Link>
 
@@ -38,7 +39,7 @@ export default function Navbar() {
                 variant="secondary"
                 size="sm"
               >
-                ⚓ Create Event
+                <IconPlus size={18} className="inline mr-1" /> Create Event
               </Button>
             </Link>
 

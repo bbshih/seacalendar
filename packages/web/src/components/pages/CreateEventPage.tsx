@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { IconList, IconSparkles, IconLoader, IconConfetti, IconChecklist, IconChartBar } from '@tabler/icons-react';
 import Card from '../shared/Card';
 import Input from '../shared/Input';
 import Button from '../shared/Button';
@@ -204,7 +205,7 @@ export default function CreateEventPage() {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}>
-            ⚓ Create Event
+            Create Event
           </h1>
           <p className="text-lg text-ocean-700 font-semibold animate-slide-up">
             Plan your next hangout with friends
@@ -213,7 +214,7 @@ export default function CreateEventPage() {
 
         {/* Event Details */}
         <Card className="mb-6 animate-fade-in">
-          <h2 className="text-xl font-bold text-ocean-700 mb-4">📋 Event Details</h2>
+          <h2 className="text-xl font-bold text-ocean-700 mb-4"><IconList size={24} className="inline mr-2" /> Event Details</h2>
 
           <div className="space-y-4">
             <Input
@@ -242,21 +243,21 @@ export default function CreateEventPage() {
 
         {/* Option Type Toggle */}
         <Card className="mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-          <h2 className="text-xl font-bold text-ocean-700 mb-4">🎯 Poll Type</h2>
+          <h2 className="text-xl font-bold text-ocean-700 mb-4">Poll Type</h2>
           <div className="flex gap-3">
             <Button
               variant={optionType === 'DATE' ? 'primary' : 'outline'}
               onClick={() => setOptionType('DATE')}
               className="flex-1"
             >
-              📅 Dates
+              Dates
             </Button>
             <Button
               variant={optionType === 'TEXT' ? 'primary' : 'outline'}
               onClick={() => setOptionType('TEXT')}
               className="flex-1"
             >
-              📝 Custom
+              Custom
             </Button>
           </div>
         </Card>
@@ -265,13 +266,13 @@ export default function CreateEventPage() {
         {optionType === 'DATE' && (
           <Card className="mb-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <h2 className="text-xl font-bold text-ocean-700 mb-4">
-              📅 Pick Dates ({dateOptions.length} selected)
+              Pick Dates ({dateOptions.length} selected)
             </h2>
 
             {/* Natural Language Date Input */}
             <div className="mb-4 p-4 bg-ocean-50 rounded-lg border border-ocean-200">
               <label className="block text-sm font-semibold text-ocean-700 mb-2">
-                ✨ Quick Add (Natural Language)
+                <IconSparkles size={18} className="inline mr-1" /> Quick Add (Natural Language)
               </label>
               <div className="flex gap-2">
                 <Input
@@ -287,7 +288,7 @@ export default function CreateEventPage() {
                   onClick={handleParseNaturalLanguage}
                   disabled={!naturalLanguageInput.trim()}
                 >
-                  ➕ Parse
+                  Parse
                 </Button>
               </div>
               {parseError && (
@@ -328,7 +329,7 @@ export default function CreateEventPage() {
         {optionType === 'TEXT' && (
           <Card className="mb-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <h2 className="text-xl font-bold text-ocean-700 mb-4">
-              📝 Custom Options ({textOptions.length} added)
+              Custom Options ({textOptions.length} added)
             </h2>
 
             <div className="space-y-4">
@@ -346,7 +347,7 @@ export default function CreateEventPage() {
                   onClick={handleAddTextOption}
                   disabled={!textInput.trim()}
                 >
-                  ➕ Add
+                  Add
                 </Button>
               </div>
 
@@ -390,7 +391,7 @@ export default function CreateEventPage() {
             disabled={isCreating}
             className="w-full max-w-md"
           >
-            {isCreating ? '⏳ Creating...' : '🌊 Create Event'}
+            {isCreating ? <><IconLoader size={18} className="inline mr-1 animate-spin" /> Creating...</> : 'Create Event'}
           </Button>
         </div>
 
@@ -399,7 +400,7 @@ export default function CreateEventPage() {
           <Modal
             isOpen={showSuccessModal}
             onClose={() => setShowSuccessModal(false)}
-            title="🎉 Event Created!"
+            title="Event Created!"
           >
             <div className="space-y-4">
               <p className="text-gray-700">
@@ -409,7 +410,7 @@ export default function CreateEventPage() {
               {/* Voting Link */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  🗳️ Voting Link (Share with friends)
+                  <IconChecklist size={18} className="inline mr-1" /> Voting Link (Share with friends)
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -429,7 +430,7 @@ export default function CreateEventPage() {
               {/* Results Link */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  📊 Results Link
+                  <IconChartBar size={18} className="inline mr-1" /> Results Link
                 </label>
                 <div className="flex gap-2">
                   <input

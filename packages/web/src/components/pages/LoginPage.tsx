@@ -26,7 +26,6 @@ export default function LoginPage() {
       <div className="max-w-md mx-auto w-full">
         <Card>
           <div className="text-center mb-6">
-            <div className="text-6xl mb-4 animate-wave">🌊</div>
             <h1 className="text-3xl font-bold text-ocean-600 mb-2">
               Welcome to SeaCalendar
             </h1>

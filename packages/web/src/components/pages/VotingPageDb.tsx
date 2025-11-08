@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { IconBoxMultiple, IconCheck, IconAlertTriangle, IconSquare, IconConfetti } from '@tabler/icons-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePoll } from '../../hooks/usePoll';
 import { api } from '../../utils/api';
@@ -103,7 +104,6 @@ export default function VotingPageDb() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4 flex items-center justify-center">
         <Card className="max-w-md w-full text-center">
-          <div className="text-4xl mb-4">❌</div>
           <h2 className="text-xl font-bold text-gray-800 mb-2">Poll Cancelled</h2>
           <p className="text-gray-600 mb-4">This poll has been cancelled by the organizer.</p>
           <Button onClick={() => navigate('/')}>Return Home</Button>
@@ -120,7 +120,7 @@ export default function VotingPageDb() {
         {/* Header */}
         <Card className="mb-6">
           <div className="flex items-start gap-4">
-            <div className="text-4xl animate-float">🗳️</div>
+            <IconBoxMultiple size={48} className="text-ocean-600 flex-shrink-0" />
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-ocean-600 mb-2">{poll.title}</h1>
               {poll.description && (
@@ -184,7 +184,13 @@ export default function VotingPageDb() {
                       )}
                     </div>
                     <div className="text-2xl">
-                      {isAvailable ? '✅' : isMaybe ? '⚠️' : '⬜'}
+                      {isAvailable ? (
+                        <IconCheck size={32} className="text-seaweed-600" />
+                      ) : isMaybe ? (
+                        <IconAlertTriangle size={32} className="text-coral-500" />
+                      ) : (
+                        <IconSquare size={32} className="text-gray-400" />
+                      )}
                     </div>
                   </div>
                 </button>
@@ -233,7 +239,7 @@ export default function VotingPageDb() {
             title="Vote Submitted!"
           >
             <div className="text-center">
-              <div className="text-6xl mb-4 animate-wave">🎉</div>
+              <IconConfetti size={64} className="mx-auto mb-4 text-seaweed-600" />
               <p className="text-gray-700 mb-6">
                 Your vote has been recorded successfully!
               </p>

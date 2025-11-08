@@ -128,16 +128,17 @@ seacalendar/
 
 ### Design System
 
-**Ocean Theme Colors:**
-- `ocean-500` (#0ea5e9) - Primary blue
-- `coral-400` (#fb923c) - Accent orange
-- `sand-100` (#fef3c7) - Light backgrounds
-- `seaweed-500` (#10b981) - Success green
+**Y2K Digital Theme Colors:**
+- `cyber-500` (#00ff41) - Matrix green (primary)
+- `neon-400` (#ff10f0) - Hot pink (accent)
+- `electric-500` (#6366f1) - Electric blue (highlights)
+- `chrome-500` (#d4d4d8) - Silver chrome (metallic)
 
 **Animations:**
-- `animate-wave` - Gentle bobbing
-- `animate-float` - Floating effect
-- `animate-ripple` - Click ripples
+- `animate-glitch` - Digital glitch effect
+- `animate-matrix` - Matrix rain effect
+- `animate-scan` - Scanline animation
+- `animate-pixel` - Pixelated transitions
 
 ### Database Schema
 

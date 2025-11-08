@@ -108,7 +108,7 @@ const startServer = async () => {
 
     // Start listening
     server.listen(Config.port, () => {
-      logger.info(`🌊 SeaCalendar API server running on port ${Config.port}`);
+      logger.info(`SeaCalendar API server running on port ${Config.port}`);
       logger.info(`📝 Environment: ${Config.nodeEnv}`);
       logger.info(`🔗 Health check: http://localhost:${Config.port}/health`);
     });

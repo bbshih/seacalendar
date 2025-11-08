@@ -240,7 +240,7 @@ async function handleSubmit(interaction: ChatInputCommandInteraction) {
     // Show preview
     const embed = new EmbedBuilder()
       .setColor(0x0ea5e9)
-      .setTitle('🌊 Question Preview')
+      .setTitle('Question Preview')
       .setDescription(question)
       .addFields(
         { name: 'Submitter', value: interaction.user.tag, inline: true },
@@ -342,7 +342,7 @@ async function handleList(interaction: ChatInputCommandInteraction) {
 
     const embed = new EmbedBuilder()
       .setColor(0x0ea5e9)
-      .setTitle('🌊 QOTW Question List')
+      .setTitle('QOTW Question List')
       .setFooter({ text: `Page ${page}/${result.pages} • ${result.total} total questions` });
 
     // Format questions (show first 10 per page for embed limit)
@@ -453,7 +453,7 @@ async function handleMine(interaction: ChatInputCommandInteraction) {
 
     const embed = new EmbedBuilder()
       .setColor(0x0ea5e9)
-      .setTitle('🌊 Your Questions')
+      .setTitle('Your Questions')
       .setFooter({ text: `${myQuestions.length} total` });
 
     // Show first 10 questions
@@ -578,7 +578,7 @@ async function handleEdit(interaction: ChatInputCommandInteraction) {
     // Show preview
     const embed = new EmbedBuilder()
       .setColor(0x0ea5e9)
-      .setTitle('🌊 Edit Question Preview')
+      .setTitle('Edit Question Preview')
       .addFields(
         { name: 'Old Question', value: question.question, inline: false },
         { name: 'New Question', value: newQuestion, inline: false }
@@ -915,7 +915,7 @@ export async function postQuestion(guildId: string, channel: TextChannel): Promi
     // No questions available - post default and request more
     const defaultQuestion = qotwService.getDefaultQuestion();
     await channel.send({
-      content: `🌊 **QUESTION OF THE WEEK** 🌊\n\n${defaultQuestion}\n\n_Submitted by SeaCalendar Bot_\n\n⚠️ **We're out of questions!** Submit yours with \`/qotw submit\``,
+      content: `**QUESTION OF THE WEEK** \n\n${defaultQuestion}\n\n_Submitted by SeaCalendar Bot_\n\n⚠️ **We're out of questions!** Submit yours with \`/qotw submit\``,
     });
     return;
   }
@@ -927,7 +927,7 @@ export async function postQuestion(guildId: string, channel: TextChannel): Promi
   }
 
   const message = await channel.send({
-    content: `🌊 **QUESTION OF THE WEEK** 🌊\n\n${question.question}\n\n_Submitted by ${question.submitterUsername}_`,
+    content: `**QUESTION OF THE WEEK** \n\n${question.question}\n\n_Submitted by ${question.submitterUsername}_`,
   });
 
   await qotwService.markQuestionAsked(question.id, guildId, channel.id, message.id);
@@ -954,7 +954,7 @@ export async function postSelectionPoll(guildId: string, channel: TextChannel): 
   await channel.send({
     content: questions.map((q, i) => `**${i + 1}.** ${q.question} _(by ${q.submitterUsername})_`).join('\n\n'),
     poll: {
-      question: { text: '🌊 Vote for next week\'s question!' },
+      question: { text: 'Vote for next week\'s question!' },
       answers: pollAnswers,
       duration: 72, // 3 days in hours
       allowMultiselect: false

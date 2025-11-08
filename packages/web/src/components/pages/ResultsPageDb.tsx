@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { IconChartBar, IconTrophy, IconCheck, IconAlertTriangle, IconLockOpen, IconBoxMultiple, IconHome, IconChecklist } from '@tabler/icons-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePoll } from '../../hooks/usePoll';
 import { api } from '../../utils/api';
@@ -107,7 +108,7 @@ export default function ResultsPageDb() {
         {/* Header */}
         <Card className="mb-6">
           <div className="flex items-start gap-4">
-            <div className="text-4xl animate-float">📊</div>
+            <IconChartBar size={48} className="text-ocean-600 flex-shrink-0" />
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-ocean-600 mb-2">{poll.title}</h1>
               {poll.description && (
@@ -127,7 +128,7 @@ export default function ResultsPageDb() {
                 )}
                 {poll.status === 'FINALIZED' && (
                   <span className="text-ocean-600">
-                    ✅ Finalized
+                    <IconCheck size={16} className="inline mr-1" /> Finalized
                   </span>
                 )}
               </div>
@@ -139,7 +140,7 @@ export default function ResultsPageDb() {
         {results.totalVoters > 0 && topOption && (
           <Card className="mb-6 bg-gradient-to-br from-seaweed-50 to-ocean-50 border-2 border-seaweed-300">
             <div className="flex items-center gap-3 mb-3">
-              <div className="text-3xl">🏆</div>
+              <IconTrophy size={32} className="text-seaweed-700" />
               <h2 className="text-xl font-bold text-seaweed-700">Top Choice</h2>
             </div>
             <div className="bg-white rounded-lg p-4">
@@ -148,11 +149,11 @@ export default function ResultsPageDb() {
               </div>
               <div className="flex items-center gap-4 text-sm">
                 <span className="text-seaweed-600 font-medium">
-                  ✅ {topOption.availableCount} available ({topOption.availablePercentage.toFixed(0)}%)
+                  <IconCheck size={16} className="inline mr-1" /> {topOption.availableCount} available ({topOption.availablePercentage.toFixed(0)}%)
                 </span>
                 {topOption.maybeCount > 0 && (
                   <span className="text-coral-500">
-                    ⚠️ {topOption.maybeCount} maybe
+                    <IconAlertTriangle size={16} className="inline mr-1" /> {topOption.maybeCount} maybe
                   </span>
                 )}
               </div>
@@ -166,7 +167,7 @@ export default function ResultsPageDb() {
 
           {results.totalVoters === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <div className="text-4xl mb-3">🗳️</div>
+              <IconBoxMultiple size={48} className="mx-auto mb-3 text-gray-400" />
               <p>No votes yet. Be the first to vote!</p>
             </div>
           ) : (
@@ -182,11 +183,11 @@ export default function ResultsPageDb() {
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-semibold text-seaweed-600">
-                        {result.availableCount} ✅
+                        {result.availableCount} <IconCheck size={16} className="inline" />
                       </div>
                       {result.maybeCount > 0 && (
                         <div className="text-sm text-coral-500">
-                          {result.maybeCount} ⚠️
+                          {result.maybeCount} <IconAlertTriangle size={16} className="inline" />
                         </div>
                       )}
                     </div>
@@ -233,7 +234,7 @@ export default function ResultsPageDb() {
               variant="primary"
               className="flex-1"
             >
-              🗳️ Vote Now
+              <IconChecklist size={18} className="inline mr-1" /> Vote Now
             </Button>
           )}
           {canReopen && (
@@ -243,14 +244,14 @@ export default function ResultsPageDb() {
               variant="primary"
               className="flex-1"
             >
-              {isReopening ? '⏳ Reopening...' : '🔓 Reopen Voting'}
+              <IconLockOpen size={18} className="inline mr-1" /> {isReopening ? 'Reopening...' : 'Reopen Voting'}
             </Button>
           )}
           <Button
             onClick={() => navigate('/')}
             variant="outline"
           >
-            ← Home
+            <IconHome size={18} className="inline mr-1" /> Home
           </Button>
         </div>
       </div>

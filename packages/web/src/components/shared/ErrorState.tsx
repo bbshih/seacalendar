@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { IconRefresh, IconHome } from '@tabler/icons-react';
 import Button from './Button';
 import Card from './Card';
 
@@ -34,7 +35,6 @@ export default function ErrorState({
         <div className="max-w-md mx-auto">
           <Card>
             <div className="text-center">
-              <div className="text-6xl mb-4">🌊</div>
               <h1 className="text-2xl font-bold text-ocean-700 mb-4">
                 {title}
               </h1>
@@ -42,11 +42,11 @@ export default function ErrorState({
               <div className="flex gap-3 justify-center">
                 {onRetry && (
                   <Button onClick={onRetry} variant="secondary" size="md">
-                    🔄 Try Again
+                    <IconRefresh size={18} className="inline mr-1" /> Try Again
                   </Button>
                 )}
                 <Button onClick={handleGoHome} variant="primary" size="md">
-                  🏠 Go Home
+                  <IconHome size={18} className="inline mr-1" /> Go Home
                 </Button>
               </div>
             </div>

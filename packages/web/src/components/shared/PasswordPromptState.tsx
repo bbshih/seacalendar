@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { IconLock, IconLockOpen, IconLoader } from '@tabler/icons-react';
 import Button from './Button';
 import Card from './Card';
 import Input from './Input';
@@ -39,7 +40,9 @@ export default function PasswordPromptState({
         <div className="max-w-md mx-auto">
           <Card>
             <div className="text-center mb-6">
-              <div className="text-6xl mb-4">🔒</div>
+              <div className="flex justify-center mb-4">
+                <IconLock size={64} className="text-ocean-600" />
+              </div>
               <h1 className="text-2xl font-bold text-ocean-700 mb-2">
                 {title}
               </h1>
@@ -76,7 +79,11 @@ export default function PasswordPromptState({
                 fullWidth
                 disabled={isLoading || !password.trim()}
               >
-                {isLoading ? '🔄 Unlocking...' : '🔓 Unlock Event'}
+                {isLoading ? (
+                  <><IconLoader size={18} className="inline mr-1 animate-spin" /> Unlocking...</>
+                ) : (
+                  <><IconLockOpen size={18} className="inline mr-1" /> Unlock Event</>
+                )}
               </Button>
 
               <div className="text-center pt-4">
