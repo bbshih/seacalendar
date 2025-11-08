@@ -17,11 +17,11 @@
     "@lukeed/uuid": "^2.0.1",
     "@seacalendar/shared": "*",
     "@tabler/icons-react": "^3.35.0",
-    "@tailwindcss/vite": "^4.1.16",
+    "@tailwindcss/vite": "^4.1.17",
     "lz-string": "^1.5.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.9.4"
+    "react-router-dom": "^7.9.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
