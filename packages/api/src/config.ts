@@ -21,9 +21,10 @@ while (rootDir !== '/') {
   rootDir = path.dirname(rootDir);
 }
 
-// Load .development then .development.local (local overrides development)
-dotenv.config({ path: path.join(rootDir, '.env.development') });
+// Load .development.local first, then .development (dotenv doesn't override existing vars)
+// This way .local takes precedence
 dotenv.config({ path: path.join(rootDir, '.env.development.local') });
+dotenv.config({ path: path.join(rootDir, '.env.development') });
 
 // Environment variable schema with validation
 const envSchema = z.object({
