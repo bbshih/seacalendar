@@ -1,6 +1,8 @@
 /**
  * Prisma enum types
  * Manual exports as workaround for environments where Prisma client generation is blocked
+ *
+ * NOTE: Only export enums here, not model types, to avoid conflicts with @prisma/client
  */
 
 export enum PollType {
@@ -20,11 +22,3 @@ export enum PollOptionType {
   DATE = 'DATE',
   TEXT = 'TEXT',
 }
-
-// Stub model types (actual types come from @prisma/client when properly generated)
-export type Poll = any;
-export type User = any;
-export type PollOption = any;
-export type QotwQuestion = any;
-export type QotwConfig = any;
-export type QotwHistory = any;

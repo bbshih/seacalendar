@@ -31,6 +31,12 @@ jobs:
           echo "🔨 Installing dependencies..."
           npm install
 
+          echo "🗄️ Running database migrations..."
+          cd packages/database
+          npx prisma migrate deploy
+          npx prisma generate
+          cd ../..
+
           echo "🏗️ Building packages..."
           npm run build
 
