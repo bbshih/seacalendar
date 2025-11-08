@@ -38,7 +38,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     // Create embed
     const embed = new EmbedBuilder()
       .setColor(0x0ea5e9)
-      .setTitle('🌊 Your Events')
+      .setTitle('Your Events')
       .setDescription(`You've created ${guildPolls.length} event${guildPolls.length !== 1 ? 's' : ''} in this server.`);
 
     // Add polls to embed (max 10)

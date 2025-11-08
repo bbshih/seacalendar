@@ -281,7 +281,7 @@ process.on('SIGTERM', shutdown);
  */
 async function main() {
   try {
-    console.log('🚀 Starting SeaCalendar Discord Bot...\n');
+    console.log('Starting SeaCalendar Discord Bot...\n');
 
     // Test database connection
     console.log('📊 Testing database connection...');

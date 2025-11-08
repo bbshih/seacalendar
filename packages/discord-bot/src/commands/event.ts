@@ -56,7 +56,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     // Create confirmation embed
     const embed = new EmbedBuilder()
       .setColor(0x0ea5e9) // Ocean blue
-      .setTitle('🌊 Event Preview')
+      .setTitle('Event Preview')
       .addFields(
         { name: '📋 Title', value: parsed.title, inline: false },
         { name: '📅 Dates', value: parsed.dates.slice(0, 10).map(d => `• ${formatDateOption(d)}`).join('\n') + (parsed.dates.length > 10 ? `\n...and ${parsed.dates.length - 10} more` : ''), inline: false },

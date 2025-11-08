@@ -48,7 +48,7 @@ async function deployCommands() {
   const rest = new REST().setToken(Config.discord.token);
 
   try {
-    console.log(`\n🚀 Started refreshing ${commands.length} application (/) commands...`);
+    console.log(`\nStarted refreshing ${commands.length} application (/) commands...`);
 
     // Deploy commands
     if (Config.discord.testGuildId && Config.isDevelopment) {

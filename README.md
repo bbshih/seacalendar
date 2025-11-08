@@ -66,4 +66,4 @@ seacalendar/
 
 ---
 
-Built with [Claude Code](https://claude.com/claude-code) 🌊
+Built with [Claude Code](https://claude.com/claude-code) 

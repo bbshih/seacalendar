@@ -125,7 +125,7 @@ function checkForNewBranches() {
   // Handle new branches
   console.log(`\n🚨 NEW CLAUDE BRANCHES DETECTED!\n`);
   newBranches.forEach(branch => {
-    console.log(`  ✨ ${branch}`);
+    console.log(`  ${branch}`);
     const commit = gitCommand(`rev-parse origin/${branch}`, { silent: true });
     handleNewBranch(branch, commit, true);
   });
@@ -169,7 +169,7 @@ function handleNewBranch(branch, commit, isNew) {
     console.log(`\n  ✅ Synced! Run: npm run dev`);
   } else {
     console.log(`\n  📥 To sync: git checkout ${branch} && npm install`);
-    console.log(`  🚀 Or run: npm run watch:auto (auto-sync enabled)`);
+    console.log(`  Or run: npm run watch:auto (auto-sync enabled)`);
   }
 
   // Update state
@@ -198,7 +198,7 @@ function cleanupState() {
 }
 
 // Main execution
-console.log('🌊 SeaCalendar - Claude Branch Watcher\n');
+console.log('SeaCalendar - Claude Branch Watcher\n');
 console.log('👀 Watching for Claude Code pushes...');
 console.log(`⏱️  Polling every ${POLL_INTERVAL / 1000} seconds`);
 console.log(`${AUTO_SYNC ? '🔄 Auto-sync: ENABLED' : '📋 Auto-sync: DISABLED (manual sync)'}\n`);

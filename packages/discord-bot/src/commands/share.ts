@@ -78,7 +78,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     // Create share embed
     const embed = new EmbedBuilder()
       .setColor(poll.status === 'VOTING' ? 0x0ea5e9 : 0x6b7280) // Blue if voting, gray if closed
-      .setTitle(`🌊 ${poll.title}`)
+      .setTitle(`${poll.title}`)
       .setDescription(poll.description || 'Vote on your availability!')
       .addFields(
         { name: '📈 Current Voters', value: `${totalVoters}`, inline: true },

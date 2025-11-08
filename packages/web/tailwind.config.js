@@ -7,39 +7,43 @@ export default {
   theme: {
     extend: {
       colors: {
-        ocean: {
-          50: '#f0f9ff',   // Foam white
-          100: '#e0f2fe',  // Light sky blue
-          200: '#b9e6fe',  // Light cyan
-          300: '#7dd3fc',  // Bright cyan
-          400: '#38bdf8',  // Sky blue
-          500: '#0ea5e9',  // Ocean blue (primary)
-          600: '#0284c7',  // Deep ocean
-          700: '#0369a1',  // Navy blue
-          800: '#075985',  // Dark navy
-          900: '#0c4a6e',  // Midnight blue
+        cyber: {
+          50: '#f0fdf4',   // Pale matrix green
+          100: '#dcfce7',  // Light neon green
+          200: '#bbf7d0',  // Soft matrix
+          300: '#86efac',  // Medium matrix
+          400: '#4ade80',  // Bright matrix
+          500: '#00ff41',  // Matrix green (primary)
+          600: '#16a34a',  // Deep matrix
+          700: '#15803d',  // Dark matrix
+          800: '#166534',  // Forest matrix
+          900: '#14532d',  // Midnight matrix
         },
-        coral: {
-          400: '#fb923c',  // Coral orange (accent)
-          500: '#f97316',
+        neon: {
+          400: '#ff10f0',  // Hot pink (accent)
+          500: '#ff006e',  // Deep pink
         },
-        sand: {
-          100: '#fef3c7',  // Light sand
-          200: '#fde68a',
-          300: '#fcd34d',
+        electric: {
+          100: '#e0e7ff',  // Light cyber blue
+          200: '#c7d2fe',  // Soft electric
+          300: '#a5b4fc',  // Medium electric
+          400: '#818cf8',  // Bright electric
+          500: '#6366f1',  // Electric blue
+          600: '#4f46e5',  // Deep electric
         },
-        seaweed: {
-          500: '#10b981',  // Sea green
-          600: '#059669',
+        chrome: {
+          500: '#d4d4d8',  // Silver chrome
+          600: '#a1a1aa',  // Dark chrome
         }
       },
       animation: {
-        // Original animations
-        'wave': 'wave 3s ease-in-out infinite',
-        'float': 'float 3s ease-in-out infinite',
-        'ripple': 'ripple 0.6s linear',
+        // Y2K digital animations
+        'glitch': 'glitch 1s linear infinite',
+        'matrix': 'matrix 20s linear infinite',
+        'scan': 'scan 2s linear infinite',
+        'pixel': 'pixel 0.6s linear',
 
-        // Gen Z experimental animations
+        // Cyber experimental animations
         'blob': 'blob 7s infinite',
         'spin-slow': 'spin 8s linear infinite',
         'wiggle': 'wiggle 1s ease-in-out infinite',
@@ -68,21 +72,28 @@ export default {
         'rainbow': 'rainbow 3s linear infinite',
       },
       keyframes: {
-        // Original keyframes
-        wave: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-10px)' },
+        // Y2K digital keyframes
+        glitch: {
+          '0%, 100%': { transform: 'translate(0)' },
+          '20%': { transform: 'translate(-2px, 2px)' },
+          '40%': { transform: 'translate(-2px, -2px)' },
+          '60%': { transform: 'translate(2px, 2px)' },
+          '80%': { transform: 'translate(2px, -2px)' },
         },
-        float: {
-          '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
-          '50%': { transform: 'translateY(-20px) rotate(5deg)' },
+        matrix: {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(100%)' },
         },
-        ripple: {
-          '0%': { transform: 'scale(0)', opacity: '1' },
-          '100%': { transform: 'scale(4)', opacity: '0' },
+        scan: {
+          '0%, 100%': { transform: 'translateY(-100%)' },
+          '50%': { transform: 'translateY(100%)' },
+        },
+        pixel: {
+          '0%': { transform: 'scale(0)', opacity: '1', filter: 'blur(0px)' },
+          '100%': { transform: 'scale(4)', opacity: '0', filter: 'blur(4px)' },
         },
 
-        // Gen Z experimental keyframes
+        // Cyber experimental keyframes
         blob: {
           '0%, 100%': {
             borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%',

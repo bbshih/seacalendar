@@ -14,7 +14,6 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4 flex items-center justify-center">
         <Card className="max-w-md w-full text-center">
-          <div className="animate-wave text-4xl mb-4">🌊</div>
           <p className="text-gray-600">Loading...</p>
         </Card>
       </div>

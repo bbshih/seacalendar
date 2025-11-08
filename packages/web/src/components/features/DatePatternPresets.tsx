@@ -11,17 +11,17 @@ export interface DatePatternPresetsProps {
 export default function DatePatternPresets({ onDatesSelected }: DatePatternPresetsProps) {
   const presets = [
     {
-      label: '🌊 Quarterly Weekends',
+      label: 'Quarterly Weekends',
       description: 'Fri-Sun for current + next 2 months',
       onClick: () => onDatesSelected(generateQuarterlyWeekends()),
     },
     {
-      label: '📅 Next 4 Weekends',
+      label: 'Next 4 Weekends',
       description: 'Fri-Sun for the next 4 weekends',
       onClick: () => onDatesSelected(generateNextWeekends(4, true)),
     },
     {
-      label: '🌅 This Weekend',
+      label: 'This Weekend',
       description: 'Fri-Sun for the upcoming weekend',
       onClick: () => onDatesSelected(generateThisWeekend(true)),
     },

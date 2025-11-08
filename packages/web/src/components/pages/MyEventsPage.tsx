@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { IconList, IconCheck, IconChecklist, IconChartBar } from '@tabler/icons-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Card from '../shared/Card';
 import Button from '../shared/Button';
@@ -59,13 +60,13 @@ export default function MyEventsPageDb() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'VOTING':
-        return <span className="px-2 py-1 bg-seaweed-100 text-seaweed-700 rounded text-xs font-medium">🟢 Voting Open</span>;
+        return <span className="px-2 py-1 bg-seaweed-100 text-seaweed-700 rounded text-xs font-medium">Voting Open</span>;
       case 'FINALIZED':
-        return <span className="px-2 py-1 bg-ocean-100 text-ocean-700 rounded text-xs font-medium">✅ Finalized</span>;
+        return <span className="px-2 py-1 bg-ocean-100 text-ocean-700 rounded text-xs font-medium"><IconCheck size={14} className="inline mr-1" /> Finalized</span>;
       case 'CANCELLED':
-        return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">❌ Cancelled</span>;
+        return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">Cancelled</span>;
       case 'EXPIRED':
-        return <span className="px-2 py-1 bg-coral-100 text-coral-700 rounded text-xs font-medium">⏰ Expired</span>;
+        return <span className="px-2 py-1 bg-coral-100 text-coral-700 rounded text-xs font-medium">Expired</span>;
       default:
         return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">{status}</span>;
     }
@@ -90,7 +91,6 @@ export default function MyEventsPageDb() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4 flex items-center justify-center">
         <Card className="max-w-md w-full text-center">
-          <div className="animate-wave text-4xl mb-4">🌊</div>
           <p className="text-gray-600">Loading your events...</p>
         </Card>
       </div>
@@ -108,7 +108,7 @@ export default function MyEventsPageDb() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
-              📋 My Events
+              <IconList size={40} className="inline mr-2" style={{ color: 'inherit', WebkitTextFillColor: 'currentColor' }} /> My Events
             </h1>
             <p className="text-lg text-ocean-700 font-semibold">
               Welcome back, {user?.username}!
@@ -131,7 +131,6 @@ export default function MyEventsPageDb() {
 
         {polls.length === 0 ? (
           <Card hover3d={false} className="text-center py-12 animate-fade-in">
-            <div className="text-6xl mb-4">🌊</div>
             <h2 className="text-2xl font-bold text-ocean-600 mb-2">
               No Events Yet
             </h2>
@@ -181,7 +180,7 @@ export default function MyEventsPageDb() {
                     {/* Voting Link */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        🗳️ Voting Link (Share with friends)
+                        <IconChecklist size={18} className="inline mr-1" /> Voting Link (Share with friends)
                       </label>
                       <div className="flex gap-2">
                         <input
@@ -201,7 +200,7 @@ export default function MyEventsPageDb() {
                     {/* Results Link */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        📊 Results Link
+                        <IconChartBar size={18} className="inline mr-1" /> Results Link
                       </label>
                       <div className="flex gap-2">
                         <input

@@ -86,7 +86,15 @@
       "Bash(docker cp:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr list:*)",
-      "Bash(/opt/seacalendar/packages/database/prisma/schema.prisma)"
+      "Bash(/opt/seacalendar/packages/database/prisma/schema.prisma)",
+      "Bash(npm run deploy-commands:*)",
+      "Bash(npm run dev:bot:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs sed:*)",
+      "Bash(find:*)",
+      "Bash({} ;)",
+      "Bash(ResultsPageDb.tsx)",
+      "Bash(CreateEventPage.tsx)"
     ],
     "deny": [],
     "ask": []

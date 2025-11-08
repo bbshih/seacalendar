@@ -110,7 +110,7 @@ export const Config = {
 
 // Log configuration on startup (hide secrets)
 if (!Config.isTest) {
-  console.log('🤖 Discord Bot Configuration:');
+  console.log('Discord Bot Configuration:');
   console.log(`  Environment: ${Config.nodeEnv}`);
   console.log(`  Database: ${Config.databaseUrl.replace(/:[^:@]+@/, ':***@')}`);
   console.log(`  Discord Token: ${Config.discord.token.substring(0, 20)}...`);
