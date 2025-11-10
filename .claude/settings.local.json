@@ -94,7 +94,8 @@
       "Bash(find:*)",
       "Bash({} ;)",
       "Bash(ResultsPageDb.tsx)",
-      "Bash(CreateEventPage.tsx)"
+      "Bash(CreateEventPage.tsx)",
+      "Bash(gh:*)"
     ],
     "deny": [],
     "ask": []
