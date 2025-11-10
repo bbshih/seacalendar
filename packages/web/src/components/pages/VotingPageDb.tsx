@@ -9,6 +9,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { usePoll } from "../../hooks/usePoll";
 import { api } from "../../utils/api";
+import { NotificationTemplates } from "../../utils/notifications";
 import Card from "../shared/Card";
 import Button from "../shared/Button";
 import Modal from "../shared/Modal";
@@ -61,6 +62,10 @@ export default function VotingPageDb() {
       );
 
       setShowSuccessModal(true);
+      // Show notification
+      if (poll) {
+        NotificationTemplates.voteSubmitted(poll.title, pollId || "");
+      }
     } catch (error) {
       console.error("Failed to submit vote:", error);
       setSubmitError(

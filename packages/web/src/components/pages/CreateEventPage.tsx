@@ -17,6 +17,7 @@ import CopyButton from "../shared/CopyButton";
 import CalendarMonthView from "../features/CalendarMonthView";
 import DatePatternPresets from "../features/DatePatternPresets";
 import { parseDateFromNaturalLanguage } from "../../utils/naturalLanguageDateParser";
+import { NotificationTemplates } from "../../utils/notifications";
 import type { DateOption } from "../../types/local";
 
 type OptionType = "DATE" | "TEXT";
@@ -243,6 +244,11 @@ export default function CreateEventPage() {
       setShowSuccessModal(true);
       // Clear draft on successful creation
       localStorage.removeItem(DRAFT_KEY);
+      // Show notification
+      NotificationTemplates.eventCreated(
+        data.data.poll.title,
+        data.data.poll.id,
+      );
     } catch (error) {
       console.error("Failed to create event:", error);
       setCreateError(
@@ -414,12 +420,19 @@ export default function CreateEventPage() {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {dateOptions.map((opt, i) => (
-                    <span
+                    <div
                       key={i}
-                      className="px-3 py-1 bg-ocean-100 text-ocean-700 rounded-full text-sm font-medium"
+                      className="px-3 py-1 bg-ocean-100 text-ocean-700 rounded-full text-sm font-medium flex items-center gap-2"
                     >
-                      {opt.label}
-                    </span>
+                      <span>{opt.label}</span>
+                      <button
+                        onClick={() => handleRemoveDate(opt.id)}
+                        className="hover:text-red-600 transition-colors"
+                        aria-label={`Remove ${opt.label}`}
+                      >
+                        ✕
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
