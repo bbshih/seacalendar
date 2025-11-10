@@ -36,16 +36,16 @@ jobs:
 
           echo "🗄️ Running database migrations..."
           # Build migration image from our own Dockerfile for security
-          docker build -t seacalendar-migrate -f- . <<'DOCKERFILE'
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-COPY packages/database ./packages/database
-COPY packages/shared ./packages/shared
-RUN npm install --workspace=@seacalendar/database --production
-WORKDIR /app/packages/database
-CMD ["npx", "prisma", "migrate", "deploy"]
-DOCKERFILE
+          docker build -t seacalendar-migrate -f- . <<'EOF'
+          FROM node:20-alpine
+          WORKDIR /app
+          COPY package*.json ./
+          COPY packages/database ./packages/database
+          COPY packages/shared ./packages/shared
+          RUN npm install --workspace=@seacalendar/database --production
+          WORKDIR /app/packages/database
+          CMD ["npx", "prisma", "migrate", "deploy"]
+          EOF
 
           docker run --rm \
             --network seacalendar_seacalendar \
