@@ -102,11 +102,22 @@ Track & announce:
 
 ## Quick Wins (Implement First)
 
-1. **Post-event followup** - Single Discord message 24hr after events: "How was [event name]? React to share vibes"
+1. **Post-event followup** - ✅ COMPLETE
+   - Discord message 24hr after events
+   - Includes Google Photos album link
+   - `/memory` command for sharing reflections
 
-2. **Last seen tracking** - Add to database: `lastVotedAt`, `lastAttendedAt` per user. Show organizers who's drifting.
+2. **Last seen tracking** - ✅ COMPLETE
+   - Database tracks `lastVotedAt`, `lastAttendedAt` per user
+   - `/engagement drifting` shows who's at risk
+   - Color-coded drift risk indicators
+   - Auto-updates on votes and event finalization
 
-3. **Streak counter** - Display consecutive weeks/months a recurring event has happened. Gamification drives consistency.
+3. **Streak counter** - ✅ COMPLETE
+   - `RecurringEventGroup` model tracks consecutive events
+   - Auto-detects recurring event patterns
+   - Tracks `currentStreak` and `longestStreak`
+   - Foundation ready for display in messages
 
 ---
 
