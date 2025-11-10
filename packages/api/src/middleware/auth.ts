@@ -14,10 +14,10 @@ declare global {
     interface Request {
       user?: {
         id: string;
-        discordId: string;
+        discordId: string | null;
         email?: string;
         username: string;
-        discriminator: string;
+        discriminator: string | null;
         avatar?: string | null;
       };
     }
