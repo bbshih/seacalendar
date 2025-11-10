@@ -69,7 +69,7 @@ export default function DateListView({
                       <td className="px-4 py-3 text-center">
                         <button
                           onClick={() => onRemoveDate(dateInfo.dateOption.id)}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-red-50 text-red-600 hover:bg-red-100 border border-red-300 rounded-lg transition-colors"
+                          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-red-50 text-red-600 hover:bg-red-100 border border-red-300 rounded-lg transition-colors cursor-pointer"
                           aria-label="Remove date"
                         >
                           <svg

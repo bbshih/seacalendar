@@ -161,7 +161,7 @@ export default function VotingPageDb() {
                       setMaybeOptions(prev => prev.filter(id => id !== option.id));
                     }
                   }}
-                  className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                  className={`w-full p-4 rounded-lg border-2 transition-all text-left cursor-pointer ${
                     isAvailable
                       ? 'border-seaweed-500 bg-seaweed-50'
                       : isMaybe
