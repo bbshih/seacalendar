@@ -11,12 +11,18 @@ export interface UserEngagement {
   username: string;
   lastVotedAt: Date | null;
   lastAttendedAt: Date | null;
+  lastMemorySharedAt: Date | null;
+  lastInteractionAt: Date | null;
   totalEventsCreated: number;
   totalEventsAttended: number;
+  totalVirtualEvents: number;
   totalVotesCast: number;
+  totalMemoriesShared: number;
   daysSinceLastVote: number | null;
   daysSinceLastAttended: number | null;
+  daysSinceLastInteraction: number | null;
   driftRisk: 'low' | 'medium' | 'high';
+  roles: string[];  // Discord role names
 }
 
 export interface GuildEngagementStats {
@@ -60,8 +66,12 @@ export async function trackAttendance(pollId: string, attendeeIds: string[]): Pr
 
 /**
  * Get engagement for all users in a guild
+ * @param roleFilter Optional role ID to filter by (e.g., "Local" role)
  */
-export async function getGuildEngagement(guildId: string): Promise<UserEngagement[]> {
+export async function getGuildEngagement(
+  guildId: string,
+  roleFilter?: string
+): Promise<UserEngagement[]> {
   // Get all users who have interacted with polls in this guild
   const polls = await prisma.poll.findMany({
     where: { guildId },
@@ -86,18 +96,61 @@ export async function getGuildEngagement(guildId: string): Promise<UserEngagemen
   votes.forEach(v => userIds.add(v.voterId));
   invites.forEach(i => userIds.add(i.userId));
 
+  // Filter by role if specified
+  if (roleFilter) {
+    const roleMembers = await prisma.guildMemberRole.findMany({
+      where: {
+        guildId,
+        roleId: roleFilter,
+      },
+      select: { userId: true },
+    });
+
+    const roleUserIds = new Set(roleMembers.map(m => m.userId));
+    userIds.forEach(uid => {
+      if (!roleUserIds.has(uid)) {
+        userIds.delete(uid);
+      }
+    });
+  }
+
   // Get user stats
   const users = await prisma.user.findMany({
     where: { id: { in: Array.from(userIds) } },
     select: {
       id: true,
       username: true,
+      discordId: true,
       lastVotedAt: true,
       lastAttendedAt: true,
+      lastMemorySharedAt: true,
+      lastInteractionAt: true,
       totalEventsCreated: true,
       totalEventsAttended: true,
+      totalVirtualEvents: true,
       totalVotesCast: true,
+      totalMemoriesShared: true,
     },
+  });
+
+  // Get roles for each user
+  const userRoles = await prisma.guildMemberRole.findMany({
+    where: {
+      guildId,
+      userId: { in: Array.from(userIds) },
+    },
+    select: {
+      userId: true,
+      roleName: true,
+    },
+  });
+
+  const rolesByUser = new Map<string, string[]>();
+  userRoles.forEach(ur => {
+    if (!rolesByUser.has(ur.userId)) {
+      rolesByUser.set(ur.userId, []);
+    }
+    rolesByUser.get(ur.userId)!.push(ur.roleName);
   });
 
   const now = DateTime.now();
@@ -111,7 +164,12 @@ export async function getGuildEngagement(guildId: string): Promise<UserEngagemen
       ? now.diff(DateTime.fromJSDate(user.lastAttendedAt), 'days').days
       : null;
 
-    const daysSinceActivity = Math.min(
+    const daysSinceLastInteraction = user.lastInteractionAt
+      ? now.diff(DateTime.fromJSDate(user.lastInteractionAt), 'days').days
+      : null;
+
+    // Use lastInteractionAt for drift risk (includes votes, attendance, memories)
+    const daysSinceActivity = daysSinceLastInteraction ?? Math.min(
       daysSinceLastVote ?? Infinity,
       daysSinceLastAttended ?? Infinity
     );
@@ -128,21 +186,31 @@ export async function getGuildEngagement(guildId: string): Promise<UserEngagemen
       username: user.username,
       lastVotedAt: user.lastVotedAt,
       lastAttendedAt: user.lastAttendedAt,
+      lastMemorySharedAt: user.lastMemorySharedAt,
+      lastInteractionAt: user.lastInteractionAt,
       totalEventsCreated: user.totalEventsCreated,
       totalEventsAttended: user.totalEventsAttended,
+      totalVirtualEvents: user.totalVirtualEvents,
       totalVotesCast: user.totalVotesCast,
+      totalMemoriesShared: user.totalMemoriesShared,
       daysSinceLastVote,
       daysSinceLastAttended,
+      daysSinceLastInteraction,
       driftRisk,
+      roles: rolesByUser.get(user.discordId || '') || [],
     };
   });
 }
 
 /**
  * Get summary stats for a guild
+ * @param roleFilter Optional role ID to filter by
  */
-export async function getGuildEngagementStats(guildId: string): Promise<GuildEngagementStats> {
-  const engagement = await getGuildEngagement(guildId);
+export async function getGuildEngagementStats(
+  guildId: string,
+  roleFilter?: string
+): Promise<GuildEngagementStats> {
+  const engagement = await getGuildEngagement(guildId, roleFilter);
 
   const activeUsers = engagement.filter(u => {
     const days = Math.min(

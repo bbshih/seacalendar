@@ -19,16 +19,34 @@ export const data = new SlashCommandBuilder()
     subcommand
       .setName('stats')
       .setDescription('View server engagement statistics')
+      .addRoleOption(option =>
+        option
+          .setName('role')
+          .setDescription('Filter by role (e.g., "Local" or "Remote")')
+          .setRequired(false)
+      )
   )
   .addSubcommand(subcommand =>
     subcommand
       .setName('leaderboard')
       .setDescription('View most engaged members')
+      .addRoleOption(option =>
+        option
+          .setName('role')
+          .setDescription('Filter by role')
+          .setRequired(false)
+      )
   )
   .addSubcommand(subcommand =>
     subcommand
       .setName('drifting')
       .setDescription('See members who might be drifting away')
+      .addRoleOption(option =>
+        option
+          .setName('role')
+          .setDescription('Filter by role')
+          .setRequired(false)
+      )
   );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -55,7 +73,13 @@ async function handleStats(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
-    const stats = await engagementService.getGuildEngagementStats(interaction.guildId!);
+    const role = interaction.options.getRole('role');
+    const roleFilter = role?.id;
+
+    const stats = await engagementService.getGuildEngagementStats(
+      interaction.guildId!,
+      roleFilter
+    );
 
     const activePercent = stats.totalUsers > 0
       ? Math.round((stats.activeUsers / stats.totalUsers) * 100)
@@ -63,8 +87,8 @@ async function handleStats(interaction: ChatInputCommandInteraction) {
 
     const embed = new EmbedBuilder()
       .setColor('#00ff41')
-      .setTitle('📊 Server Engagement Stats')
-      .setDescription('How engaged is your friend group?')
+      .setTitle(role ? `📊 Engagement: @${role.name}` : '📊 Server Engagement Stats')
+      .setDescription(role ? `Stats for members with @${role.name} role` : 'How engaged is your friend group?')
       .addFields(
         {
           name: '👥 Total Members',
@@ -110,7 +134,13 @@ async function handleLeaderboard(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
-    const stats = await engagementService.getGuildEngagementStats(interaction.guildId!);
+    const role = interaction.options.getRole('role');
+    const roleFilter = role?.id;
+
+    const stats = await engagementService.getGuildEngagementStats(
+      interaction.guildId!,
+      roleFilter
+    );
 
     if (stats.topEngaged.length === 0) {
       await interaction.editReply({
@@ -121,8 +151,8 @@ async function handleLeaderboard(interaction: ChatInputCommandInteraction) {
 
     const embed = new EmbedBuilder()
       .setColor('#00ff41')
-      .setTitle('🏆 Most Engaged Members')
-      .setDescription('Your most active community members')
+      .setTitle(role ? `🏆 Leaderboard: @${role.name}` : '🏆 Most Engaged Members')
+      .setDescription(role ? `Top @${role.name} members` : 'Your most active community members')
       .setTimestamp();
 
     const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
@@ -155,7 +185,13 @@ async function handleDrifting(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
-    const stats = await engagementService.getGuildEngagementStats(interaction.guildId!);
+    const role = interaction.options.getRole('role');
+    const roleFilter = role?.id;
+
+    const stats = await engagementService.getGuildEngagementStats(
+      interaction.guildId!,
+      roleFilter
+    );
 
     if (stats.needsAttention.length === 0) {
       const embed = new EmbedBuilder()
@@ -170,8 +206,8 @@ async function handleDrifting(interaction: ChatInputCommandInteraction) {
 
     const embed = new EmbedBuilder()
       .setColor('#ff6b6b')
-      .setTitle('⚠️ Members Who Might Be Drifting')
-      .setDescription('Consider reaching out to these friends!')
+      .setTitle(role ? `⚠️ Drifting: @${role.name}` : '⚠️ Members Who Might Be Drifting')
+      .setDescription(role ? `@${role.name} members who need attention` : 'Consider reaching out to these friends!')
       .setTimestamp();
 
     for (const user of stats.needsAttention) {

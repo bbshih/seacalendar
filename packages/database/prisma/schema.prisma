@@ -22,6 +22,9 @@ model Poll {
   title       String
   description String?
 
+  // Event location type
+  locationType EventLocationType @default(IN_PERSON)
+
   // Ownership
   creatorId   String
   creator     User       @relation(fields: [creatorId], references: [id])
@@ -74,6 +77,12 @@ enum PollStatus {
   FINALIZED
   CANCELLED
   EXPIRED
+}
+
+enum EventLocationType {
+  IN_PERSON  // Physical location
+  VIRTUAL    // Online only
+  HYBRID     // Both in-person and virtual options
 }
 
 enum PollOptionType {
@@ -182,11 +191,16 @@ model User {
   requireDiscordLink Boolean @default(false) // Must link Discord within deadline
 
   // Engagement tracking (for friendship health)
-  lastVotedAt     DateTime?  // Last time user voted on any poll
-  lastAttendedAt  DateTime?  // Last time user attended a finalized event
-  totalEventsCreated Int @default(0)  // Events created by user
-  totalEventsAttended Int @default(0) // Events attended
-  totalVotesCast   Int @default(0)    // Total votes cast
+  lastVotedAt         DateTime?  // Last time user voted on any poll
+  lastAttendedAt      DateTime?  // Last time user attended a finalized event
+  lastMemorySharedAt  DateTime?  // Last time user shared a memory
+  lastInteractionAt   DateTime?  // Most recent of any engagement activity
+
+  totalEventsCreated  Int @default(0)  // Events created by user
+  totalEventsAttended Int @default(0)  // Events attended (in-person)
+  totalVirtualEvents  Int @default(0)  // Virtual events participated in
+  totalVotesCast      Int @default(0)  // Total votes cast
+  totalMemoriesShared Int @default(0)  // Memories/reflections shared
 
   // Preferences
   preferences     UserPreferences?
@@ -542,6 +556,21 @@ model EventAttendance {
   @@unique([pollId, userId])
   @@index([userId, attendedAt])
   @@index([pollId])
+}
+
+model GuildMemberRole {
+  id          String   @id @default(uuid())
+  guildId     String
+  userId      String   // Discord user ID
+  roleId      String   // Discord role ID
+  roleName    String   // Cached role name (e.g., "Local", "Remote", "Alumni")
+
+  addedAt     DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([guildId, userId, roleId])
+  @@index([guildId, roleId])
+  @@index([userId])
 }
 
 model RecurringEventGroup {
