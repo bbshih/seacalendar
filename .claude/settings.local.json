@@ -96,6 +96,11 @@
       "Bash(ResultsPageDb.tsx)",
       "Bash(CreateEventPage.tsx)",
       "Bash(gh:*)"
+      "Bash(systemctl cat:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(timeout 60 npm run build:*)"
     ],
     "deny": [],
     "ask": []

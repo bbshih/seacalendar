@@ -32,7 +32,7 @@ export default function Button({
   };
 
   const baseStyles =
-    "font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-visible active:translate-y-1 active:brightness-90";
+    "font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-visible active:translate-y-1 active:brightness-90 cursor-pointer";
 
   const variantStyles = {
     primary: "bg-gradient-to-br from-ocean-400 to-ocean-600 hover:brightness-110 border-[3px] border-ocean-200/60 transform hover:-translate-y-1 shadow-[0_8px_32px_0_rgba(14,116,144,0.5),0_6px_0_0_rgb(7,89,133),inset_0_3px_8px_0_rgba(255,255,255,0.6),inset_0_-3px_8px_0_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_0_rgba(14,116,144,0.7),0_8px_0_0_rgb(7,89,133),inset_0_4px_10px_0_rgba(255,255,255,0.7),inset_0_-4px_10px_0_rgba(0,0,0,0.4)]",

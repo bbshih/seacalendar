@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { config } from '../config';
-import { ApiError } from '../utils/errors';
+import { ErrorFactory } from '../middleware/errorHandler';
 import { prisma } from '@seacalendar/database';
 
 interface GoogleTokenResponse {
@@ -20,6 +20,7 @@ interface GoogleUserInfo {
   family_name?: string;
   picture: string;
   locale?: string;
+  [key: string]: unknown;
 }
 
 export const googleService = {
@@ -61,7 +62,7 @@ export const googleService = {
       return response.data;
     } catch (error: any) {
       console.error('Google token exchange error:', error.response?.data || error.message);
-      throw new ApiError('Failed to exchange Google authorization code', 500, 'GOOGLE_TOKEN_ERROR');
+      throw ErrorFactory.internal('Failed to exchange Google authorization code');
     }
   },
 
@@ -82,7 +83,7 @@ export const googleService = {
       return response.data;
     } catch (error: any) {
       console.error('Google user info error:', error.response?.data || error.message);
-      throw new ApiError('Failed to fetch Google user info', 500, 'GOOGLE_API_ERROR');
+      throw ErrorFactory.internal('Failed to fetch Google user info');
     }
   },
 
@@ -104,7 +105,7 @@ export const googleService = {
       return response.data;
     } catch (error: any) {
       console.error('Google token refresh error:', error.response?.data || error.message);
-      throw new ApiError('Failed to refresh Google access token', 500, 'GOOGLE_REFRESH_ERROR');
+      throw ErrorFactory.internal('Failed to refresh Google access token');
     }
   },
 
@@ -119,11 +120,7 @@ export const googleService = {
     const tokens = await this.exchangeCode(code);
 
     if (!tokens.refresh_token) {
-      throw new ApiError(
-        'No refresh token received. User may need to re-authorize.',
-        400,
-        'NO_REFRESH_TOKEN'
-      );
+      throw ErrorFactory.badRequest('No refresh token received. User may need to re-authorize.');
     }
 
     // Get user info
@@ -144,11 +141,7 @@ export const googleService = {
       });
 
       if (existingProvider && existingProvider.userId !== existingUserId) {
-        throw new ApiError(
-          'This Google account is already linked to another user',
-          400,
-          'GOOGLE_ALREADY_LINKED'
-        );
+        throw ErrorFactory.badRequest('This Google account is already linked to another user');
       }
 
       // Create or update Google auth provider
@@ -167,14 +160,14 @@ export const googleService = {
           refreshToken: tokens.refresh_token,
           expiresAt,
           scope: tokens.scope,
-          providerData: googleUser,
+          providerData: googleUser as any,
         },
         update: {
           accessToken: tokens.access_token,
           refreshToken: tokens.refresh_token,
           expiresAt,
           scope: tokens.scope,
-          providerData: googleUser,
+          providerData: googleUser as any,
         },
       });
 
@@ -254,7 +247,7 @@ export const googleService = {
             refreshToken: tokens.refresh_token,
             expiresAt,
             scope: tokens.scope,
-            providerData: googleUser,
+            providerData: googleUser as any,
           },
         },
       },
