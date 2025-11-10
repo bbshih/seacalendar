@@ -502,6 +502,10 @@ model EventFollowup {
   messageId       String?   // ID of follow-up message sent
   channelId       String?
 
+  // Google Photos integration
+  photoAlbumUrl   String?   // Shared Google Photos album URL
+  photoAlbumId    String?   // Google Photos album ID
+
   @@index([status, scheduledFor])
 }
 

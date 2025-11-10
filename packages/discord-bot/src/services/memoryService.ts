@@ -5,6 +5,7 @@
 
 import { prisma, Poll, EventMemory, EventFollowup, MemoryType } from '@seacalendar/database';
 import { DateTime } from 'luxon';
+import * as googlePhotos from './googlePhotosService.js';
 
 export interface CreateMemoryInput {
   pollId: string;
@@ -22,16 +23,37 @@ export interface AddReactionInput {
 
 /**
  * Create event followup when poll is finalized
+ * Optionally creates Google Photos album
  */
 export async function scheduleFollowup(poll: Poll, finalizedDate: DateTime): Promise<EventFollowup> {
   // Schedule followup for 24 hours after event
   const scheduledFor = finalizedDate.plus({ hours: 24 }).toJSDate();
+
+  // Try to create Google Photos album
+  let photoAlbumUrl: string | undefined;
+  let photoAlbumId: string | undefined;
+
+  if (googlePhotos.isConfigured()) {
+    try {
+      const album = await googlePhotos.createSharedAlbum(
+        `${poll.title} - ${finalizedDate.toFormat('MMM dd, yyyy')}`
+      );
+      photoAlbumUrl = album.shareUrl;
+      photoAlbumId = album.albumId;
+      console.log(`✅ Created Google Photos album for poll ${poll.id}: ${album.shareUrl}`);
+    } catch (error) {
+      console.error(`⚠️  Failed to create Google Photos album for poll ${poll.id}:`, error);
+      // Continue without album - not critical
+    }
+  }
 
   return prisma.eventFollowup.create({
     data: {
       pollId: poll.id,
       scheduledFor,
       channelId: poll.channelId || undefined,
+      photoAlbumUrl,
+      photoAlbumId,
     },
   });
 }

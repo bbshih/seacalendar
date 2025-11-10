@@ -266,10 +266,20 @@ async function initializeCronJobs() {
           const guild = await client.guilds.fetch(poll.guildId || '');
           const channel = await guild.channels.fetch(followup.channelId) as TextChannel;
 
+          // Build followup message
+          let content = `## 💭 How was "${poll.title}"?\n\n`;
+
+          if (followup.photoAlbumUrl) {
+            content += `📸 **Upload photos:** ${followup.photoAlbumUrl}\n_(Everyone can add photos to the shared album!)_\n\n`;
+          }
+
+          content += `Share your thoughts:\n`;
+          content += `• Use \`/memory add\` for text reflections\n`;
+          content += `• Upload photos to the album above\n\n`;
+          content += `🔗 Event: https://cal.billyeatstofu.com/events/${poll.id}`;
+
           // Send followup message
-          const message = await channel.send({
-            content: `## 💭 How was "${poll.title}"?\n\nShare your thoughts, photos, or favorite moments! Use \`/memory\` to add memories to this event.\n\n🔗 Event: https://cal.billyeatstofu.com/events/${poll.id}`,
-          });
+          const message = await channel.send({ content });
 
           await memoryService.markFollowupSent(followup.id, message.id);
           console.log(`✅ Sent followup for poll ${poll.id}`);
