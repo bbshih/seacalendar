@@ -44,6 +44,7 @@ model Poll {
   votes       Vote[]
   invites     PollInvite[]
   reminders   EventReminder[]
+  memories    EventMemory[]
 
   // Event-specific (null for generic polls)
   finalizedOptionId String?
@@ -442,6 +443,73 @@ model CalendarEvent {
   @@unique([calendarConnectionId, providerEventId])
   @@index([calendarConnectionId, startTime, endTime])
   @@index([startTime, endTime])
+}
+
+// ============================================================================
+// Event Memories & Reflections
+// ============================================================================
+
+model EventMemory {
+  id              String   @id @default(uuid())
+  pollId          String
+  poll            Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  // Memory content
+  type            MemoryType
+  content         String?  // Text reflection or photo caption
+  photoUrl        String?  // S3/storage URL for photos
+
+  // Authorship
+  userId          String
+  submittedAt     DateTime @default(now())
+
+  // Engagement
+  reactions       MemoryReaction[]
+
+  @@index([pollId, submittedAt])
+  @@index([userId])
+}
+
+enum MemoryType {
+  REFLECTION  // Text: "How was the event?"
+  PHOTO       // Shared photo
+  HIGHLIGHT   // Memorable moment
+}
+
+model MemoryReaction {
+  id        String   @id @default(uuid())
+  memoryId  String
+  memory    EventMemory @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+
+  userId    String
+  emoji     String   // e.g., "❤️", "😂", "🔥"
+  reactedAt DateTime @default(now())
+
+  @@unique([memoryId, userId, emoji])
+  @@index([memoryId])
+}
+
+model EventFollowup {
+  id              String   @id @default(uuid())
+  pollId          String   @unique
+
+  // Scheduling
+  scheduledFor    DateTime  // 24hr after event finalizedOptionId datetime
+  sentAt          DateTime?
+  status          FollowupStatus @default(PENDING)
+
+  // Discord context
+  messageId       String?   // ID of follow-up message sent
+  channelId       String?
+
+  @@index([status, scheduledFor])
+}
+
+enum FollowupStatus {
+  PENDING
+  SENT
+  SKIPPED  // Event was cancelled
+  FAILED
 }
 
 // ============================================================================
