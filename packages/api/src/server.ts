@@ -3,15 +3,15 @@
  * Express server with Discord OAuth, WebSocket support, and RESTful API
  */
 
-import express, { Express } from 'express';
-import http from 'http';
-import { Server as SocketIOServer } from 'socket.io';
-import { prisma } from '@seacalendar/database';
-import { Config } from './config';
-import { helmetConfig, corsConfig } from './middleware/security';
-import { generalLimiter } from './middleware/rateLimit';
-import { requestLogger, logger } from './middleware/logger';
-import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import express, { Express } from "express";
+import http from "http";
+import { Server as SocketIOServer } from "socket.io";
+import { prisma } from "@seacalendar/database";
+import { Config } from "./config";
+import { helmetConfig, corsConfig } from "./middleware/security";
+import { generalLimiter } from "./middleware/rateLimit";
+import { requestLogger, logger } from "./middleware/logger";
+import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 
 // Create Express app
 const app: Express = express();
@@ -34,40 +34,40 @@ app.use(requestLogger); // Request logging
 app.use(generalLimiter); // Rate limiting
 
 // Health check endpoint (both paths for compatibility)
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   res.json({
     success: true,
-    message: 'SeaCalendar API is running',
+    message: "SeaCalendar API is running",
     timestamp: new Date().toISOString(),
     environment: Config.nodeEnv,
   });
 });
 
-app.get('/api/health', (req, res) => {
+app.get("/api/health", (req, res) => {
   res.json({
     success: true,
-    message: 'SeaCalendar API is running',
+    message: "SeaCalendar API is running",
     timestamp: new Date().toISOString(),
     environment: Config.nodeEnv,
   });
 });
 
 // Import routes
-import authRoutes from './routes/auth';
-import pollRoutes from './routes/polls';
-import voteRoutes from './routes/votes';
-import userRoutes from './routes/users';
-import utilsRoutes from './routes/utils';
+import authRoutes from "./routes/auth";
+import pollRoutes from "./routes/polls";
+import voteRoutes from "./routes/votes";
+import userRoutes from "./routes/users";
+import utilsRoutes from "./routes/utils";
 
 // Register API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/polls', pollRoutes);
-app.use('/api', voteRoutes); // Vote routes include /api/polls/:pollId/vote
-app.use('/api/users', userRoutes);
-app.use('/api/utils', utilsRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/polls", pollRoutes);
+app.use("/api", voteRoutes); // Vote routes include /api/polls/:pollId/vote
+app.use("/api/users", userRoutes);
+app.use("/api/utils", utilsRoutes);
 
 // Import and initialize Socket.io handlers
-import { initializeSocketHandlers } from './sockets';
+import { initializeSocketHandlers } from "./sockets";
 initializeSocketHandlers(io);
 
 // 404 handler
@@ -82,31 +82,31 @@ const gracefulShutdown = async (signal: string) => {
 
   // Close server
   server.close(() => {
-    logger.info('HTTP server closed');
+    logger.info("HTTP server closed");
   });
 
   // Close Socket.io connections
   io.close(() => {
-    logger.info('Socket.io connections closed');
+    logger.info("Socket.io connections closed");
   });
 
   // Disconnect Prisma
   await prisma.$disconnect();
-  logger.info('Database connection closed');
+  logger.info("Database connection closed");
 
   process.exit(0);
 };
 
 // Register shutdown handlers
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
 // Start server
 const startServer = async () => {
   try {
     // Test database connection
     await prisma.$connect();
-    logger.info('✅ Database connected');
+    logger.info("✅ Database connected");
 
     // Start listening
     server.listen(Config.port, () => {
@@ -116,9 +116,9 @@ const startServer = async () => {
     });
 
     // Export io for use in other modules
-    app.set('io', io);
+    app.set("io", io);
   } catch (error) {
-    logger.error('Failed to start server', { error });
+    logger.error("Failed to start server", { error });
     process.exit(1);
   }
 };

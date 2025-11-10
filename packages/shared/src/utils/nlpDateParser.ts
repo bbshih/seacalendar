@@ -3,8 +3,16 @@
  * Parses event descriptions to extract dates and details using chrono-node
  */
 
-import * as chrono from 'chrono-node';
-import { addDays, addWeeks, addMonths, startOfDay, endOfWeek, startOfWeek, format } from 'date-fns';
+import * as chrono from "chrono-node";
+import {
+  addDays,
+  addWeeks,
+  addMonths,
+  startOfDay,
+  endOfWeek,
+  startOfWeek,
+  format,
+} from "date-fns";
 
 export interface ParsedEvent {
   title: string;
@@ -29,23 +37,26 @@ export interface ParsedEvent {
  */
 export function parseEventDescription(text: string): ParsedEvent {
   const parsed: ParsedEvent = {
-    title: '',
+    title: "",
     dates: [],
     times: [],
-    description: '',
+    description: "",
     raw: text,
   };
 
   // Check for "weekends? (for|over) (the )?next X (months?|weeks?)" pattern
-  const weekendsNextPattern = /weekends?\s+(?:for|over)\s+(?:the\s+)?next\s+(\d+)\s+(months?|weeks?)/i;
+  const weekendsNextPattern =
+    /weekends?\s+(?:for|over)\s+(?:the\s+)?next\s+(\d+)\s+(months?|weeks?)/i;
   const weekendsNextMatch = text.match(weekendsNextPattern);
 
   // Check for "every [day(s)] (this|next) (and next )?(week|month)" pattern
-  const everyDayWeekPattern = /every\s+((?:friday|saturday|sunday|monday|tuesday|wednesday|thursday)(?:\s+and\s+(?:friday|saturday|sunday|monday|tuesday|wednesday|thursday))*)\s+(this|next)\s+(?:and\s+next\s+)?(week|month)/i;
+  const everyDayWeekPattern =
+    /every\s+((?:friday|saturday|sunday|monday|tuesday|wednesday|thursday)(?:\s+and\s+(?:friday|saturday|sunday|monday|tuesday|wednesday|thursday))*)\s+(this|next)\s+(?:and\s+next\s+)?(week|month)/i;
   const everyDayWeekMatch = text.match(everyDayWeekPattern);
 
   // Check for "every [day(s)] in [month/year]" pattern
-  const everyPattern = /every\s+(weekend|weekday|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\s+in\s+(\w+)/i;
+  const everyPattern =
+    /every\s+(weekend|weekday|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\s+in\s+(\w+)/i;
   const everyMatch = text.match(everyPattern);
 
   if (weekendsNextMatch) {
@@ -56,7 +67,7 @@ export function parseEventDescription(text: string): ParsedEvent {
     const now = startOfDay(new Date());
     let endDate: Date;
 
-    if (unit.startsWith('month')) {
+    if (unit.startsWith("month")) {
       endDate = addMonths(now, count);
     } else {
       endDate = addWeeks(now, count);
@@ -72,7 +83,7 @@ export function parseEventDescription(text: string): ParsedEvent {
   } else if (everyDayWeekMatch) {
     const daysText = everyDayWeekMatch[1];
     const timeframe = everyDayWeekMatch[2]; // "this" or "next"
-    const hasNext = text.includes('and next');
+    const hasNext = text.includes("and next");
 
     // Parse all mentioned days
     const daysOfWeek = parseDayOfWeek(daysText);
@@ -88,13 +99,19 @@ export function parseEventDescription(text: string): ParsedEvent {
 
       // If "this and next week", add next week too
       if (hasNext) {
-        const nextWeekResult = chrono.parse('next week');
+        const nextWeekResult = chrono.parse("next week");
         if (nextWeekResult.length > 0) {
           const nextWeekDate = nextWeekResult[0].start.date();
           const nextWeekStart = startOfWeek(nextWeekDate, { weekStartsOn: 0 });
           const nextWeekEnd = endOfWeek(nextWeekDate, { weekStartsOn: 0 });
-          const nextWeekDates = generateDateRange(nextWeekStart, nextWeekEnd, daysOfWeek);
-          parsed.dates = [...parsed.dates, ...nextWeekDates].sort((a, b) => a.getTime() - b.getTime());
+          const nextWeekDates = generateDateRange(
+            nextWeekStart,
+            nextWeekEnd,
+            daysOfWeek,
+          );
+          parsed.dates = [...parsed.dates, ...nextWeekDates].sort(
+            (a, b) => a.getTime() - b.getTime(),
+          );
         }
       }
     }
@@ -117,9 +134,9 @@ export function parseEventDescription(text: string): ParsedEvent {
 
       // Determine which days of week to include
       let daysOfWeek: number[] = [];
-      if (dayType === 'weekend') {
+      if (dayType === "weekend") {
         daysOfWeek = [6, 0]; // Saturday and Sunday
-      } else if (dayType === 'weekday') {
+      } else if (dayType === "weekday") {
         daysOfWeek = [1, 2, 3, 4, 5]; // Monday-Friday
       } else {
         // Parse specific day
@@ -139,7 +156,10 @@ export function parseEventDescription(text: string): ParsedEvent {
       // Extract dates, filtering out vague time references
       for (const result of chronoResults) {
         // Skip vague references like "night", "morning", "evening" without specific dates
-        if (result.text.match(/^(night|morning|evening|afternoon)$/i) && !result.start.isCertain('day')) {
+        if (
+          result.text.match(/^(night|morning|evening|afternoon)$/i) &&
+          !result.start.isCertain("day")
+        ) {
           continue;
         }
 
@@ -147,8 +167,8 @@ export function parseEventDescription(text: string): ParsedEvent {
         parsed.dates.push(date);
 
         // Extract time if present
-        if (result.start.isCertain('hour')) {
-          const time = format(date, 'h:mm a');
+        if (result.start.isCertain("hour")) {
+          const time = format(date, "h:mm a");
           if (!parsed.times.includes(time)) {
             parsed.times.push(time);
           }
@@ -156,8 +176,10 @@ export function parseEventDescription(text: string): ParsedEvent {
       }
 
       // Remove duplicate dates
-      parsed.dates = Array.from(new Set(parsed.dates.map(d => d.toISOString())))
-        .map(iso => new Date(iso))
+      parsed.dates = Array.from(
+        new Set(parsed.dates.map((d) => d.toISOString())),
+      )
+        .map((iso) => new Date(iso))
         .sort((a, b) => a.getTime() - b.getTime());
     }
   }
@@ -180,7 +202,10 @@ export function parseEventDescription(text: string): ParsedEvent {
 
       // Remove common prefixes
       const cleanTitle = titleCandidate
-        .replace(/^(event|hangout|gathering|meeting|dinner|lunch)[\s:]*-?[\s:]*/i, '')
+        .replace(
+          /^(event|hangout|gathering|meeting|dinner|lunch)[\s:]*-?[\s:]*/i,
+          "",
+        )
         .trim();
 
       if (cleanTitle.length > 0 && cleanTitle.length < 100) {
@@ -192,7 +217,7 @@ export function parseEventDescription(text: string): ParsedEvent {
   // If no title found, use first few words
   if (!parsed.title) {
     const words = text.split(/\s+/).slice(0, 5);
-    parsed.title = words.join(' ');
+    parsed.title = words.join(" ");
   }
 
   return parsed;
@@ -205,9 +230,9 @@ export function parseEventDescription(text: string): ParsedEvent {
  */
 export function parseDateFromNaturalLanguage(input: string): string[] {
   const parsed = parseEventDescription(input);
-  return parsed.dates.map(date => {
+  return parsed.dates.map((date) => {
     const d = startOfDay(date);
-    return format(d, 'yyyy-MM-dd');
+    return format(d, "yyyy-MM-dd");
   });
 }
 
@@ -218,7 +243,7 @@ export function parseDateFromNaturalLanguage(input: string): string[] {
 export function generateDateRange(
   startDate: Date,
   endDate: Date,
-  daysOfWeek: number[] // 0=Sunday, 5=Friday, 6=Saturday
+  daysOfWeek: number[], // 0=Sunday, 5=Friday, 6=Saturday
 ): Date[] {
   const dates: Date[] = [];
   let current = startOfDay(startDate);
@@ -274,7 +299,7 @@ export function parseDayOfWeek(text: string): number[] {
  * Format date for display
  */
 export function formatDateOption(date: Date): string {
-  return format(date, 'EEE MMM d, yyyy');
+  return format(date, "EEE MMM d, yyyy");
 }
 
 /**
@@ -287,26 +312,26 @@ export function validateParsedEvent(parsed: ParsedEvent): {
   const errors: string[] = [];
 
   if (!parsed.title || parsed.title.length < 3) {
-    errors.push('Event title must be at least 3 characters');
+    errors.push("Event title must be at least 3 characters");
   }
 
   if (parsed.title.length > 100) {
-    errors.push('Event title must be less than 100 characters');
+    errors.push("Event title must be less than 100 characters");
   }
 
   if (parsed.dates.length === 0) {
-    errors.push('At least one date must be specified');
+    errors.push("At least one date must be specified");
   }
 
   if (parsed.dates.length > 50) {
-    errors.push('Maximum of 50 dates allowed');
+    errors.push("Maximum of 50 dates allowed");
   }
 
   // Check for past dates
   const now = new Date();
-  const pastDates = parsed.dates.filter(d => d < now);
+  const pastDates = parsed.dates.filter((d) => d < now);
   if (pastDates.length > 0) {
-    errors.push('All dates must be in the future');
+    errors.push("All dates must be in the future");
   }
 
   return {

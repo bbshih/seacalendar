@@ -3,10 +3,10 @@
  * Shared utility endpoints like date parsing
  */
 
-import { Router } from 'express';
-import { z } from 'zod';
-import { parseDateFromNaturalLanguage } from '@seacalendar/shared';
-import { asyncHandler } from '../middleware/errorHandler';
+import { Router } from "express";
+import { z } from "zod";
+import { parseDateFromNaturalLanguage } from "@seacalendar/shared";
+import { asyncHandler } from "../middleware/errorHandler";
 
 const router = Router();
 
@@ -21,7 +21,7 @@ const parseDateSchema = z.object({
  * Public endpoint - no auth required
  */
 router.post(
-  '/parse-dates',
+  "/parse-dates",
   asyncHandler(async (req, res) => {
     const { input } = parseDateSchema.parse(req.body);
 
@@ -34,7 +34,7 @@ router.post(
         dates,
       },
     });
-  })
+  }),
 );
 
 export default router;
