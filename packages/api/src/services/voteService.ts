@@ -70,48 +70,62 @@ export const submitVote = async (pollId: string, userId: string, data: SubmitVot
     throw ErrorFactory.badRequest('Options cannot be both available and maybe');
   }
 
-  // Create or update vote
-  const vote = await prisma.vote.upsert({
-    where: {
-      pollId_voterId: {
-        pollId,
-        voterId: userId,
+  // Create or update vote and track engagement
+  const vote = await prisma.$transaction(async (tx) => {
+    // Update user's lastVotedAt and totalVotesCast
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        lastVotedAt: new Date(),
+        totalVotesCast: { increment: 1 },
       },
-    },
-    create: {
-      pollId,
-      voterId: userId,
-      availableOptionIds: data.availableOptionIds,
-      maybeOptionIds: data.maybeOptionIds || [],
-      notes: data.notes,
-    },
-    update: {
-      availableOptionIds: data.availableOptionIds,
-      maybeOptionIds: data.maybeOptionIds || [],
-      notes: data.notes,
-      updatedAt: new Date(),
-    },
-    include: {
-      voter: {
-        select: {
-          id: true,
-          username: true,
-          discriminator: true,
-          avatar: true,
+    });
+
+    // Upsert vote
+    const voteResult = await tx.vote.upsert({
+      where: {
+        pollId_voterId: {
+          pollId,
+          voterId: userId,
         },
       },
-    },
-  });
+      create: {
+        pollId,
+        voterId: userId,
+        availableOptionIds: data.availableOptionIds,
+        maybeOptionIds: data.maybeOptionIds || [],
+        notes: data.notes,
+      },
+      update: {
+        availableOptionIds: data.availableOptionIds,
+        maybeOptionIds: data.maybeOptionIds || [],
+        notes: data.notes,
+        updatedAt: new Date(),
+      },
+      include: {
+        voter: {
+          select: {
+            id: true,
+            username: true,
+            discriminator: true,
+            avatar: true,
+          },
+        },
+      },
+    });
 
-  // Update poll invite status
-  await prisma.pollInvite.updateMany({
-    where: {
-      pollId,
-      userId,
-    },
-    data: {
-      hasVoted: true,
-    },
+    // Update poll invite status
+    await tx.pollInvite.updateMany({
+      where: {
+        pollId,
+        userId,
+      },
+      data: {
+        hasVoted: true,
+      },
+    });
+
+    return voteResult;
   });
 
   logger.info('Vote submitted', { pollId, userId, voteId: vote.id });

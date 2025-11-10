@@ -241,7 +241,10 @@ export const finalizePoll = async (pollId: string, userId: string, optionId: str
   // Verify ownership
   const poll = await prisma.poll.findUnique({
     where: { id: pollId },
-    include: { options: true },
+    include: {
+      options: true,
+      votes: true,
+    },
   });
 
   if (!poll) {
@@ -262,21 +265,59 @@ export const finalizePoll = async (pollId: string, userId: string, optionId: str
     throw ErrorFactory.badRequest('Invalid option ID');
   }
 
-  // Finalize poll
-  const finalizedPoll = await prisma.poll.update({
-    where: { id: pollId },
-    data: {
-      status: PollStatus.FINALIZED,
-      finalizedOptionId: optionId,
-      closedAt: new Date(),
-    },
-    include: {
-      options: true,
-      votes: true,
-    },
+  // Get all users who voted "available" for the winning option
+  const attendees = poll.votes
+    .filter(vote => vote.availableOptionIds.includes(optionId))
+    .map(vote => vote.voterId);
+
+  // Finalize poll and track engagement
+  const finalizedPoll = await prisma.$transaction(async (tx) => {
+    // Update poll status
+    const updated = await tx.poll.update({
+      where: { id: pollId },
+      data: {
+        status: PollStatus.FINALIZED,
+        finalizedOptionId: optionId,
+        closedAt: new Date(),
+      },
+      include: {
+        options: true,
+        votes: true,
+      },
+    });
+
+    // Update creator stats
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        totalEventsCreated: { increment: 1 },
+      },
+    });
+
+    // Track attendance for all attendees
+    const now = new Date();
+    for (const attendeeId of attendees) {
+      await tx.eventAttendance.create({
+        data: {
+          pollId,
+          userId: attendeeId,
+          attendedAt: now,
+        },
+      });
+
+      await tx.user.update({
+        where: { id: attendeeId },
+        data: {
+          lastAttendedAt: now,
+          totalEventsAttended: { increment: 1 },
+        },
+      });
+    }
+
+    return updated;
   });
 
-  logger.info('Poll finalized', { pollId, userId, optionId });
+  logger.info('Poll finalized', { pollId, userId, optionId, attendees: attendees.length });
 
   return finalizedPoll;
 };

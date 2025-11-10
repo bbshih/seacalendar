@@ -51,6 +51,10 @@ model Poll {
   venue       Venue?     @relation(fields: [venueId], references: [id])
   venueId     String?
 
+  // Recurring events
+  recurringGroupId String?
+  recurringGroup   RecurringEventGroup? @relation(fields: [recurringGroupId], references: [id])
+
   // Audit
   auditLogs   AuditLog[]
 
@@ -176,6 +180,13 @@ model User {
   emailVerified   Boolean  @default(false)
   isActive        Boolean  @default(true)
   requireDiscordLink Boolean @default(false) // Must link Discord within deadline
+
+  // Engagement tracking (for friendship health)
+  lastVotedAt     DateTime?  // Last time user voted on any poll
+  lastAttendedAt  DateTime?  // Last time user attended a finalized event
+  totalEventsCreated Int @default(0)  // Events created by user
+  totalEventsAttended Int @default(0) // Events attended
+  totalVotesCast   Int @default(0)    // Total votes cast
 
   // Preferences
   preferences     UserPreferences?
@@ -514,6 +525,44 @@ enum FollowupStatus {
   SENT
   SKIPPED  // Event was cancelled
   FAILED
+}
+
+// ============================================================================
+// Engagement & Friendship Tracking
+// ============================================================================
+
+model EventAttendance {
+  id        String   @id @default(uuid())
+  pollId    String
+  userId    String
+
+  // When user was marked as attended (on poll finalization)
+  attendedAt DateTime @default(now())
+
+  @@unique([pollId, userId])
+  @@index([userId, attendedAt])
+  @@index([pollId])
+}
+
+model RecurringEventGroup {
+  id          String   @id @default(uuid())
+  name        String   // e.g., "Weekly Game Night"
+  guildId     String
+
+  // Streak tracking
+  currentStreak    Int @default(0)  // Consecutive occurrences
+  longestStreak    Int @default(0)  // All-time best
+  lastOccurrence   DateTime?        // Last finalized event date
+  totalOccurrences Int @default(0)  // Total events in group
+
+  // Relations
+  polls       Poll[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([guildId])
+  @@index([guildId, currentStreak])
 }
 
 // ============================================================================
