@@ -32,6 +32,9 @@ jobs:
           npm install
 
           echo "🗄️ Running database migrations..."
+          set -a
+          source .env.production.local
+          set +a
           cd packages/database
           npx prisma migrate deploy
           npx prisma generate
