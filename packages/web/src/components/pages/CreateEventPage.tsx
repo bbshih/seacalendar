@@ -8,7 +8,7 @@ import Modal from '../shared/Modal';
 import CopyButton from '../shared/CopyButton';
 import CalendarMonthView from '../features/CalendarMonthView';
 import DatePatternPresets from '../features/DatePatternPresets';
-import { parseDateFromNaturalLanguage } from '@seacalendar/shared';
+import { parseDateFromNaturalLanguage } from '../../utils/naturalLanguageDateParser';
 import type { DateOption } from '../../types/local';
 
 type OptionType = 'DATE' | 'TEXT';
