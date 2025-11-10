@@ -51,6 +51,7 @@ const envSchema = z.object({
 
   // Discord Bot
   DISCORD_TOKEN: z.string().optional(), // Bot token for posting to Discord
+  DEFAULT_DISCORD_CHANNEL_ID: z.string().optional(), // Default channel for web-created events
 
   // Google OAuth (optional for now)
   GOOGLE_CLIENT_ID: z.string().optional(),
@@ -106,6 +107,7 @@ export const config = {
     clientSecret: env.DISCORD_CLIENT_SECRET,
     redirectUri: env.DISCORD_REDIRECT_URI,
     botToken: env.DISCORD_TOKEN,
+    defaultChannelId: env.DEFAULT_DISCORD_CHANNEL_ID,
     authUrl: "https://discord.com/api/oauth2/authorize",
     tokenUrl: "https://discord.com/api/oauth2/token",
     userUrl: "https://discord.com/api/users/@me",

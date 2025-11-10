@@ -12,6 +12,7 @@ import {
 import { ErrorFactory } from "../middleware/errorHandler";
 import { logger } from "../middleware/logger";
 import { postEventToDiscord } from "./discord";
+import { Config } from "../config";
 
 export interface CreatePollData {
   title: string;
@@ -98,9 +99,10 @@ export const createPoll = async (userId: string, data: CreatePollData) => {
 
     logger.info("Poll created", { pollId: poll.id, creatorId: userId });
 
-    // Post to Discord if channelId is provided
-    if (data.channelId && poll.creator.discordId) {
-      await postEventToDiscord(data.channelId, {
+    // Post to Discord if channelId is provided or default is configured
+    const channelId = data.channelId || Config.discord.defaultChannelId;
+    if (channelId && poll.creator.discordId) {
+      await postEventToDiscord(channelId, {
         pollId: poll.id,
         title: poll.title,
         description: poll.description || undefined,
