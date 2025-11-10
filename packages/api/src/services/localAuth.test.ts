@@ -8,7 +8,7 @@ import { localAuthService } from './localAuth';
 import { prisma } from '@seacalendar/database';
 import { resetMockPrisma } from '../test/mockPrisma';
 import { createMockUser, createMockAuthProvider } from '../test/testData';
-import { ApiError } from '../utils/errors';
+import { ApiError } from '../middleware/errorHandler';
 
 // Mock bcrypt
 vi.mock('bcrypt');

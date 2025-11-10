@@ -13,7 +13,7 @@ import {
   createMockGoogleOAuthResponse,
   createMockGoogleUser,
 } from '../test/testData';
-import { ApiError } from '../utils/errors';
+import { ApiError } from '../middleware/errorHandler';
 import { config } from '../config';
 
 // Mock axios

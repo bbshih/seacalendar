@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { config } from '../config';
-import { ApiError } from '../utils/errors';
+import { ApiError } from '../middleware/errorHandler';
 import { prisma } from '@seacalendar/database';
 
 interface GoogleTokenResponse {
