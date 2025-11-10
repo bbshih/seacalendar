@@ -11,6 +11,8 @@ import {
   parseEventDescriptionAdvanced,
 } from "@seacalendar/shared";
 import { asyncHandler } from "../middleware/errorHandler";
+import { llmParsingLimiter } from "../middleware/rateLimit";
+import { validateDateInput } from "../middleware/inputValidation";
 import { format } from "date-fns";
 
 const router = Router();
@@ -46,9 +48,12 @@ router.post(
  * POST /api/utils/parse-event
  * Parse natural language event description with smart LLM fallback
  * Public endpoint - no auth required
+ * Rate limited to prevent API cost abuse
  */
 router.post(
   "/parse-event",
+  llmParsingLimiter,
+  validateDateInput,
   asyncHandler(async (req, res) => {
     const { input } = parseDateSchema.parse(req.body);
 
@@ -70,9 +75,12 @@ router.post(
  * POST /api/utils/parse-event-advanced
  * Parse with LLM and return structured date ranges (advanced)
  * Public endpoint - no auth required
+ * Rate limited to prevent API cost abuse
  */
 router.post(
   "/parse-event-advanced",
+  llmParsingLimiter,
+  validateDateInput,
   asyncHandler(async (req, res) => {
     const { input } = parseDateSchema.parse(req.body);
 
