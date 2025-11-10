@@ -16,7 +16,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@prisma/client": "^5.9.1"
+    "@prisma/client": "^6.19.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
