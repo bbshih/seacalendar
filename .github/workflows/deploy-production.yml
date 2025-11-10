@@ -35,14 +35,22 @@ jobs:
           npm run build
 
           echo "🗄️ Running database migrations..."
-          # Run migrations in a temporary container with network access to postgres
+          # Build migration image from our own Dockerfile for security
+          docker build -t seacalendar-migrate -f- . <<'DOCKERFILE'
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+COPY packages/database ./packages/database
+COPY packages/shared ./packages/shared
+RUN npm install --workspace=@seacalendar/database --production
+WORKDIR /app/packages/database
+CMD ["npx", "prisma", "migrate", "deploy"]
+DOCKERFILE
+
           docker run --rm \
             --network seacalendar_seacalendar \
             --env-file .env.production.local \
-            -v $(pwd)/packages/database:/app/database \
-            -w /app/database \
-            node:20-alpine \
-            sh -c "npx prisma migrate deploy && npx prisma generate"
+            seacalendar-migrate
 
           echo "🐳 Checking deployment mode..."
           if docker ps | grep -q "seacalendar-api\|seacalendar-web\|seacalendar-bot"; then
