@@ -31,17 +31,18 @@ jobs:
           echo "🔨 Installing dependencies..."
           npm install
 
-          echo "🗄️ Running database migrations..."
-          set -a
-          source .env.production.local
-          set +a
-          cd packages/database
-          npx prisma migrate deploy
-          npx prisma generate
-          cd ../..
-
           echo "🏗️ Building packages..."
           npm run build
+
+          echo "🗄️ Running database migrations..."
+          # Run migrations in a temporary container with network access to postgres
+          docker run --rm \
+            --network seacalendar_seacalendar \
+            --env-file .env.production.local \
+            -v $(pwd)/packages/database:/app/database \
+            -w /app/database \
+            node:20-alpine \
+            sh -c "npx prisma migrate deploy && npx prisma generate"
 
           echo "🐳 Checking deployment mode..."
           if docker ps | grep -q "seacalendar-api\|seacalendar-web\|seacalendar-bot"; then
