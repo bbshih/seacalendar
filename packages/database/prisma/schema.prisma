@@ -22,6 +22,9 @@ model Poll {
   title       String
   description String?
 
+  // Event location type
+  locationType EventLocationType @default(IN_PERSON)
+
   // Ownership
   creatorId   String
   creator     User       @relation(fields: [creatorId], references: [id])
@@ -44,11 +47,16 @@ model Poll {
   votes       Vote[]
   invites     PollInvite[]
   reminders   EventReminder[]
+  memories    EventMemory[]
 
   // Event-specific (null for generic polls)
   finalizedOptionId String?
   venue       Venue?     @relation(fields: [venueId], references: [id])
   venueId     String?
+
+  // Recurring events
+  recurringGroupId String?
+  recurringGroup   RecurringEventGroup? @relation(fields: [recurringGroupId], references: [id])
 
   // Audit
   auditLogs   AuditLog[]
@@ -69,6 +77,12 @@ enum PollStatus {
   FINALIZED
   CANCELLED
   EXPIRED
+}
+
+enum EventLocationType {
+  IN_PERSON  // Physical location
+  VIRTUAL    // Online only
+  HYBRID     // Both in-person and virtual options
 }
 
 enum PollOptionType {
@@ -175,6 +189,18 @@ model User {
   emailVerified   Boolean  @default(false)
   isActive        Boolean  @default(true)
   requireDiscordLink Boolean @default(false) // Must link Discord within deadline
+
+  // Engagement tracking (for friendship health)
+  lastVotedAt         DateTime?  // Last time user voted on any poll
+  lastAttendedAt      DateTime?  // Last time user attended a finalized event
+  lastMemorySharedAt  DateTime?  // Last time user shared a memory
+  lastInteractionAt   DateTime?  // Most recent of any engagement activity
+
+  totalEventsCreated  Int @default(0)  // Events created by user
+  totalEventsAttended Int @default(0)  // Events attended (in-person)
+  totalVirtualEvents  Int @default(0)  // Virtual events participated in
+  totalVotesCast      Int @default(0)  // Total votes cast
+  totalMemoriesShared Int @default(0)  // Memories/reflections shared
 
   // Preferences
   preferences     UserPreferences?
@@ -442,6 +468,130 @@ model CalendarEvent {
   @@unique([calendarConnectionId, providerEventId])
   @@index([calendarConnectionId, startTime, endTime])
   @@index([startTime, endTime])
+}
+
+// ============================================================================
+// Event Memories & Reflections
+// ============================================================================
+
+model EventMemory {
+  id              String   @id @default(uuid())
+  pollId          String
+  poll            Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  // Memory content
+  type            MemoryType
+  content         String?  // Text reflection or photo caption
+  photoUrl        String?  // S3/storage URL for photos
+
+  // Authorship
+  userId          String
+  submittedAt     DateTime @default(now())
+
+  // Engagement
+  reactions       MemoryReaction[]
+
+  @@index([pollId, submittedAt])
+  @@index([userId])
+}
+
+enum MemoryType {
+  REFLECTION  // Text: "How was the event?"
+  PHOTO       // Shared photo
+  HIGHLIGHT   // Memorable moment
+}
+
+model MemoryReaction {
+  id        String   @id @default(uuid())
+  memoryId  String
+  memory    EventMemory @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+
+  userId    String
+  emoji     String   // e.g., "❤️", "😂", "🔥"
+  reactedAt DateTime @default(now())
+
+  @@unique([memoryId, userId, emoji])
+  @@index([memoryId])
+}
+
+model EventFollowup {
+  id              String   @id @default(uuid())
+  pollId          String   @unique
+
+  // Scheduling
+  scheduledFor    DateTime  // 24hr after event finalizedOptionId datetime
+  sentAt          DateTime?
+  status          FollowupStatus @default(PENDING)
+
+  // Discord context
+  messageId       String?   // ID of follow-up message sent
+  channelId       String?
+
+  // Google Photos integration
+  photoAlbumUrl   String?   // Shared Google Photos album URL
+  photoAlbumId    String?   // Google Photos album ID
+
+  @@index([status, scheduledFor])
+}
+
+enum FollowupStatus {
+  PENDING
+  SENT
+  SKIPPED  // Event was cancelled
+  FAILED
+}
+
+// ============================================================================
+// Engagement & Friendship Tracking
+// ============================================================================
+
+model EventAttendance {
+  id        String   @id @default(uuid())
+  pollId    String
+  userId    String
+
+  // When user was marked as attended (on poll finalization)
+  attendedAt DateTime @default(now())
+
+  @@unique([pollId, userId])
+  @@index([userId, attendedAt])
+  @@index([pollId])
+}
+
+model GuildMemberRole {
+  id          String   @id @default(uuid())
+  guildId     String
+  userId      String   // Discord user ID
+  roleId      String   // Discord role ID
+  roleName    String   // Cached role name (e.g., "Local", "Remote", "Alumni")
+
+  addedAt     DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([guildId, userId, roleId])
+  @@index([guildId, roleId])
+  @@index([userId])
+}
+
+model RecurringEventGroup {
+  id          String   @id @default(uuid())
+  name        String   // e.g., "Weekly Game Night"
+  guildId     String
+
+  // Streak tracking
+  currentStreak    Int @default(0)  // Consecutive occurrences
+  longestStreak    Int @default(0)  // All-time best
+  lastOccurrence   DateTime?        // Last finalized event date
+  totalOccurrences Int @default(0)  // Total events in group
+
+  // Relations
+  polls       Poll[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([guildId])
+  @@index([guildId, currentStreak])
 }
 
 // ============================================================================

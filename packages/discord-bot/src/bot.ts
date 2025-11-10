@@ -13,6 +13,7 @@ import { prisma } from '@seacalendar/database';
 import cron from 'node-cron';
 import { DateTime } from 'luxon';
 import * as qotwService from './services/qotwService.js';
+import * as memoryService from './services/memoryService.js';
 import { postQuestion, postSelectionPoll } from './commands/qotw.js';
 
 // Get __dirname equivalent in ESM
@@ -245,6 +246,50 @@ async function initializeCronJobs() {
       }
     } catch (error) {
       console.error('❌ Error in selection poll cron job:', error);
+    }
+  });
+
+  // Event Memories: Check every 5 minutes for pending followups
+  cron.schedule('*/5 * * * *', async () => {
+    try {
+      const followups = await memoryService.getPendingFollowups();
+
+      for (const followup of followups) {
+        try {
+          const poll = await memoryService.getPollWithFollowup(followup.pollId);
+          if (!poll || !followup.channelId) {
+            await memoryService.skipFollowup(followup.id);
+            continue;
+          }
+
+          // Get guild and channel
+          const guild = await client.guilds.fetch(poll.guildId || '');
+          const channel = await guild.channels.fetch(followup.channelId) as TextChannel;
+
+          // Build followup message
+          let content = `## 💭 How was "${poll.title}"?\n\n`;
+
+          if (followup.photoAlbumUrl) {
+            content += `📸 **Upload photos:** ${followup.photoAlbumUrl}\n_(Everyone can add photos to the shared album!)_\n\n`;
+          }
+
+          content += `Share your thoughts:\n`;
+          content += `• Use \`/memory add\` for text reflections\n`;
+          content += `• Upload photos to the album above\n\n`;
+          content += `🔗 Event: https://cal.billyeatstofu.com/events/${poll.id}`;
+
+          // Send followup message
+          const message = await channel.send({ content });
+
+          await memoryService.markFollowupSent(followup.id, message.id);
+          console.log(`✅ Sent followup for poll ${poll.id}`);
+        } catch (error) {
+          console.error(`❌ Failed to send followup ${followup.id}:`, error);
+          await memoryService.markFollowupFailed(followup.id);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error in memory followup cron job:', error);
     }
   });
 
