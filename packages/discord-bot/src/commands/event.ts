@@ -12,7 +12,7 @@ import {
   EmbedBuilder,
   ComponentType,
 } from 'discord.js';
-import { parseEventDescription, validateParsedEvent, formatDateOption } from '../services/nlp.js';
+import { parseEventDescription, validateParsedEvent, formatDateOption } from '@seacalendar/shared';
 import { createEventPoll, generateVotingUrl, canUseDiscordVoting } from '../services/pollService.js';
 import { Config } from '../config.js';
 

@@ -8,7 +8,7 @@ import {
   validateParsedEvent,
   parseDayOfWeek,
   generateDateRange,
-} from './nlp';
+} from '@seacalendar/shared';
 
 describe('NLP Service', () => {
   describe('parseEventDescription', () => {

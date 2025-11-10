@@ -1,6 +1,6 @@
 /**
- * Natural Language Processing service
- * Parses event descriptions to extract dates and details
+ * Natural Language Processing service for date parsing
+ * Parses event descriptions to extract dates and details using chrono-node
  */
 
 import * as chrono from 'chrono-node';
@@ -23,6 +23,9 @@ export interface ParsedEvent {
  * - "Boys Night every weekend in December"
  * - "Hangout weekends for the next 3 months"
  * - "Every friday and saturday this and next week"
+ * - "tomorrow"
+ * - "next week"
+ * - "this weekend"
  */
 export function parseEventDescription(text: string): ParsedEvent {
   const parsed: ParsedEvent = {
@@ -193,6 +196,19 @@ export function parseEventDescription(text: string): ParsedEvent {
   }
 
   return parsed;
+}
+
+/**
+ * Parse natural language input and return ISO date strings
+ * This is a simplified version for quick date parsing without full event context
+ * Returns array of ISO date strings (YYYY-MM-DD)
+ */
+export function parseDateFromNaturalLanguage(input: string): string[] {
+  const parsed = parseEventDescription(input);
+  return parsed.dates.map(date => {
+    const d = startOfDay(date);
+    return format(d, 'yyyy-MM-dd');
+  });
 }
 
 /**

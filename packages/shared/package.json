@@ -11,6 +11,8 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "chrono-node": "^2.9.0",
+    "date-fns": "^4.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
