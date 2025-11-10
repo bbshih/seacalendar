@@ -363,7 +363,7 @@ export default function CreateEventPage() {
                         <span className="text-ocean-700 font-medium">{opt.label}</span>
                         <button
                           onClick={() => handleRemoveTextOption(opt.id)}
-                          className="text-red-500 hover:text-red-700 font-bold"
+                          className="text-red-500 hover:text-red-700 font-bold cursor-pointer"
                         >
                           ✕
                         </button>

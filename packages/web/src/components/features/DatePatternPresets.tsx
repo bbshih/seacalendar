@@ -51,7 +51,7 @@ export default function DatePatternPresets({ onDatesSelected }: DatePatternPrese
           <button
             key={preset.label}
             onClick={preset.onClick}
-            className="group relative p-4 rounded-lg border-2 border-ocean-200 bg-white hover:border-ocean-400 hover:bg-ocean-50 transition-all duration-200 text-left hover:shadow-md"
+            className="group relative p-4 rounded-lg border-2 border-ocean-200 bg-white hover:border-ocean-400 hover:bg-ocean-50 transition-all duration-200 text-left hover:shadow-md cursor-pointer"
           >
             <div className="flex flex-col gap-1">
               <div className="font-medium text-ocean-800 group-hover:text-ocean-900">

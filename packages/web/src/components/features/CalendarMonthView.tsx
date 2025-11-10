@@ -239,7 +239,7 @@ function CalendarMonthView({
             disabled={!canGoPrevious}
             className={`p-2 rounded-lg transition-colors ${
               canGoPrevious
-                ? 'hover:bg-ocean-200'
+                ? 'hover:bg-ocean-200 cursor-pointer'
                 : 'opacity-40 cursor-not-allowed'
             }`}
             aria-label="Previous month"
@@ -265,7 +265,7 @@ function CalendarMonthView({
           </h3>
           <button
             onClick={goToToday}
-            className="px-3 py-1 text-sm bg-ocean-500 text-white rounded-lg hover:bg-ocean-600 transition-colors"
+            className="px-3 py-1 text-sm bg-ocean-500 text-white rounded-lg hover:bg-ocean-600 transition-colors cursor-pointer"
           >
             Today
           </button>
@@ -274,7 +274,7 @@ function CalendarMonthView({
         <div className="flex items-center gap-1">
           <button
             onClick={goToNextMonth}
-            className="p-2 hover:bg-ocean-200 rounded-lg transition-colors"
+            className="p-2 hover:bg-ocean-200 rounded-lg transition-colors cursor-pointer"
             aria-label="Next month"
           >
             <svg
