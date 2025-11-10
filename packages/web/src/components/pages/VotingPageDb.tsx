@@ -10,6 +10,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { usePoll } from "../../hooks/usePoll";
 import { api } from "../../utils/api";
 import { NotificationTemplates } from "../../utils/notifications";
+import { setVotingPageMeta, resetMetaTags } from "../../utils/metaTags";
 import Card from "../shared/Card";
 import Button from "../shared/Button";
 import Modal from "../shared/Modal";
@@ -35,6 +36,16 @@ export default function VotingPageDb() {
       navigate("/login", { state: { from: { pathname: `/vote/${pollId}` } } });
     }
   }, [authLoading, user, navigate, pollId]);
+
+  // Update meta tags for link preview
+  useEffect(() => {
+    if (poll) {
+      setVotingPageMeta(poll.title, pollId || "");
+    }
+    return () => {
+      resetMetaTags();
+    };
+  }, [poll, pollId]);
 
   const handleSubmitVote = async () => {
     if (!user) {

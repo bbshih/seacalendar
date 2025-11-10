@@ -8,12 +8,16 @@ import {
   IconBoxMultiple,
   IconHome,
   IconChecklist,
+  IconSquare,
 } from "@tabler/icons-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { usePoll } from "../../hooks/usePoll";
 import { api } from "../../utils/api";
+import { NotificationTemplates } from "../../utils/notifications";
+import { setResultsPageMeta, resetMetaTags } from "../../utils/metaTags";
 import Card from "../shared/Card";
 import Button from "../shared/Button";
+import Modal from "../shared/Modal";
 import LoadingState from "../shared/LoadingState";
 import ErrorState from "../shared/ErrorState";
 
@@ -42,11 +46,31 @@ export default function ResultsPageDb() {
   const [resultsError, setResultsError] = useState("");
   const [isReopening, setIsReopening] = useState(false);
 
+  // Quick vote modal state
+  const [showQuickVote, setShowQuickVote] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
   useEffect(() => {
     if (pollId) {
       loadResults();
     }
   }, [pollId]);
+
+  // Update meta tags for link preview
+  useEffect(() => {
+    if (poll && results) {
+      const sortedResults = [...results.optionResults].sort(
+        (a, b) => b.availableCount - a.availableCount,
+      );
+      const topChoice = sortedResults[0]?.label;
+      setResultsPageMeta(poll.title, pollId || "", topChoice);
+    }
+    return () => {
+      resetMetaTags();
+    };
+  }, [poll, results, pollId]);
 
   const loadResults = async () => {
     if (!pollId) return;
@@ -85,6 +109,63 @@ export default function ResultsPageDb() {
       alert(error instanceof Error ? error.message : "Failed to reopen poll");
     } finally {
       setIsReopening(false);
+    }
+  };
+
+  const handleQuickVote = () => {
+    if (!user) {
+      navigate("/login", {
+        state: { from: { pathname: `/results/${pollId}` } },
+      });
+      return;
+    }
+    setShowQuickVote(true);
+  };
+
+  const toggleOption = (optionId: string) => {
+    setSelectedOptions((prev) =>
+      prev.includes(optionId)
+        ? prev.filter((id) => id !== optionId)
+        : [...prev, optionId],
+    );
+  };
+
+  const handleSubmitVote = async () => {
+    if (selectedOptions.length === 0) {
+      setSubmitError("Please select at least one option");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError("");
+
+    try {
+      await api.post(
+        `/polls/${pollId}/vote`,
+        {
+          availableOptionIds: selectedOptions,
+          maybeOptionIds: [],
+          notes: undefined,
+        },
+        true,
+      );
+
+      // Show notification
+      if (poll) {
+        NotificationTemplates.voteSubmitted(poll.title, pollId || "");
+      }
+
+      // Reload results and close modal
+      await loadResults();
+      setShowQuickVote(false);
+      setSelectedOptions([]);
+    } catch (error) {
+      console.error("Failed to submit vote:", error);
+      setSubmitError(
+        error instanceof Error ? error.message : "Failed to submit vote",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -228,11 +309,11 @@ export default function ResultsPageDb() {
         <div className="flex gap-3">
           {poll.status === "VOTING" && (
             <Button
-              onClick={() => navigate(`/vote/${pollId}`)}
+              onClick={handleQuickVote}
               variant="primary"
               className="flex-1"
             >
-              <IconChecklist size={18} className="inline mr-1" /> Vote Now
+              <IconChecklist size={18} className="inline mr-1" /> Quick Vote
             </Button>
           )}
           {canReopen && (
@@ -250,6 +331,93 @@ export default function ResultsPageDb() {
             <IconHome size={18} className="inline mr-1" /> Home
           </Button>
         </div>
+
+        {/* Quick Vote Modal */}
+        {showQuickVote && poll && (
+          <Modal
+            isOpen={showQuickVote}
+            onClose={() => {
+              setShowQuickVote(false);
+              setSelectedOptions([]);
+              setSubmitError("");
+            }}
+            title="Quick Vote"
+          >
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Select when you're available:
+              </p>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {poll.options
+                  .sort((a, b) => a.order - b.order)
+                  .map((option) => {
+                    const isSelected = selectedOptions.includes(option.id);
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => toggleOption(option.id)}
+                        className={`w-full p-3 rounded-lg border-2 transition-all text-left cursor-pointer ${
+                          isSelected
+                            ? "border-seaweed-500 bg-seaweed-50"
+                            : "border-gray-200 hover:border-ocean-300"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-800">
+                              {option.label}
+                            </div>
+                            {option.date && (
+                              <div className="text-sm text-gray-500 mt-1">
+                                {new Date(option.date).toLocaleDateString()}
+                                {option.timeStart && ` at ${option.timeStart}`}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xl ml-2">
+                            {isSelected ? (
+                              <IconCheck
+                                size={24}
+                                className="text-seaweed-600"
+                              />
+                            ) : (
+                              <IconSquare size={24} className="text-gray-400" />
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+              {submitError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                  {submitError}
+                </div>
+              )}
+              <div className="flex gap-2 pt-2">
+                <Button
+                  onClick={handleSubmitVote}
+                  disabled={isSubmitting}
+                  variant="primary"
+                  className="flex-1"
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Vote"}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowQuickVote(false);
+                    setSelectedOptions([]);
+                    setSubmitError("");
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </Modal>
+        )}
       </div>
     </div>
   );
