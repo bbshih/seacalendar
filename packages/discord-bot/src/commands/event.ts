@@ -13,7 +13,7 @@ import {
   ComponentType,
 } from "discord.js";
 import {
-  parseEventDescription,
+  parseEventDescriptionSmart,
   validateParsedEvent,
   formatDateOption,
 } from "@seacalendar/shared";
@@ -43,8 +43,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
-    // Parse the natural language description
-    const parsed = parseEventDescription(description);
+    // Parse the natural language description with smart LLM fallback
+    const parsed = await parseEventDescriptionSmart(description);
 
     // Debug logging
     console.log("📝 Parsed event:", {

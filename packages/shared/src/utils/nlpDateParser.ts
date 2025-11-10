@@ -13,6 +13,11 @@ import {
   startOfWeek,
   format,
 } from "date-fns";
+import {
+  parseEventWithLLM,
+  expandDateRanges,
+  type LLMParsedEvent,
+} from "./llmDateParser";
 
 export interface ParsedEvent {
   title: string;
@@ -338,4 +343,60 @@ export function validateParsedEvent(parsed: ParsedEvent): {
     valid: errors.length === 0,
     errors,
   };
+}
+
+/**
+ * Tiered date parsing: Try local patterns first, fall back to LLM for complex cases
+ * This is the main entry point for parsing event descriptions
+ */
+export async function parseEventDescriptionSmart(
+  text: string,
+): Promise<ParsedEvent> {
+  // Step 1: Try local pattern matching (fast, free)
+  const localResult = parseEventDescription(text);
+
+  // Calculate confidence based on local parsing results
+  const hasGoodTitle = localResult.title.length > 2 && localResult.title.length < 100;
+  const hasDates = localResult.dates.length > 0;
+  const localConfidence = hasGoodTitle && hasDates ? 0.9 : hasDates ? 0.7 : 0.0;
+
+  // If local parsing is confident, use it
+  if (localConfidence >= 0.85) {
+    return localResult;
+  }
+
+  // Step 2: Try LLM parsing for complex/ambiguous cases
+  try {
+    const llmResult = await parseEventWithLLM(text);
+
+    if (llmResult && llmResult.confidence >= 0.7) {
+      // Convert LLM result to ParsedEvent format
+      const dates = expandDateRanges(llmResult.dateRanges);
+      const times = llmResult.dateRanges
+        .flatMap((range) => range.times || [])
+        .filter((time, index, self) => self.indexOf(time) === index); // unique
+
+      return {
+        title: llmResult.title,
+        dates,
+        times,
+        description: llmResult.description || "",
+        raw: text,
+      };
+    }
+  } catch (error) {
+    console.warn("LLM parsing failed, using local result:", error);
+  }
+
+  // Step 3: Fall back to local result if LLM fails or has low confidence
+  return localResult;
+}
+
+/**
+ * Export LLM parsed event for advanced use cases
+ */
+export async function parseEventDescriptionAdvanced(
+  text: string,
+): Promise<LLMParsedEvent | null> {
+  return parseEventWithLLM(text);
 }
