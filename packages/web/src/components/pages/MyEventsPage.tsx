@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { IconList, IconCheck, IconChecklist, IconChartBar } from '@tabler/icons-react';
-import { useAuth } from '../../contexts/AuthContext';
-import Card from '../shared/Card';
-import Button from '../shared/Button';
-import CopyButton from '../shared/CopyButton';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  IconList,
+  IconCheck,
+  IconChecklist,
+  IconChartBar,
+} from "@tabler/icons-react";
+import { useAuth } from "../../contexts/AuthContext";
+import Card from "../shared/Card";
+import Button from "../shared/Button";
+import CopyButton from "../shared/CopyButton";
 
 interface Poll {
   id: string;
@@ -22,7 +27,7 @@ export default function MyEventsPageDb() {
   const navigate = useNavigate();
   const [polls, setPolls] = useState<Poll[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState('');
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     loadPolls();
@@ -30,27 +35,27 @@ export default function MyEventsPageDb() {
 
   const loadPolls = async () => {
     setIsLoading(true);
-    setLoadError('');
+    setLoadError("");
 
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/polls/user/created', {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch("/api/polls/user/created", {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.message || 'Failed to load polls');
+        throw new Error(data.message || "Failed to load polls");
       }
 
       setPolls(data.data.polls);
     } catch (error) {
-      console.error('Failed to load polls:', error);
+      console.error("Failed to load polls:", error);
       setLoadError(
-        error instanceof Error ? error.message : 'Failed to load polls'
+        error instanceof Error ? error.message : "Failed to load polls",
       );
     } finally {
       setIsLoading(false);
@@ -59,32 +64,52 @@ export default function MyEventsPageDb() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'VOTING':
-        return <span className="px-2 py-1 bg-seaweed-100 text-seaweed-700 rounded text-xs font-medium">Voting Open</span>;
-      case 'FINALIZED':
-        return <span className="px-2 py-1 bg-ocean-100 text-ocean-700 rounded text-xs font-medium"><IconCheck size={14} className="inline mr-1" /> Finalized</span>;
-      case 'CANCELLED':
-        return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">Cancelled</span>;
-      case 'EXPIRED':
-        return <span className="px-2 py-1 bg-coral-100 text-coral-700 rounded text-xs font-medium">Expired</span>;
+      case "VOTING":
+        return (
+          <span className="px-2 py-1 bg-seaweed-100 text-seaweed-700 rounded text-xs font-medium">
+            Voting Open
+          </span>
+        );
+      case "FINALIZED":
+        return (
+          <span className="px-2 py-1 bg-ocean-100 text-ocean-700 rounded text-xs font-medium">
+            <IconCheck size={14} className="inline mr-1" /> Finalized
+          </span>
+        );
+      case "CANCELLED":
+        return (
+          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+            Cancelled
+          </span>
+        );
+      case "EXPIRED":
+        return (
+          <span className="px-2 py-1 bg-coral-100 text-coral-700 rounded text-xs font-medium">
+            Expired
+          </span>
+        );
       default:
-        return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">{status}</span>;
+        return (
+          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+            {status}
+          </span>
+        );
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    navigate("/");
   };
 
   if (isLoading) {
@@ -103,24 +128,39 @@ export default function MyEventsPageDb() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8 animate-slide-down">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-ocean-600 via-coral-500 to-ocean-500 bg-clip-text text-transparent animate-gradient-x bg-[length:200%_100%]"
+            <h1
+              className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-ocean-600 via-coral-500 to-ocean-500 bg-clip-text text-transparent animate-gradient-x bg-[length:200%_100%]"
               style={{
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}>
-              <IconList size={40} className="inline mr-2" style={{ color: 'inherit', WebkitTextFillColor: 'currentColor' }} /> My Events
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              <IconList
+                size={40}
+                className="inline mr-2"
+                style={{
+                  color: "inherit",
+                  WebkitTextFillColor: "currentColor",
+                }}
+              />{" "}
+              My Events
             </h1>
             <p className="text-lg text-ocean-700 font-semibold">
               Welcome back, {user?.username}!
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="gradient"
+              size="sm"
+              onClick={() => navigate("/create")}
+            >
+              + New Event
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
         </div>
 
         {loadError && (
@@ -135,15 +175,27 @@ export default function MyEventsPageDb() {
               No Events Yet
             </h2>
             <p className="text-ocean-500 mb-6">
-              Create your first event in Discord using the <code className="bg-gray-200 px-2 py-1 rounded">/event</code> command!
+              Create your first event here on the web or via Discord!
             </p>
-            <Button
-              variant="gradient"
-              size="lg"
-              onClick={() => window.open('https://discord.com', '_blank')}
-            >
-              🎮 Open Discord
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                variant="gradient"
+                size="lg"
+                onClick={() => navigate("/create")}
+              >
+                ✨ Create Event
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => window.open("https://discord.com", "_blank")}
+              >
+                🎮 Use Discord{" "}
+                <code className="ml-2 bg-gray-200 px-2 py-1 rounded text-xs">
+                  /event
+                </code>
+              </Button>
+            </div>
           </Card>
         ) : (
           <div className="space-y-4 animate-fade-in">
@@ -166,7 +218,9 @@ export default function MyEventsPageDb() {
                           {poll.title}
                         </h3>
                         {poll.description && (
-                          <p className="text-sm text-gray-600 mb-2">{poll.description}</p>
+                          <p className="text-sm text-gray-600 mb-2">
+                            {poll.description}
+                          </p>
                         )}
                         <div className="flex items-center gap-3 text-sm text-gray-600">
                           <span>Created {formatDate(poll.createdAt)}</span>
@@ -180,7 +234,8 @@ export default function MyEventsPageDb() {
                     {/* Voting Link */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <IconChecklist size={18} className="inline mr-1" /> Voting Link (Share with friends)
+                        <IconChecklist size={18} className="inline mr-1" />{" "}
+                        Voting Link (Share with friends)
                       </label>
                       <div className="flex gap-2">
                         <input
@@ -200,7 +255,8 @@ export default function MyEventsPageDb() {
                     {/* Results Link */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <IconChartBar size={18} className="inline mr-1" /> Results Link
+                        <IconChartBar size={18} className="inline mr-1" />{" "}
+                        Results Link
                       </label>
                       <div className="flex gap-2">
                         <input
@@ -227,10 +283,7 @@ export default function MyEventsPageDb() {
 
         {/* Back to Home */}
         <div className="mt-8 text-center">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/')}
-          >
+          <Button variant="outline" onClick={() => navigate("/")}>
             ← Back to Home
           </Button>
         </div>

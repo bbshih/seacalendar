@@ -1,14 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { IconBoxMultiple, IconCheck, IconAlertTriangle, IconSquare, IconConfetti } from '@tabler/icons-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { usePoll } from '../../hooks/usePoll';
-import { api } from '../../utils/api';
-import Card from '../shared/Card';
-import Button from '../shared/Button';
-import Modal from '../shared/Modal';
-import LoadingState from '../shared/LoadingState';
-import ErrorState from '../shared/ErrorState';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  IconBoxMultiple,
+  IconCheck,
+  IconSquare,
+  IconConfetti,
+} from "@tabler/icons-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { usePoll } from "../../hooks/usePoll";
+import { api } from "../../utils/api";
+import Card from "../shared/Card";
+import Button from "../shared/Button";
+import Modal from "../shared/Modal";
+import LoadingState from "../shared/LoadingState";
+import ErrorState from "../shared/ErrorState";
 
 export default function VotingPageDb() {
   const { pollId } = useParams<{ pollId: string }>();
@@ -18,95 +23,86 @@ export default function VotingPageDb() {
 
   // Voting state
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [maybeOptions, setMaybeOptions] = useState<string[]>([]);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const [submitError, setSubmitError] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/login', { state: { from: { pathname: `/vote/${pollId}` } } });
+      navigate("/login", { state: { from: { pathname: `/vote/${pollId}` } } });
     }
   }, [authLoading, user, navigate, pollId]);
 
   const handleSubmitVote = async () => {
     if (!user) {
-      setSubmitError('Please log in to vote');
+      setSubmitError("Please log in to vote");
       return;
     }
 
-    if (selectedOptions.length === 0 && maybeOptions.length === 0) {
-      setSubmitError('Please select at least one option');
+    if (selectedOptions.length === 0) {
+      setSubmitError("Please select at least one option");
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitError('');
+    setSubmitError("");
 
     try {
       await api.post(
         `/polls/${pollId}/vote`,
         {
           availableOptionIds: selectedOptions,
-          maybeOptionIds: maybeOptions,
+          maybeOptionIds: [],
           notes: notes.trim() || undefined,
         },
-        true // requireAuth
+        true, // requireAuth
       );
 
       setShowSuccessModal(true);
     } catch (error) {
-      console.error('Failed to submit vote:', error);
+      console.error("Failed to submit vote:", error);
       setSubmitError(
-        error instanceof Error ? error.message : 'Failed to submit vote'
+        error instanceof Error ? error.message : "Failed to submit vote",
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const toggleOption = (optionId: string, type: 'available' | 'maybe') => {
-    if (type === 'available') {
-      setSelectedOptions(prev =>
-        prev.includes(optionId)
-          ? prev.filter(id => id !== optionId)
-          : [...prev, optionId]
-      );
-      // Remove from maybe if adding to available
-      setMaybeOptions(prev => prev.filter(id => id !== optionId));
-    } else {
-      setMaybeOptions(prev =>
-        prev.includes(optionId)
-          ? prev.filter(id => id !== optionId)
-          : [...prev, optionId]
-      );
-      // Remove from available if adding to maybe
-      setSelectedOptions(prev => prev.filter(id => id !== optionId));
-    }
+  const toggleOption = (optionId: string) => {
+    setSelectedOptions((prev) =>
+      prev.includes(optionId)
+        ? prev.filter((id) => id !== optionId)
+        : [...prev, optionId],
+    );
   };
 
   if (isLoading) {
-    return <LoadingState message="Loading poll..." />;
+    return <LoadingState message="Loading event..." />;
   }
 
   if (loadError || !poll) {
     return (
       <ErrorState
-        error={loadError || 'Poll not found'}
-        onGoHome={() => navigate('/')}
+        error={loadError || "Event not found"}
+        onGoHome={() => navigate("/")}
       />
     );
   }
 
-  if (poll.status === 'CANCELLED') {
+  if (poll.status === "CANCELLED") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4 flex items-center justify-center">
         <Card className="max-w-md w-full text-center">
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Poll Cancelled</h2>
-          <p className="text-gray-600 mb-4">This poll has been cancelled by the organizer.</p>
-          <Button onClick={() => navigate('/')}>Return Home</Button>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">
+            Event Cancelled
+          </h2>
+          <p className="text-gray-600 mb-4">
+            This event has been cancelled by the organizer.
+          </p>
+          <Button onClick={() => navigate("/")}>Return Home</Button>
         </Card>
       </div>
     );
@@ -120,9 +116,14 @@ export default function VotingPageDb() {
         {/* Header */}
         <Card className="mb-6">
           <div className="flex items-start gap-4">
-            <IconBoxMultiple size={48} className="text-ocean-600 flex-shrink-0" />
+            <IconBoxMultiple
+              size={48}
+              className="text-ocean-600 flex-shrink-0"
+            />
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-ocean-600 mb-2">{poll.title}</h1>
+              <h1 className="text-2xl font-bold text-ocean-600 mb-2">
+                {poll.title}
+              </h1>
               {poll.description && (
                 <p className="text-gray-600 mb-2">{poll.description}</p>
               )}
@@ -131,7 +132,8 @@ export default function VotingPageDb() {
               </p>
               {poll.votingDeadline && (
                 <p className="text-sm text-coral-500 mt-1">
-                  Voting ends: {new Date(poll.votingDeadline).toLocaleDateString()}
+                  Voting ends:{" "}
+                  {new Date(poll.votingDeadline).toLocaleDateString()}
                 </p>
               )}
             </div>
@@ -140,40 +142,35 @@ export default function VotingPageDb() {
 
         {/* Options */}
         <Card className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Select Options</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            Select Your Availability
+          </h2>
           <p className="text-sm text-gray-600 mb-4">
-            Click once for "Available" (green), twice for "Maybe" (yellow), three times to deselect
+            Click to mark when you're available. Click again to deselect.
           </p>
           <div className="space-y-3">
             {sortedOptions.map((option) => {
               const isAvailable = selectedOptions.includes(option.id);
-              const isMaybe = maybeOptions.includes(option.id);
 
               return (
                 <button
                   key={option.id}
-                  onClick={() => {
-                    if (!isAvailable && !isMaybe) {
-                      toggleOption(option.id, 'available');
-                    } else if (isAvailable) {
-                      toggleOption(option.id, 'maybe');
-                    } else {
-                      setMaybeOptions(prev => prev.filter(id => id !== option.id));
-                    }
-                  }}
+                  onClick={() => toggleOption(option.id)}
                   className={`w-full p-4 rounded-lg border-2 transition-all text-left cursor-pointer ${
                     isAvailable
-                      ? 'border-seaweed-500 bg-seaweed-50'
-                      : isMaybe
-                      ? 'border-coral-400 bg-coral-50'
-                      : 'border-gray-200 hover:border-ocean-300'
+                      ? "border-seaweed-500 bg-seaweed-50"
+                      : "border-gray-200 hover:border-ocean-300"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium text-gray-800">{option.label}</div>
+                      <div className="font-medium text-gray-800">
+                        {option.label}
+                      </div>
                       {option.description && (
-                        <div className="text-sm text-gray-600 mt-1">{option.description}</div>
+                        <div className="text-sm text-gray-600 mt-1">
+                          {option.description}
+                        </div>
                       )}
                       {option.date && (
                         <div className="text-sm text-gray-500 mt-1">
@@ -186,8 +183,6 @@ export default function VotingPageDb() {
                     <div className="text-2xl">
                       {isAvailable ? (
                         <IconCheck size={32} className="text-seaweed-600" />
-                      ) : isMaybe ? (
-                        <IconAlertTriangle size={32} className="text-coral-500" />
                       ) : (
                         <IconSquare size={32} className="text-gray-400" />
                       )}
@@ -225,7 +220,7 @@ export default function VotingPageDb() {
           disabled={isSubmitting}
           className="w-full"
         >
-          {isSubmitting ? 'Submitting...' : 'Submit Vote'}
+          {isSubmitting ? "Submitting..." : "Submit Vote"}
         </Button>
 
         {/* Success Modal */}
@@ -239,7 +234,10 @@ export default function VotingPageDb() {
             title="Vote Submitted!"
           >
             <div className="text-center">
-              <IconConfetti size={64} className="mx-auto mb-4 text-seaweed-600" />
+              <IconConfetti
+                size={64}
+                className="mx-auto mb-4 text-seaweed-600"
+              />
               <p className="text-gray-700 mb-6">
                 Your vote has been recorded successfully!
               </p>

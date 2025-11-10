@@ -1,13 +1,21 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { IconChartBar, IconTrophy, IconCheck, IconAlertTriangle, IconLockOpen, IconBoxMultiple, IconHome, IconChecklist } from '@tabler/icons-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { usePoll } from '../../hooks/usePoll';
-import { api } from '../../utils/api';
-import Card from '../shared/Card';
-import Button from '../shared/Button';
-import LoadingState from '../shared/LoadingState';
-import ErrorState from '../shared/ErrorState';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  IconChartBar,
+  IconTrophy,
+  IconCheck,
+  IconLockOpen,
+  IconBoxMultiple,
+  IconHome,
+  IconChecklist,
+} from "@tabler/icons-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { usePoll } from "../../hooks/usePoll";
+import { api } from "../../utils/api";
+import Card from "../shared/Card";
+import Button from "../shared/Button";
+import LoadingState from "../shared/LoadingState";
+import ErrorState from "../shared/ErrorState";
 
 interface OptionResult {
   optionId: string;
@@ -31,7 +39,7 @@ export default function ResultsPageDb() {
 
   const [results, setResults] = useState<VoteResults | null>(null);
   const [resultsLoading, setResultsLoading] = useState(true);
-  const [resultsError, setResultsError] = useState('');
+  const [resultsError, setResultsError] = useState("");
   const [isReopening, setIsReopening] = useState(false);
 
   useEffect(() => {
@@ -44,15 +52,18 @@ export default function ResultsPageDb() {
     if (!pollId) return;
 
     setResultsLoading(true);
-    setResultsError('');
+    setResultsError("");
 
     try {
-      const data = await api.get<{ success: boolean; data: { results: VoteResults } }>(`/polls/${pollId}/results`);
+      const data = await api.get<{
+        success: boolean;
+        data: { results: VoteResults };
+      }>(`/polls/${pollId}/results`);
       setResults(data.data.results);
     } catch (error) {
-      console.error('Failed to load results:', error);
+      console.error("Failed to load results:", error);
       setResultsError(
-        error instanceof Error ? error.message : 'Failed to load results'
+        error instanceof Error ? error.message : "Failed to load results",
       );
     } finally {
       setResultsLoading(false);
@@ -70,8 +81,8 @@ export default function ResultsPageDb() {
       await loadResults();
       window.location.reload(); // Force refresh to show updated poll status
     } catch (error) {
-      console.error('Failed to reopen poll:', error);
-      alert(error instanceof Error ? error.message : 'Failed to reopen poll');
+      console.error("Failed to reopen poll:", error);
+      alert(error instanceof Error ? error.message : "Failed to reopen poll");
     } finally {
       setIsReopening(false);
     }
@@ -87,20 +98,21 @@ export default function ResultsPageDb() {
   if (loadError || !poll || !results) {
     return (
       <ErrorState
-        error={loadError || 'Results not found'}
-        onGoHome={() => navigate('/')}
+        error={loadError || "Results not found"}
+        onGoHome={() => navigate("/")}
       />
     );
   }
 
   // Sort results by available count (descending)
-  const sortedResults = [...results.optionResults].sort((a, b) =>
-    b.availableCount - a.availableCount || b.maybeCount - a.maybeCount
+  const sortedResults = [...results.optionResults].sort(
+    (a, b) => b.availableCount - a.availableCount,
   );
 
   const topOption = sortedResults[0];
   const isCreator = user && poll.creatorId === user.id;
-  const canReopen = isCreator && (poll.status === 'FINALIZED' || poll.status === 'CANCELLED');
+  const canReopen =
+    isCreator && (poll.status === "FINALIZED" || poll.status === "CANCELLED");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4">
@@ -110,7 +122,9 @@ export default function ResultsPageDb() {
           <div className="flex items-start gap-4">
             <IconChartBar size={48} className="text-ocean-600 flex-shrink-0" />
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-ocean-600 mb-2">{poll.title}</h1>
+              <h1 className="text-2xl font-bold text-ocean-600 mb-2">
+                {poll.title}
+              </h1>
               {poll.description && (
                 <p className="text-gray-600 mb-2">{poll.description}</p>
               )}
@@ -119,14 +133,13 @@ export default function ResultsPageDb() {
               </p>
               <div className="mt-3 flex items-center gap-4 text-sm">
                 <span className="text-seaweed-600 font-medium">
-                  {results.totalVoters} {results.totalVoters === 1 ? 'vote' : 'votes'}
+                  {results.totalVoters}{" "}
+                  {results.totalVoters === 1 ? "vote" : "votes"}
                 </span>
-                {poll.status === 'VOTING' && (
-                  <span className="text-coral-500">
-                    Voting open
-                  </span>
+                {poll.status === "VOTING" && (
+                  <span className="text-coral-500">Voting open</span>
                 )}
-                {poll.status === 'FINALIZED' && (
+                {poll.status === "FINALIZED" && (
                   <span className="text-ocean-600">
                     <IconCheck size={16} className="inline mr-1" /> Finalized
                   </span>
@@ -149,13 +162,10 @@ export default function ResultsPageDb() {
               </div>
               <div className="flex items-center gap-4 text-sm">
                 <span className="text-seaweed-600 font-medium">
-                  <IconCheck size={16} className="inline mr-1" /> {topOption.availableCount} available ({topOption.availablePercentage.toFixed(0)}%)
+                  <IconCheck size={16} className="inline mr-1" />{" "}
+                  {topOption.availableCount} available (
+                  {topOption.availablePercentage.toFixed(0)}%)
                 </span>
-                {topOption.maybeCount > 0 && (
-                  <span className="text-coral-500">
-                    <IconAlertTriangle size={16} className="inline mr-1" /> {topOption.maybeCount} maybe
-                  </span>
-                )}
               </div>
             </div>
           </Card>
@@ -163,11 +173,16 @@ export default function ResultsPageDb() {
 
         {/* All results */}
         <Card className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">All Options</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            All Options
+          </h2>
 
           {results.totalVoters === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <IconBoxMultiple size={48} className="mx-auto mb-3 text-gray-400" />
+              <IconBoxMultiple
+                size={48}
+                className="mx-auto mb-3 text-gray-400"
+              />
               <p>No votes yet. Be the first to vote!</p>
             </div>
           ) : (
@@ -179,46 +194,29 @@ export default function ResultsPageDb() {
                 >
                   <div className="flex items-start justify-between gap-4 mb-2">
                     <div className="flex-1">
-                      <div className="font-medium text-gray-800">{result.label}</div>
+                      <div className="font-medium text-gray-800">
+                        {result.label}
+                      </div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-semibold text-seaweed-600">
-                        {result.availableCount} <IconCheck size={16} className="inline" />
+                        {result.availableCount}{" "}
+                        <IconCheck size={16} className="inline" />
                       </div>
-                      {result.maybeCount > 0 && (
-                        <div className="text-sm text-coral-500">
-                          {result.maybeCount} <IconAlertTriangle size={16} className="inline" />
-                        </div>
-                      )}
                     </div>
                   </div>
 
-                  {/* Progress bars */}
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-seaweed-500 h-full transition-all duration-300"
-                          style={{ width: `${result.availablePercentage}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-gray-500 w-10 text-right">
-                        {result.availablePercentage.toFixed(0)}%
-                      </span>
+                  {/* Progress bar */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-seaweed-500 h-full transition-all duration-300"
+                        style={{ width: `${result.availablePercentage}%` }}
+                      />
                     </div>
-                    {result.maybeCount > 0 && (
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
-                          <div
-                            className="bg-coral-400 h-full transition-all duration-300"
-                            style={{ width: `${result.maybePercentage}%` }}
-                          />
-                        </div>
-                        <span className="text-xs text-gray-500 w-10 text-right">
-                          {result.maybePercentage.toFixed(0)}%
-                        </span>
-                      </div>
-                    )}
+                    <span className="text-xs text-gray-500 w-10 text-right">
+                      {result.availablePercentage.toFixed(0)}%
+                    </span>
                   </div>
                 </div>
               ))}
@@ -228,7 +226,7 @@ export default function ResultsPageDb() {
 
         {/* Actions */}
         <div className="flex gap-3">
-          {poll.status === 'VOTING' && (
+          {poll.status === "VOTING" && (
             <Button
               onClick={() => navigate(`/vote/${pollId}`)}
               variant="primary"
@@ -244,13 +242,11 @@ export default function ResultsPageDb() {
               variant="primary"
               className="flex-1"
             >
-              <IconLockOpen size={18} className="inline mr-1" /> {isReopening ? 'Reopening...' : 'Reopen Voting'}
+              <IconLockOpen size={18} className="inline mr-1" />{" "}
+              {isReopening ? "Reopening..." : "Reopen Voting"}
             </Button>
           )}
-          <Button
-            onClick={() => navigate('/')}
-            variant="outline"
-          >
+          <Button onClick={() => navigate("/")} variant="outline">
             <IconHome size={18} className="inline mr-1" /> Home
           </Button>
         </div>
