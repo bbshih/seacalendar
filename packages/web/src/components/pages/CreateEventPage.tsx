@@ -4,7 +4,6 @@ import {
   IconList,
   IconSparkles,
   IconLoader,
-  IconConfetti,
   IconChecklist,
   IconChartBar,
   IconTrash,

@@ -10,7 +10,7 @@ import { ErrorFactory } from '../middleware/errorHandler';
 
 export interface JwtPayload {
   userId: string;
-  discordId: string;
+  discordId: string | null;
   email?: string;
 }
 
