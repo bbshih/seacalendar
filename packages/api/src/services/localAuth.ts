@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { prisma } from '@seacalendar/database';
-import { ApiError } from '../utils/errors';
+import { ApiError } from '../middleware/errorHandler';
 
 const SALT_ROUNDS = 12;
 const DISCORD_LINK_DAYS = 7; // Days to link Discord account

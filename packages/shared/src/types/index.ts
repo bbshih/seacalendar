@@ -86,38 +86,13 @@ export interface PollInvite {
 }
 
 // ============================================================================
-// Legacy Types (Backwards compatibility with existing web app)
+// Date Utilities
 // ============================================================================
 
-/** @deprecated Use Poll instead */
-export interface Event {
-  id: string;
-  title: string;
-  organizer: string;
-  dateOptions: DateOption[];
-  votes: LegacyVote[];
-  finalizedEvent?: FinalizedEvent;
-  createdAt: string;
-}
-
-/** @deprecated Use PollOption instead */
 export interface DateOption {
   id: string;
   date: string; // ISO date format: "2025-01-10"
   label: string; // Display format: "Fri Jan 10"
-}
-
-/** @deprecated Use Vote instead */
-export interface LegacyVote {
-  voterName: string;
-  selectedDates: string[]; // Array of DateOption ids
-  timestamp: string;
-}
-
-export interface FinalizedEvent {
-  selectedDateId: string;
-  venue: VenueDetails;
-  attendees: string[];
 }
 
 // ============================================================================
