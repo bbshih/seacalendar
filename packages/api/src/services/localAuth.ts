@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { prisma } from '@seacalendar/database';
-import { ApiError } from '../middleware/errorHandler';
+import { ErrorFactory } from '../middleware/errorHandler';
 
 const SALT_ROUNDS = 12;
 const DISCORD_LINK_DAYS = 7; // Days to link Discord account
@@ -26,19 +26,15 @@ export const localAuthService = {
 
     // Validate username format (alphanumeric, underscores, hyphens, 3-20 chars)
     if (!/^[a-zA-Z0-9_-]{3,20}$/.test(username)) {
-      throw new ApiError(
-        'Invalid username format. Use 3-20 alphanumeric characters, underscores, or hyphens.',
-        400,
-        'INVALID_USERNAME'
+      throw ErrorFactory.badRequest(
+        'Invalid username format. Use 3-20 alphanumeric characters, underscores, or hyphens.'
       );
     }
 
     // Validate password strength (min 8 chars, 1 uppercase, 1 lowercase, 1 number)
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)) {
-      throw new ApiError(
-        'Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 number.',
-        400,
-        'WEAK_PASSWORD'
+      throw ErrorFactory.badRequest(
+        'Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 number.'
       );
     }
 
@@ -48,7 +44,7 @@ export const localAuthService = {
     });
 
     if (existingUser) {
-      throw new ApiError('Username already taken', 400, 'USERNAME_TAKEN');
+      throw ErrorFactory.badRequest('Username already taken');
     }
 
     // Check if email already exists
@@ -58,7 +54,7 @@ export const localAuthService = {
       });
 
       if (existingEmail) {
-        throw new ApiError('Email already registered', 400, 'EMAIL_TAKEN');
+        throw ErrorFactory.badRequest('Email already registered');
       }
     }
 
@@ -113,29 +109,27 @@ export const localAuthService = {
     });
 
     if (!user || !user.passwordHash) {
-      throw new ApiError('Invalid username or password', 401, 'INVALID_CREDENTIALS');
+      throw ErrorFactory.unauthorized('Invalid username or password');
     }
 
     // Check if account is active
     if (!user.isActive) {
-      throw new ApiError('Account is disabled', 403, 'ACCOUNT_DISABLED');
+      throw ErrorFactory.forbidden('Account is disabled');
     }
 
     // Verify password
     const isValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isValid) {
-      throw new ApiError('Invalid username or password', 401, 'INVALID_CREDENTIALS');
+      throw ErrorFactory.unauthorized('Invalid username or password');
     }
 
     // Check Discord link deadline
     if (user.requireDiscordLink && user.discordLinkDeadline) {
       const now = new Date();
       if (now > user.discordLinkDeadline && !user.discordId) {
-        throw new ApiError(
-          `Account requires Discord linking. Deadline was ${user.discordLinkDeadline.toLocaleDateString()}.`,
-          403,
-          'DISCORD_LINK_REQUIRED'
+        throw ErrorFactory.forbidden(
+          `Account requires Discord linking. Deadline was ${user.discordLinkDeadline.toLocaleDateString()}.`
         );
       }
     }
@@ -152,22 +146,20 @@ export const localAuthService = {
     });
 
     if (!user || !user.passwordHash) {
-      throw new ApiError('User not found or does not have password auth', 404, 'NOT_FOUND');
+      throw ErrorFactory.notFound('User not found or does not have password auth');
     }
 
     // Verify current password
     const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
 
     if (!isValid) {
-      throw new ApiError('Current password is incorrect', 401, 'INVALID_PASSWORD');
+      throw ErrorFactory.unauthorized('Current password is incorrect');
     }
 
     // Validate new password strength
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) {
-      throw new ApiError(
-        'New password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 number.',
-        400,
-        'WEAK_PASSWORD'
+      throw ErrorFactory.badRequest(
+        'New password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 number.'
       );
     }
 

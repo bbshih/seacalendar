@@ -87,7 +87,20 @@
       "Bash(gh pr view:*)",
       "Bash(gh pr list:*)",
       "Bash(/opt/seacalendar/packages/database/prisma/schema.prisma)",
-      "Bash(systemctl cat:*)"
+      "Bash(npm run deploy-commands:*)",
+      "Bash(npm run dev:bot:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs sed:*)",
+      "Bash(find:*)",
+      "Bash({} ;)",
+      "Bash(ResultsPageDb.tsx)",
+      "Bash(CreateEventPage.tsx)",
+      "Bash(gh:*)"
+      "Bash(systemctl cat:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(timeout 60 npm run build:*)"
     ],
     "deny": [],
     "ask": []

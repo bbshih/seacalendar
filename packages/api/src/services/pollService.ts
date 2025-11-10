@@ -3,9 +3,16 @@
  * Business logic for poll operations
  */
 
-import { prisma, PollType, PollStatus, PollOptionType } from '@seacalendar/database';
-import { ErrorFactory } from '../middleware/errorHandler';
-import { logger } from '../middleware/logger';
+import {
+  prisma,
+  PollType,
+  PollStatus,
+  PollOptionType,
+} from "@seacalendar/database";
+import { ErrorFactory } from "../middleware/errorHandler";
+import { logger } from "../middleware/logger";
+import { postEventToDiscord } from "./discord";
+import { Config } from "../config";
 
 export interface CreatePollData {
   title: string;
@@ -15,7 +22,7 @@ export interface CreatePollData {
   guildId?: string;
   channelId?: string;
   options: {
-    optionType?: 'DATE' | 'TEXT';
+    optionType?: "DATE" | "TEXT";
     label: string;
     description?: string;
     date?: Date;
@@ -39,11 +46,11 @@ export const createPoll = async (userId: string, data: CreatePollData) => {
   try {
     // Validate options
     if (!data.options || data.options.length === 0) {
-      throw ErrorFactory.badRequest('At least one poll option is required');
+      throw ErrorFactory.badRequest("At least one poll option is required");
     }
 
     if (data.options.length > 30) {
-      throw ErrorFactory.badRequest('Maximum 30 poll options allowed');
+      throw ErrorFactory.badRequest("Maximum 30 poll options allowed");
     }
 
     // Create poll with options
@@ -59,7 +66,10 @@ export const createPoll = async (userId: string, data: CreatePollData) => {
         status: PollStatus.VOTING,
         options: {
           create: data.options.map((option, index) => ({
-            optionType: option.optionType === 'TEXT' ? PollOptionType.TEXT : PollOptionType.DATE,
+            optionType:
+              option.optionType === "TEXT"
+                ? PollOptionType.TEXT
+                : PollOptionType.DATE,
             label: option.label,
             description: option.description,
             date: option.date,
@@ -87,11 +97,30 @@ export const createPoll = async (userId: string, data: CreatePollData) => {
       },
     });
 
-    logger.info('Poll created', { pollId: poll.id, creatorId: userId });
+    logger.info("Poll created", { pollId: poll.id, creatorId: userId });
+
+    // Post to Discord if channelId is provided or default is configured
+    const channelId = data.channelId || Config.discord.defaultChannelId;
+    if (channelId && poll.creator.discordId) {
+      await postEventToDiscord(channelId, {
+        pollId: poll.id,
+        title: poll.title,
+        description: poll.description || undefined,
+        optionsCount: poll.options.length,
+        votingDeadline: poll.votingDeadline || undefined,
+        creatorDiscordId: poll.creator.discordId,
+      }).catch((error) => {
+        // Log but don't fail the poll creation
+        logger.error("Failed to post event to Discord", {
+          error,
+          pollId: poll.id,
+        });
+      });
+    }
 
     return poll;
   } catch (error) {
-    logger.error('Failed to create poll', { error, userId });
+    logger.error("Failed to create poll", { error, userId });
     throw error;
   }
 };
@@ -104,7 +133,7 @@ export const getPoll = async (pollId: string, userId?: string) => {
     where: { id: pollId },
     include: {
       options: {
-        orderBy: { order: 'asc' },
+        orderBy: { order: "asc" },
       },
       votes: {
         include: {
@@ -143,13 +172,14 @@ export const getPoll = async (pollId: string, userId?: string) => {
   });
 
   if (!poll) {
-    throw ErrorFactory.notFound('Poll not found');
+    throw ErrorFactory.notFound("Poll not found");
   }
 
   // Check if user has access to view this poll
   // Public polls can be viewed by anyone, private polls only by invited users
   const isCreator = userId === poll.creatorId;
-  const isInvited = userId && poll.invites.some((invite) => invite.userId === userId);
+  const isInvited =
+    userId && poll.invites.some((invite) => invite.userId === userId);
 
   if (!isCreator && !isInvited && poll.guildId) {
     // If it's a guild poll, we'll allow viewing (Discord bot will handle permissions)
@@ -162,7 +192,11 @@ export const getPoll = async (pollId: string, userId?: string) => {
 /**
  * Update poll
  */
-export const updatePoll = async (pollId: string, userId: string, data: UpdatePollData) => {
+export const updatePoll = async (
+  pollId: string,
+  userId: string,
+  data: UpdatePollData,
+) => {
   // Verify ownership
   const poll = await prisma.poll.findUnique({
     where: { id: pollId },
@@ -170,16 +204,19 @@ export const updatePoll = async (pollId: string, userId: string, data: UpdatePol
   });
 
   if (!poll) {
-    throw ErrorFactory.notFound('Poll not found');
+    throw ErrorFactory.notFound("Poll not found");
   }
 
   if (poll.creatorId !== userId) {
-    throw ErrorFactory.forbidden('Only poll creator can update the poll');
+    throw ErrorFactory.forbidden("Only poll creator can update the poll");
   }
 
   // Don't allow updates to finalized or cancelled polls
-  if (poll.status === PollStatus.FINALIZED || poll.status === PollStatus.CANCELLED) {
-    throw ErrorFactory.badRequest('Cannot update finalized or cancelled polls');
+  if (
+    poll.status === PollStatus.FINALIZED ||
+    poll.status === PollStatus.CANCELLED
+  ) {
+    throw ErrorFactory.badRequest("Cannot update finalized or cancelled polls");
   }
 
   // Update poll
@@ -193,7 +230,7 @@ export const updatePoll = async (pollId: string, userId: string, data: UpdatePol
     },
   });
 
-  logger.info('Poll updated', { pollId, userId });
+  logger.info("Poll updated", { pollId, userId });
 
   return updatedPoll;
 };
@@ -209,15 +246,15 @@ export const cancelPoll = async (pollId: string, userId: string) => {
   });
 
   if (!poll) {
-    throw ErrorFactory.notFound('Poll not found');
+    throw ErrorFactory.notFound("Poll not found");
   }
 
   if (poll.creatorId !== userId) {
-    throw ErrorFactory.forbidden('Only poll creator can cancel the poll');
+    throw ErrorFactory.forbidden("Only poll creator can cancel the poll");
   }
 
   if (poll.status === PollStatus.FINALIZED) {
-    throw ErrorFactory.badRequest('Cannot cancel finalized polls');
+    throw ErrorFactory.badRequest("Cannot cancel finalized polls");
   }
 
   // Cancel poll
@@ -229,7 +266,7 @@ export const cancelPoll = async (pollId: string, userId: string) => {
     },
   });
 
-  logger.info('Poll cancelled', { pollId, userId });
+  logger.info("Poll cancelled", { pollId, userId });
 
   return cancelledPoll;
 };
@@ -237,7 +274,11 @@ export const cancelPoll = async (pollId: string, userId: string) => {
 /**
  * Finalize poll (set winning option)
  */
-export const finalizePoll = async (pollId: string, userId: string, optionId: string) => {
+export const finalizePoll = async (
+  pollId: string,
+  userId: string,
+  optionId: string,
+) => {
   // Verify ownership
   const poll = await prisma.poll.findUnique({
     where: { id: pollId },
@@ -248,21 +289,21 @@ export const finalizePoll = async (pollId: string, userId: string, optionId: str
   });
 
   if (!poll) {
-    throw ErrorFactory.notFound('Poll not found');
+    throw ErrorFactory.notFound("Poll not found");
   }
 
   if (poll.creatorId !== userId) {
-    throw ErrorFactory.forbidden('Only poll creator can finalize the poll');
+    throw ErrorFactory.forbidden("Only poll creator can finalize the poll");
   }
 
   if (poll.status === PollStatus.FINALIZED) {
-    throw ErrorFactory.badRequest('Poll is already finalized');
+    throw ErrorFactory.badRequest("Poll is already finalized");
   }
 
   // Verify option belongs to this poll
   const option = poll.options.find((opt) => opt.id === optionId);
   if (!option) {
-    throw ErrorFactory.badRequest('Invalid option ID');
+    throw ErrorFactory.badRequest("Invalid option ID");
   }
 
   // Get all users who voted "available" for the winning option
@@ -317,7 +358,7 @@ export const finalizePoll = async (pollId: string, userId: string, optionId: str
     return updated;
   });
 
-  logger.info('Poll finalized', { pollId, userId, optionId, attendees: attendees.length });
+  logger.info("Poll finalized", { pollId, userId, optionId, attendees: attendees.length });
 
   return finalizedPoll;
 };
@@ -337,7 +378,7 @@ export const getUserPolls = async (userId: string, status?: PollStatus) => {
       invites: true,
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
   });
 
@@ -369,7 +410,7 @@ export const getInvitedPolls = async (userId: string) => {
       },
     },
     orderBy: {
-      invitedAt: 'desc',
+      invitedAt: "desc",
     },
   });
 
@@ -382,7 +423,7 @@ export const getInvitedPolls = async (userId: string) => {
 export const reopenPoll = async (
   pollId: string,
   userId: string,
-  extensionDays: number = 7
+  extensionDays: number = 7,
 ) => {
   // Verify ownership
   const poll = await prisma.poll.findUnique({
@@ -391,19 +432,21 @@ export const reopenPoll = async (
   });
 
   if (!poll) {
-    throw ErrorFactory.notFound('Poll not found');
+    throw ErrorFactory.notFound("Poll not found");
   }
 
   if (poll.creatorId !== userId) {
-    throw ErrorFactory.forbidden('Only poll creator can reopen the poll');
+    throw ErrorFactory.forbidden("Only poll creator can reopen the poll");
   }
 
   if (poll.status === PollStatus.VOTING) {
-    throw ErrorFactory.badRequest('Poll is already open for voting');
+    throw ErrorFactory.badRequest("Poll is already open for voting");
   }
 
   // Calculate new deadline
-  const newDeadline = new Date(Date.now() + extensionDays * 24 * 60 * 60 * 1000);
+  const newDeadline = new Date(
+    Date.now() + extensionDays * 24 * 60 * 60 * 1000,
+  );
 
   // Reopen poll
   const reopenedPoll = await prisma.poll.update({
@@ -421,7 +464,7 @@ export const reopenPoll = async (
     },
   });
 
-  logger.info('Poll reopened', { pollId, userId, extensionDays });
+  logger.info("Poll reopened", { pollId, userId, extensionDays });
 
   return reopenedPoll;
 };

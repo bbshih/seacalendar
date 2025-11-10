@@ -53,3 +53,15 @@ export const voteLimiter = rateLimit({
     message: 'Too many votes submitted, please slow down',
   },
 });
+
+// LLM parsing rate limiter (20 per hour to control API costs)
+export const llmParsingLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many parsing requests, please try again later',
+  },
+});

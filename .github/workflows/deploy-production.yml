@@ -38,18 +38,25 @@ jobs:
           # Build migration image from our own Dockerfile for security
           docker build -t seacalendar-migrate -f- . <<'EOF'
           FROM node:20-alpine
+          RUN apk add --no-cache openssl
           WORKDIR /app
           COPY package*.json ./
           COPY packages/database ./packages/database
           COPY packages/shared ./packages/shared
           RUN npm install --workspace=@seacalendar/database --production
           WORKDIR /app/packages/database
+          RUN npx prisma generate
           CMD ["npx", "prisma", "migrate", "deploy"]
           EOF
 
+          # Source env file to properly handle quoted values
+          set -a
+          source .env.production.local
+          set +a
+
           docker run --rm \
             --network seacalendar_seacalendar \
-            --env-file .env.production.local \
+            -e DATABASE_URL \
             seacalendar-migrate
 
           echo "🐳 Checking deployment mode..."
