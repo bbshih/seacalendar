@@ -1,9 +1,31 @@
+import { api, ApiError } from './api';
+
 /**
- * Parse natural language date inputs into ISO date strings
+ * Parse natural language date inputs into ISO date strings using the API
+ * Falls back to local parsing if API is unavailable
+ */
+export async function parseDateFromNaturalLanguage(input: string): Promise<string[]> {
+  try {
+    // Call API for parsing (uses chrono-node on backend)
+    const response = await api.post<{ success: boolean; data: { dates: string[] } }>(
+      '/utils/parse-dates',
+      { input },
+      false // No auth required
+    );
+
+    return response.data.dates;
+  } catch (error) {
+    // Fallback to local parsing if API fails
+    console.warn('API date parsing failed, using local fallback:', error);
+    return parseDateLocally(input);
+  }
+}
+
+/**
+ * Local browser-compatible date parser (fallback)
  * Supports patterns like "tomorrow", "next week", "12/25/2024", etc.
  */
-
-export function parseDateFromNaturalLanguage(input: string): string[] {
+function parseDateLocally(input: string): string[] {
   const trimmedInput = input.trim().toLowerCase();
   const dates: string[] = [];
   const today = new Date();

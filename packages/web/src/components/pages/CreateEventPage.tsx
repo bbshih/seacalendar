@@ -94,33 +94,39 @@ export default function CreateEventPage() {
   };
 
 
-  const handleParseNaturalLanguage = () => {
+  const handleParseNaturalLanguage = async () => {
     setParseError('');
-    const parsed = parseDateFromNaturalLanguage(naturalLanguageInput);
 
-    if (parsed.length === 0) {
-      setParseError('Could not parse dates. Try: "tomorrow", "next week", "this weekend", "next 5 days", "12/25"');
-      return;
-    }
+    try {
+      const parsed = await parseDateFromNaturalLanguage(naturalLanguageInput);
 
-    // Add parsed dates to options
-    const newOptions: DateOption[] = parsed.map(isoDate => {
-      const date = new Date(isoDate);
-      const label = date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
+      if (parsed.length === 0) {
+        setParseError('Could not parse dates. Try: "tomorrow", "next week", "this weekend", "next 5 days", "12/25"');
+        return;
+      }
+
+      // Add parsed dates to options
+      const newOptions: DateOption[] = parsed.map(isoDate => {
+        const date = new Date(isoDate);
+        const label = date.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+        return {
+          id: `temp-${Date.now()}-${Math.random()}`,
+          date: isoDate,
+          label,
+        };
       });
-      return {
-        id: `temp-${Date.now()}-${Math.random()}`,
-        date: isoDate,
-        label,
-      };
-    });
 
-    setDateOptions([...dateOptions, ...newOptions]);
-    setNaturalLanguageInput('');
+      setDateOptions([...dateOptions, ...newOptions]);
+      setNaturalLanguageInput('');
+    } catch (error) {
+      setParseError('Error parsing dates. Please try again.');
+      console.error('Date parsing error:', error);
+    }
   };
 
   const handleCreateEvent = async () => {
