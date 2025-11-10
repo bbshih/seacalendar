@@ -14,7 +14,8 @@ import * as engagementService from '../services/engagementService.js';
 export const data = new SlashCommandBuilder()
   .setName('engagement')
   .setDescription('View friendship health and engagement stats')
-  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild) // Admin only
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator) // Admin only
+  .setDMPermission(false) // Server only, not in DMs
   .addSubcommand(subcommand =>
     subcommand
       .setName('stats')

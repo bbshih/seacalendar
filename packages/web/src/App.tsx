@@ -1,14 +1,15 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import Navbar from './components/shared/Navbar';
-import LandingPage from './components/pages/LandingPage';
-import LoginPage from './components/pages/LoginPage';
-import AuthCallbackPage from './components/pages/AuthCallbackPage';
-import CreateEventPage from './components/pages/CreateEventPage';
-import VotingPageDb from './components/pages/VotingPageDb';
-import ResultsPageDb from './components/pages/ResultsPageDb';
-import MyEventsPage from './components/pages/MyEventsPage';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Navbar from "./components/shared/Navbar";
+import NotificationPrompt from "./components/shared/NotificationPrompt";
+import LandingPage from "./components/pages/LandingPage";
+import LoginPage from "./components/pages/LoginPage";
+import AuthCallbackPage from "./components/pages/AuthCallbackPage";
+import CreateEventPage from "./components/pages/CreateEventPage";
+import VotingPageDb from "./components/pages/VotingPageDb";
+import ResultsPageDb from "./components/pages/ResultsPageDb";
+import MyEventsPage from "./components/pages/MyEventsPage";
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
               />
             </Routes>
           </main>
+          <NotificationPrompt />
         </div>
       </AuthProvider>
     </BrowserRouter>

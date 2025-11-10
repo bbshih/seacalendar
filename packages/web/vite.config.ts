@@ -6,6 +6,9 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: "/", // Changed from "/seacalendar/" for Vercel deployment
+  optimizeDeps: {
+    include: ["@seacalendar/shared"],
+  },
   server: {
     port: 3000,
     strictPort: true,
