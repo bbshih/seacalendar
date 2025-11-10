@@ -42,7 +42,7 @@ jobs:
           COPY package*.json ./
           COPY packages/database ./packages/database
           COPY packages/shared ./packages/shared
-          RUN npm install --workspace=@seacalendar/database
+          RUN npm install --workspace=@seacalendar/database --production
           WORKDIR /app/packages/database
           RUN npx prisma generate
           CMD ["npx", "prisma", "migrate", "deploy"]
