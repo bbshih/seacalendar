@@ -1,13 +1,25 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { IconChartBar, IconTrophy, IconCheck, IconAlertTriangle, IconLockOpen, IconBoxMultiple, IconHome, IconChecklist } from '@tabler/icons-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { usePoll } from '../../hooks/usePoll';
-import { api } from '../../utils/api';
-import Card from '../shared/Card';
-import Button from '../shared/Button';
-import LoadingState from '../shared/LoadingState';
-import ErrorState from '../shared/ErrorState';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  IconChartBar,
+  IconTrophy,
+  IconCheck,
+  IconLockOpen,
+  IconBoxMultiple,
+  IconHome,
+  IconChecklist,
+  IconSquare,
+} from "@tabler/icons-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { usePoll } from "../../hooks/usePoll";
+import { api } from "../../utils/api";
+import { NotificationTemplates } from "../../utils/notifications";
+import { setResultsPageMeta, resetMetaTags } from "../../utils/metaTags";
+import Card from "../shared/Card";
+import Button from "../shared/Button";
+import Modal from "../shared/Modal";
+import LoadingState from "../shared/LoadingState";
+import ErrorState from "../shared/ErrorState";
 
 interface OptionResult {
   optionId: string;
@@ -31,8 +43,14 @@ export default function ResultsPageDb() {
 
   const [results, setResults] = useState<VoteResults | null>(null);
   const [resultsLoading, setResultsLoading] = useState(true);
-  const [resultsError, setResultsError] = useState('');
+  const [resultsError, setResultsError] = useState("");
   const [isReopening, setIsReopening] = useState(false);
+
+  // Quick vote modal state
+  const [showQuickVote, setShowQuickVote] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     if (pollId) {
@@ -40,19 +58,36 @@ export default function ResultsPageDb() {
     }
   }, [pollId]);
 
+  // Update meta tags for link preview
+  useEffect(() => {
+    if (poll && results) {
+      const sortedResults = [...results.optionResults].sort(
+        (a, b) => b.availableCount - a.availableCount,
+      );
+      const topChoice = sortedResults[0]?.label;
+      setResultsPageMeta(poll.title, pollId || "", topChoice);
+    }
+    return () => {
+      resetMetaTags();
+    };
+  }, [poll, results, pollId]);
+
   const loadResults = async () => {
     if (!pollId) return;
 
     setResultsLoading(true);
-    setResultsError('');
+    setResultsError("");
 
     try {
-      const data = await api.get<{ success: boolean; data: { results: VoteResults } }>(`/polls/${pollId}/results`);
+      const data = await api.get<{
+        success: boolean;
+        data: { results: VoteResults };
+      }>(`/polls/${pollId}/results`);
       setResults(data.data.results);
     } catch (error) {
-      console.error('Failed to load results:', error);
+      console.error("Failed to load results:", error);
       setResultsError(
-        error instanceof Error ? error.message : 'Failed to load results'
+        error instanceof Error ? error.message : "Failed to load results",
       );
     } finally {
       setResultsLoading(false);
@@ -70,10 +105,67 @@ export default function ResultsPageDb() {
       await loadResults();
       window.location.reload(); // Force refresh to show updated poll status
     } catch (error) {
-      console.error('Failed to reopen poll:', error);
-      alert(error instanceof Error ? error.message : 'Failed to reopen poll');
+      console.error("Failed to reopen poll:", error);
+      alert(error instanceof Error ? error.message : "Failed to reopen poll");
     } finally {
       setIsReopening(false);
+    }
+  };
+
+  const handleQuickVote = () => {
+    if (!user) {
+      navigate("/login", {
+        state: { from: { pathname: `/results/${pollId}` } },
+      });
+      return;
+    }
+    setShowQuickVote(true);
+  };
+
+  const toggleOption = (optionId: string) => {
+    setSelectedOptions((prev) =>
+      prev.includes(optionId)
+        ? prev.filter((id) => id !== optionId)
+        : [...prev, optionId],
+    );
+  };
+
+  const handleSubmitVote = async () => {
+    if (selectedOptions.length === 0) {
+      setSubmitError("Please select at least one option");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError("");
+
+    try {
+      await api.post(
+        `/polls/${pollId}/vote`,
+        {
+          availableOptionIds: selectedOptions,
+          maybeOptionIds: [],
+          notes: undefined,
+        },
+        true,
+      );
+
+      // Show notification
+      if (poll) {
+        NotificationTemplates.voteSubmitted(poll.title, pollId || "");
+      }
+
+      // Reload results and close modal
+      await loadResults();
+      setShowQuickVote(false);
+      setSelectedOptions([]);
+    } catch (error) {
+      console.error("Failed to submit vote:", error);
+      setSubmitError(
+        error instanceof Error ? error.message : "Failed to submit vote",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -87,20 +179,21 @@ export default function ResultsPageDb() {
   if (loadError || !poll || !results) {
     return (
       <ErrorState
-        error={loadError || 'Results not found'}
-        onGoHome={() => navigate('/')}
+        error={loadError || "Results not found"}
+        onGoHome={() => navigate("/")}
       />
     );
   }
 
   // Sort results by available count (descending)
-  const sortedResults = [...results.optionResults].sort((a, b) =>
-    b.availableCount - a.availableCount || b.maybeCount - a.maybeCount
+  const sortedResults = [...results.optionResults].sort(
+    (a, b) => b.availableCount - a.availableCount,
   );
 
   const topOption = sortedResults[0];
   const isCreator = user && poll.creatorId === user.id;
-  const canReopen = isCreator && (poll.status === 'FINALIZED' || poll.status === 'CANCELLED');
+  const canReopen =
+    isCreator && (poll.status === "FINALIZED" || poll.status === "CANCELLED");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sand-50 to-ocean-50 p-4">
@@ -110,7 +203,9 @@ export default function ResultsPageDb() {
           <div className="flex items-start gap-4">
             <IconChartBar size={48} className="text-ocean-600 flex-shrink-0" />
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-ocean-600 mb-2">{poll.title}</h1>
+              <h1 className="text-2xl font-bold text-ocean-600 mb-2">
+                {poll.title}
+              </h1>
               {poll.description && (
                 <p className="text-gray-600 mb-2">{poll.description}</p>
               )}
@@ -119,14 +214,13 @@ export default function ResultsPageDb() {
               </p>
               <div className="mt-3 flex items-center gap-4 text-sm">
                 <span className="text-seaweed-600 font-medium">
-                  {results.totalVoters} {results.totalVoters === 1 ? 'vote' : 'votes'}
+                  {results.totalVoters}{" "}
+                  {results.totalVoters === 1 ? "vote" : "votes"}
                 </span>
-                {poll.status === 'VOTING' && (
-                  <span className="text-coral-500">
-                    Voting open
-                  </span>
+                {poll.status === "VOTING" && (
+                  <span className="text-coral-500">Voting open</span>
                 )}
-                {poll.status === 'FINALIZED' && (
+                {poll.status === "FINALIZED" && (
                   <span className="text-ocean-600">
                     <IconCheck size={16} className="inline mr-1" /> Finalized
                   </span>
@@ -149,13 +243,10 @@ export default function ResultsPageDb() {
               </div>
               <div className="flex items-center gap-4 text-sm">
                 <span className="text-seaweed-600 font-medium">
-                  <IconCheck size={16} className="inline mr-1" /> {topOption.availableCount} available ({topOption.availablePercentage.toFixed(0)}%)
+                  <IconCheck size={16} className="inline mr-1" />{" "}
+                  {topOption.availableCount} available (
+                  {topOption.availablePercentage.toFixed(0)}%)
                 </span>
-                {topOption.maybeCount > 0 && (
-                  <span className="text-coral-500">
-                    <IconAlertTriangle size={16} className="inline mr-1" /> {topOption.maybeCount} maybe
-                  </span>
-                )}
               </div>
             </div>
           </Card>
@@ -163,11 +254,16 @@ export default function ResultsPageDb() {
 
         {/* All results */}
         <Card className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">All Options</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            All Options
+          </h2>
 
           {results.totalVoters === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <IconBoxMultiple size={48} className="mx-auto mb-3 text-gray-400" />
+              <IconBoxMultiple
+                size={48}
+                className="mx-auto mb-3 text-gray-400"
+              />
               <p>No votes yet. Be the first to vote!</p>
             </div>
           ) : (
@@ -179,46 +275,29 @@ export default function ResultsPageDb() {
                 >
                   <div className="flex items-start justify-between gap-4 mb-2">
                     <div className="flex-1">
-                      <div className="font-medium text-gray-800">{result.label}</div>
+                      <div className="font-medium text-gray-800">
+                        {result.label}
+                      </div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-semibold text-seaweed-600">
-                        {result.availableCount} <IconCheck size={16} className="inline" />
+                        {result.availableCount}{" "}
+                        <IconCheck size={16} className="inline" />
                       </div>
-                      {result.maybeCount > 0 && (
-                        <div className="text-sm text-coral-500">
-                          {result.maybeCount} <IconAlertTriangle size={16} className="inline" />
-                        </div>
-                      )}
                     </div>
                   </div>
 
-                  {/* Progress bars */}
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-seaweed-500 h-full transition-all duration-300"
-                          style={{ width: `${result.availablePercentage}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-gray-500 w-10 text-right">
-                        {result.availablePercentage.toFixed(0)}%
-                      </span>
+                  {/* Progress bar */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-seaweed-500 h-full transition-all duration-300"
+                        style={{ width: `${result.availablePercentage}%` }}
+                      />
                     </div>
-                    {result.maybeCount > 0 && (
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
-                          <div
-                            className="bg-coral-400 h-full transition-all duration-300"
-                            style={{ width: `${result.maybePercentage}%` }}
-                          />
-                        </div>
-                        <span className="text-xs text-gray-500 w-10 text-right">
-                          {result.maybePercentage.toFixed(0)}%
-                        </span>
-                      </div>
-                    )}
+                    <span className="text-xs text-gray-500 w-10 text-right">
+                      {result.availablePercentage.toFixed(0)}%
+                    </span>
                   </div>
                 </div>
               ))}
@@ -228,13 +307,13 @@ export default function ResultsPageDb() {
 
         {/* Actions */}
         <div className="flex gap-3">
-          {poll.status === 'VOTING' && (
+          {poll.status === "VOTING" && (
             <Button
-              onClick={() => navigate(`/vote/${pollId}`)}
+              onClick={handleQuickVote}
               variant="primary"
               className="flex-1"
             >
-              <IconChecklist size={18} className="inline mr-1" /> Vote Now
+              <IconChecklist size={18} className="inline mr-1" /> Quick Vote
             </Button>
           )}
           {canReopen && (
@@ -244,16 +323,101 @@ export default function ResultsPageDb() {
               variant="primary"
               className="flex-1"
             >
-              <IconLockOpen size={18} className="inline mr-1" /> {isReopening ? 'Reopening...' : 'Reopen Voting'}
+              <IconLockOpen size={18} className="inline mr-1" />{" "}
+              {isReopening ? "Reopening..." : "Reopen Voting"}
             </Button>
           )}
-          <Button
-            onClick={() => navigate('/')}
-            variant="outline"
-          >
+          <Button onClick={() => navigate("/")} variant="outline">
             <IconHome size={18} className="inline mr-1" /> Home
           </Button>
         </div>
+
+        {/* Quick Vote Modal */}
+        {showQuickVote && poll && (
+          <Modal
+            isOpen={showQuickVote}
+            onClose={() => {
+              setShowQuickVote(false);
+              setSelectedOptions([]);
+              setSubmitError("");
+            }}
+            title="Quick Vote"
+          >
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Select when you're available:
+              </p>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {poll.options
+                  .sort((a, b) => a.order - b.order)
+                  .map((option) => {
+                    const isSelected = selectedOptions.includes(option.id);
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => toggleOption(option.id)}
+                        className={`w-full p-3 rounded-lg border-2 transition-all text-left cursor-pointer ${
+                          isSelected
+                            ? "border-seaweed-500 bg-seaweed-50"
+                            : "border-gray-200 hover:border-ocean-300"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-800">
+                              {option.label}
+                            </div>
+                            {option.date && (
+                              <div className="text-sm text-gray-500 mt-1">
+                                {new Date(option.date).toLocaleDateString()}
+                                {option.timeStart && ` at ${option.timeStart}`}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xl ml-2">
+                            {isSelected ? (
+                              <IconCheck
+                                size={24}
+                                className="text-seaweed-600"
+                              />
+                            ) : (
+                              <IconSquare size={24} className="text-gray-400" />
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+              {submitError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                  {submitError}
+                </div>
+              )}
+              <div className="flex gap-2 pt-2">
+                <Button
+                  onClick={handleSubmitVote}
+                  disabled={isSubmitting}
+                  variant="primary"
+                  className="flex-1"
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Vote"}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowQuickVote(false);
+                    setSelectedOptions([]);
+                    setSubmitError("");
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </Modal>
+        )}
       </div>
     </div>
   );

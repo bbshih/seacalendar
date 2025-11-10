@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IconList,
@@ -7,6 +7,7 @@ import {
   IconConfetti,
   IconChecklist,
   IconChartBar,
+  IconTrash,
 } from "@tabler/icons-react";
 import Card from "../shared/Card";
 import Input from "../shared/Input";
@@ -16,6 +17,7 @@ import CopyButton from "../shared/CopyButton";
 import CalendarMonthView from "../features/CalendarMonthView";
 import DatePatternPresets from "../features/DatePatternPresets";
 import { parseDateFromNaturalLanguage } from "../../utils/naturalLanguageDateParser";
+import { NotificationTemplates } from "../../utils/notifications";
 import type { DateOption } from "../../types/local";
 
 type OptionType = "DATE" | "TEXT";
@@ -26,6 +28,8 @@ interface PollOption {
   label: string;
   date?: string;
 }
+
+const DRAFT_KEY = "createEventDraft";
 
 export default function CreateEventPage() {
   const navigate = useNavigate();
@@ -44,6 +48,47 @@ export default function CreateEventPage() {
   // Success modal
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdPoll, setCreatedPoll] = useState<any>(null);
+
+  // Refs for focusing invalid fields
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Load draft on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(DRAFT_KEY);
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        setEventTitle(draft.eventTitle || "");
+        setDescription(draft.description || "");
+        setOptionType(draft.optionType || "DATE");
+        setDateOptions(draft.dateOptions || []);
+        setTextOptions(draft.textOptions || []);
+      } catch (error) {
+        console.error("Failed to load draft:", error);
+      }
+    }
+  }, []);
+
+  // Auto-save draft
+  useEffect(() => {
+    const draft = {
+      eventTitle,
+      description,
+      optionType,
+      dateOptions,
+      textOptions,
+    };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  }, [eventTitle, description, optionType, dateOptions, textOptions]);
+
+  const clearDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setEventTitle("");
+    setDescription("");
+    setOptionType("DATE");
+    setDateOptions([]);
+    setTextOptions([]);
+  };
 
   const handleAddDate = (isoDate: string) => {
     const date = new Date(isoDate);
@@ -140,6 +185,8 @@ export default function CreateEventPage() {
   const handleCreateEvent = async () => {
     if (!eventTitle.trim()) {
       setCreateError("Please enter an event title");
+      // Focus the title input
+      titleInputRef.current?.focus();
       return;
     }
 
@@ -195,6 +242,13 @@ export default function CreateEventPage() {
 
       setCreatedPoll(data.data.poll);
       setShowSuccessModal(true);
+      // Clear draft on successful creation
+      localStorage.removeItem(DRAFT_KEY);
+      // Show notification
+      NotificationTemplates.eventCreated(
+        data.data.poll.title,
+        data.data.poll.id,
+      );
     } catch (error) {
       console.error("Failed to create event:", error);
       setCreateError(
@@ -230,6 +284,16 @@ export default function CreateEventPage() {
           <p className="text-lg text-ocean-700 font-semibold animate-slide-up">
             Plan your next hangout with friends
           </p>
+          {(eventTitle ||
+            description ||
+            dateOptions.length > 0 ||
+            textOptions.length > 0) && (
+            <div className="mt-4">
+              <Button variant="ghost" size="sm" onClick={clearDraft}>
+                <IconTrash size={16} className="inline mr-1" /> Clear Draft
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Event Details */}
@@ -239,14 +303,25 @@ export default function CreateEventPage() {
           </h2>
 
           <div className="space-y-4">
-            <Input
-              label="Event Title"
-              placeholder="e.g., Weekend Dinner, Movie Night, Game Session"
-              value={eventTitle}
-              onChange={(e) => setEventTitle(e.target.value)}
-              fullWidth
-              required
-            />
+            <div>
+              <Input
+                label="Event Title"
+                placeholder="e.g., Weekend Dinner, Movie Night, Game Session"
+                value={eventTitle}
+                onChange={(e) => setEventTitle(e.target.value)}
+                fullWidth
+                required
+              />
+              <input
+                ref={titleInputRef}
+                type="text"
+                className="sr-only"
+                tabIndex={-1}
+                aria-hidden="true"
+                value={eventTitle}
+                onChange={(e) => setEventTitle(e.target.value)}
+              />
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -268,7 +343,7 @@ export default function CreateEventPage() {
           className="mb-6 animate-fade-in"
           style={{ animationDelay: "0.1s" }}
         >
-          <h2 className="text-xl font-bold text-ocean-700 mb-4">Poll Type</h2>
+          <h2 className="text-xl font-bold text-ocean-700 mb-4">Option Type</h2>
           <div className="flex gap-3">
             <Button
               variant={optionType === "DATE" ? "primary" : "outline"}
@@ -345,12 +420,19 @@ export default function CreateEventPage() {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {dateOptions.map((opt, i) => (
-                    <span
+                    <div
                       key={i}
-                      className="px-3 py-1 bg-ocean-100 text-ocean-700 rounded-full text-sm font-medium"
+                      className="px-3 py-1 bg-ocean-100 text-ocean-700 rounded-full text-sm font-medium flex items-center gap-2"
                     >
-                      {opt.label}
-                    </span>
+                      <span>{opt.label}</span>
+                      <button
+                        onClick={() => handleRemoveDate(opt.id)}
+                        className="hover:text-red-600 transition-colors"
+                        aria-label={`Remove ${opt.label}`}
+                      >
+                        ✕
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
