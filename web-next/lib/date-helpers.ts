@@ -132,3 +132,72 @@ export interface DateOption {
   date: string;
   label: string;
 }
+
+/**
+ * Generate dates for "Quarterly Weekends" pattern
+ * Returns Fri-Sun for current + next 2 months
+ */
+export function generateQuarterlyWeekends(): string[] {
+  const today = new Date();
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const endDate = new Date(today.getFullYear(), today.getMonth() + 3, 0); // Last day of 3rd month
+
+  return generateDatesInRange(startOfMonth, endDate, DayPatterns.FRI_SUN);
+}
+
+/**
+ * Generate dates for "Next N Weekends" pattern
+ */
+export function generateNextWeekends(count: number, includeFriday = true): string[] {
+  const today = new Date();
+  const dates: string[] = [];
+  const daysPattern = includeFriday ? DayPatterns.FRI_SUN : DayPatterns.WEEKENDS;
+
+  let current = new Date(today);
+  let weekendsFound = 0;
+
+  // Find the starting day (next Friday if including Friday, otherwise next Saturday)
+  const targetStartDay = includeFriday ? DaysOfWeek.FRIDAY : DaysOfWeek.SATURDAY;
+  while (current.getDay() !== targetStartDay) {
+    current.setDate(current.getDate() + 1);
+  }
+
+  // Generate dates for N weekends
+  const endDate = new Date(current);
+  endDate.setDate(endDate.getDate() + (count * 7)); // Rough estimate, will filter
+
+  const allDates = generateDatesInRange(current, endDate, daysPattern);
+
+  // Group by weekend and take only N weekends
+  return allDates.slice(0, count * (includeFriday ? 3 : 2));
+}
+
+/**
+ * Generate dates for "This Weekend" pattern
+ */
+export function generateThisWeekend(includeFriday = true): string[] {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+
+  // If today is Monday-Thursday, get the upcoming weekend
+  // If today is Friday-Sunday, get this current weekend
+  let startDate = new Date(today);
+
+  if (includeFriday) {
+    // Find this week's Friday
+    const daysUntilFriday = (DaysOfWeek.FRIDAY - dayOfWeek + 7) % 7;
+    startDate.setDate(today.getDate() + daysUntilFriday);
+  } else {
+    // Find this week's Saturday
+    const daysUntilSaturday = (DaysOfWeek.SATURDAY - dayOfWeek + 7) % 7;
+    startDate.setDate(today.getDate() + daysUntilSaturday);
+  }
+
+  // End date is Sunday
+  const endDate = new Date(startDate);
+  const daysUntilSunday = (DaysOfWeek.SUNDAY - startDate.getDay() + 7) % 7;
+  endDate.setDate(startDate.getDate() + daysUntilSunday);
+
+  const pattern = includeFriday ? DayPatterns.FRI_SUN : DayPatterns.WEEKENDS;
+  return generateDatesInRange(startDate, endDate, pattern);
+}

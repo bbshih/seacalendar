@@ -1,6 +1,6 @@
 import { useState, useMemo, memo, useEffect } from 'react';
-import type { DateOption } from '../../types/local';
-import { formatDateLabel } from '@seacalendar/shared';
+import type { DateOption } from '@/types/local';
+import { formatDateLabel } from '@/lib/date-helpers';
 
 interface CalendarMonthViewProps {
   dateOptions: DateOption[];

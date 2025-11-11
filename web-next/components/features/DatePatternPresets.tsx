@@ -2,7 +2,7 @@ import {
   generateQuarterlyWeekends,
   generateNextWeekends,
   generateThisWeekend,
-} from '@seacalendar/shared';
+} from '@/lib/date-helpers';
 
 export interface DatePatternPresetsProps {
   onDatesSelected: (dates: string[]) => void;
