@@ -23,11 +23,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Mark as mounted on client side only
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Load user on mount
   useEffect(() => {
+    if (!mounted) return;
     loadUser();
-  }, []);
+  }, [mounted]);
 
   const loadUser = async () => {
     const token = localStorage.getItem('accessToken');
