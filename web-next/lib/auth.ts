@@ -3,24 +3,26 @@
  */
 
 import { NextRequest } from 'next/server';
+import { cookies } from 'next/headers';
 import { verifyAccessToken } from './services/jwt';
 import { ErrorFactory } from './errors';
 import { UserContext } from './types';
 import { db } from './db';
 
 /**
- * Extract and verify JWT from request headers
+ * Extract and verify JWT from request cookies
  * Returns user context or null if not authenticated
  */
 export async function getAuthUser(request: NextRequest): Promise<UserContext | null> {
   try {
-    // Get token from Authorization header
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Get token from HTTP-only cookie
+    const cookieStore = await cookies();
+    const token = cookieStore.get('accessToken')?.value;
+
+    if (!token) {
       return null;
     }
 
-    const token = authHeader.substring(7);
     const payload = verifyAccessToken(token);
 
     // Fetch full user details

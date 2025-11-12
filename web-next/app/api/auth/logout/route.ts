@@ -3,24 +3,26 @@
  */
 
 import { NextRequest } from 'next/server';
-import { z } from 'zod';
+import { cookies } from 'next/headers';
 import { revokeRefreshToken } from '@/lib/services/jwt';
 import { requireAuth } from '@/lib/auth';
 import { handleApiError, successResponse } from '@/lib/errors';
 
-const logoutSchema = z.object({
-  refreshToken: z.string().optional(),
-});
-
 export async function POST(request: NextRequest) {
   try {
     await requireAuth(request);
-    const body = await request.json();
-    const { refreshToken } = logoutSchema.parse(body);
+
+    // Get refresh token from cookie
+    const cookieStore = await cookies();
+    const refreshToken = cookieStore.get('refreshToken')?.value;
 
     if (refreshToken) {
       await revokeRefreshToken(refreshToken);
     }
+
+    // Clear auth cookies
+    cookieStore.delete('accessToken');
+    cookieStore.delete('refreshToken');
 
     return successResponse({ message: 'Logged out successfully' });
   } catch (error) {

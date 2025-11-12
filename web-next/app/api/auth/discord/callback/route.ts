@@ -3,6 +3,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { exchangeCodeForToken, fetchDiscordUser } from '@/lib/services/discord';
 import { generateTokens } from '@/lib/services/jwt';
 import { db } from '@/lib/db';
@@ -79,15 +80,29 @@ export async function GET(request: NextRequest) {
       email: user.email || undefined,
     });
 
-    // Redirect to web app with tokens
-    const redirectUrl = new URL('/auth/callback', config.appUrl);
-    redirectUrl.searchParams.set('token', tokens.accessToken);
-    redirectUrl.searchParams.set('refreshToken', tokens.refreshToken);
-    if (state) {
-      redirectUrl.searchParams.set('state', state);
-    }
+    // Set HTTP-only cookies
+    const cookieStore = await cookies();
+    const isProduction = process.env.NODE_ENV === 'production';
 
-    return NextResponse.redirect(redirectUrl.toString());
+    cookieStore.set('accessToken', tokens.accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 15 * 60, // 15 minutes
+      path: '/',
+    });
+
+    cookieStore.set('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/',
+    });
+
+    // Redirect to web app (state contains return URL)
+    const redirectUrl = state || '/';
+    return NextResponse.redirect(new URL(redirectUrl, config.appUrl).toString());
   } catch (error) {
     return handleApiError(error);
   }

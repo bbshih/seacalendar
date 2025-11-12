@@ -1,21 +1,28 @@
+'use client';
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
   id: string;
-  discordId: string;
+  discordId?: string;
   username: string;
-  discriminator: string;
-  avatar?: string;
   email?: string;
+  displayName?: string;
+  avatar?: string;
+  requireDiscordLink?: boolean;
+  discordLinkDeadline?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (provider: 'discord', returnTo?: string) => void;
+  loginDiscord: (returnTo?: string) => void;
+  loginGoogle: (returnTo?: string) => void;
+  loginLocal: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string, email?: string) => Promise<void>;
   logout: () => Promise<void>;
-  refreshAuth: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,120 +30,103 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
 
-  // Mark as mounted on client side only
+  // Load user on mount (cookies sent automatically)
   useEffect(() => {
-    setMounted(true);
+    loadUser();
   }, []);
 
-  // Load user on mount
-  useEffect(() => {
-    if (!mounted) return;
-    loadUser();
-  }, [mounted]);
-
   const loadUser = async () => {
-    const token = localStorage.getItem('accessToken');
-
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
-
     try {
       const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include', // Include cookies
       });
 
-      if (!response.ok) {
-        // Token expired or invalid, try refresh
-        await refreshAuth();
-        return;
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.data.user);
+      } else {
+        setUser(null);
       }
-
-      const data = await response.json();
-      setUser(data.data.user);
     } catch (error) {
       console.error('Failed to load user:', error);
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = (provider: 'discord', returnTo?: string) => {
-    if (provider === 'discord') {
-      // Redirect to Discord OAuth with return URL
-      const state = returnTo || window.location.pathname;
-      fetch(`/api/auth/discord/url?state=${encodeURIComponent(state)}`)
-        .then(res => res.json())
-        .then(data => {
-          window.location.href = data.authUrl;
-        });
+  const loginDiscord = (returnTo?: string) => {
+    const state = returnTo || window.location.pathname;
+    fetch(`/api/auth/discord/url?state=${encodeURIComponent(state)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        window.location.href = data.data.authUrl;
+      });
+  };
+
+  const loginGoogle = (returnTo?: string) => {
+    const state = returnTo || window.location.pathname;
+    fetch(`/api/auth/google/url?state=${encodeURIComponent(state)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        window.location.href = data.data.authUrl;
+      });
+  };
+
+  const loginLocal = async (username: string, password: string) => {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Login failed');
     }
+
+    const data = await response.json();
+    setUser(data.data.user);
+  };
+
+  const register = async (username: string, password: string, email?: string) => {
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ username, password, email }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Registration failed');
+    }
+
+    const data = await response.json();
+    setUser(data.data.user);
   };
 
   const logout = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    const accessToken = localStorage.getItem('accessToken');
-
     try {
-      if (refreshToken && accessToken) {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ refreshToken }),
-        });
-      }
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       setUser(null);
     }
   };
 
-  const refreshAuth = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
-
-    if (!refreshToken) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to refresh token');
-      }
-
-      const data = await response.json();
-      localStorage.setItem('accessToken', data.data.accessToken);
-      localStorage.setItem('refreshToken', data.data.refreshToken);
-
-      // Load user with new token
-      await loadUser();
-    } catch (error) {
-      console.error('Failed to refresh token:', error);
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      setIsLoading(false);
-    }
+  const refreshUser = async () => {
+    await loadUser();
   };
 
   return (
@@ -145,9 +135,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         isAuthenticated: !!user,
-        login,
+        loginDiscord,
+        loginGoogle,
+        loginLocal,
+        register,
         logout,
-        refreshAuth,
+        refreshUser,
       }}
     >
       {children}

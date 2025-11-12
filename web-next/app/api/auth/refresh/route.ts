@@ -1,25 +1,45 @@
 /**
- * POST /api/auth/refresh - Refresh access token using refresh token
+ * POST /api/auth/refresh - Refresh access token using refresh token from cookies
  */
 
 import { NextRequest } from 'next/server';
-import { z } from 'zod';
+import { cookies } from 'next/headers';
 import { refreshAccessToken } from '@/lib/services/jwt';
-import { handleApiError, successResponse } from '@/lib/errors';
-
-const refreshSchema = z.object({
-  refreshToken: z.string().min(1),
-});
+import { handleApiError, successResponse, ErrorFactory } from '@/lib/errors';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { refreshToken } = refreshSchema.parse(body);
+    // Get refresh token from cookie
+    const cookieStore = await cookies();
+    const refreshToken = cookieStore.get('refreshToken')?.value;
+
+    if (!refreshToken) {
+      throw ErrorFactory.unauthorized('Refresh token required');
+    }
 
     // Generate new token pair
     const tokens = await refreshAccessToken(refreshToken);
 
-    return successResponse({ data: tokens });
+    // Update cookies with new tokens
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    cookieStore.set('accessToken', tokens.accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 15 * 60, // 15 minutes
+      path: '/',
+    });
+
+    cookieStore.set('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/',
+    });
+
+    return successResponse({ message: 'Tokens refreshed successfully' });
   } catch (error) {
     return handleApiError(error);
   }
