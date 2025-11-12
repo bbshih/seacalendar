@@ -52,17 +52,17 @@ export default function Navbar() {
                 <div className="flex items-center space-x-2">
                   {user?.avatar && (
                     <img
-                      src={`https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`}
-                      alt={user.username}
+                      src={user.discordId
+                        ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`
+                        : user.avatar
+                      }
+                      alt={user.displayName || user.username}
                       className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
                     />
                   )}
                   <div className="hidden sm:block">
                     <p className="text-sm font-medium text-white">
-                      {user?.username}
-                      {user?.discriminator && user.discriminator !== '0' && (
-                        <span className="text-ocean-200">#{user.discriminator}</span>
-                      )}
+                      {user?.displayName || user?.username}
                     </p>
                     {user?.email && (
                       <p className="text-xs text-ocean-200">{user.email}</p>
