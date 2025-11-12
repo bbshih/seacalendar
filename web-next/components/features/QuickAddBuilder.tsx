@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Button from '../shared/Button';
-import { generateCustomPattern, DaysOfWeek, getDayName } from '@seacalendar/shared';
+import { generateCustomPattern, DaysOfWeek, getDayName } from '@/lib/date-helpers';
 
 export interface QuickAddBuilderProps {
   onDatesSelected: (dates: string[]) => void;

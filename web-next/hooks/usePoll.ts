@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
-import type { Poll } from '@/lib/types';
 
 interface UsePollResult {
-  poll: Poll | null;
+  poll: any | null;
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 }
 
 export function usePoll(pollId: string | undefined): UsePollResult {
-  const [poll, setPoll] = useState<Poll | null>(null);
+  const [poll, setPoll] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

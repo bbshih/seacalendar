@@ -1,15 +1,18 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+'use client';
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import Button from './Button';
 import { IconList, IconPlus } from '@tabler/icons-react';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    router.push('/');
   };
 
   return (
@@ -17,14 +20,14 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo/Brand */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <span className="text-2xl font-black text-white">SeaCalendar</span>
           </Link>
 
           {/* Navigation Links */}
           <div className="flex items-center space-x-3">
             {/* My Events Link */}
-            <Link to="/my-events">
+            <Link href="/my-events">
               <Button
                 variant="glass"
                 size="sm"
@@ -34,7 +37,7 @@ export default function Navbar() {
             </Link>
 
             {/* Create Event Link */}
-            <Link to="/create">
+            <Link href="/create">
               <Button
                 variant="secondary"
                 size="sm"

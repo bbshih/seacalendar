@@ -9,11 +9,12 @@ import { handleApiError, successResponse } from '@/lib/errors';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth(request);
-    const voters = await getVoterDetails(params.id, user.id);
+    const { id } = await params;
+    const voters = await getVoterDetails(id, user.id);
 
     return successResponse({ voters });
   } catch (error) {

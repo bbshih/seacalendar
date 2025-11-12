@@ -14,17 +14,20 @@ const finalizePollSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Require authentication
     const user = await requireAuth(request);
 
+    // Await params in Next.js 15
+    const { id } = await params;
+
     // Parse and validate request body
     const body = await request.json();
     const validatedData = finalizePollSchema.parse(body);
 
-    const poll = await finalizePoll(params.id, user.id, validatedData.optionId);
+    const poll = await finalizePoll(id, user.id, validatedData.optionId);
 
     return successResponse({ poll }, 200);
   } catch (error) {

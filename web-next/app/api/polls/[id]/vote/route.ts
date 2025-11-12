@@ -18,14 +18,15 @@ const submitVoteSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth(request);
+    const { id } = await params;
     const body = await request.json();
     const validatedData = submitVoteSchema.parse(body);
 
-    const vote = await submitVote(params.id, user.id, validatedData);
+    const vote = await submitVote(id, user.id, validatedData);
 
     return successResponse({ vote }, 200);
   } catch (error) {
@@ -35,11 +36,12 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth(request);
-    const vote = await getUserVote(params.id, user.id);
+    const { id } = await params;
+    const vote = await getUserVote(id, user.id);
 
     return successResponse({ vote });
   } catch (error) {
@@ -49,11 +51,12 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth(request);
-    await deleteVote(params.id, user.id);
+    const { id } = await params;
+    await deleteVote(id, user.id);
 
     return successResponse({ message: 'Vote deleted successfully' });
   } catch (error) {

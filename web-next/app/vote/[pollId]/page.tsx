@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { IconBoxMultiple, IconCheck, IconAlertTriangle, IconSquare, IconConfetti } from '@tabler/icons-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,13 +13,13 @@ import LoadingState from '@/components/shared/LoadingState';
 import ErrorState from '@/components/shared/ErrorState';
 
 interface VotingPageProps {
-  params: {
+  params: Promise<{
     pollId: string;
-  };
+  }>;
 }
 
 export default function VotingPage({ params }: VotingPageProps) {
-  const pollId = params.pollId;
+  const { pollId } = use(params);
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   const { poll, loading: isLoading, error: loadError } = usePoll(pollId);

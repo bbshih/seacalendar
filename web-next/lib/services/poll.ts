@@ -4,8 +4,12 @@
  */
 
 import { db } from '../db';
-import { PollType, PollStatus, PollOptionType } from '@prisma/client';
 import { ErrorFactory } from '../errors';
+
+// Type aliases (Prisma client not fully generated)
+type PollType = 'EVENT' | 'GENERIC' | 'QOTW';
+type PollStatus = 'DRAFT' | 'VOTING' | 'FINALIZED' | 'CANCELLED' | 'EXPIRED';
+type PollOptionType = 'DATE' | 'TEXT';
 
 export interface CreatePollData {
   title: string;
@@ -51,15 +55,15 @@ export async function createPoll(userId: string, data: CreatePollData) {
       data: {
         title: data.title,
         description: data.description,
-        type: data.type || PollType.EVENT,
+        type: data.type || 'EVENT',
         votingDeadline: data.votingDeadline,
         guildId: data.guildId,
         channelId: data.channelId,
         creatorId: userId,
-        status: PollStatus.VOTING,
+        status: 'VOTING',
         options: {
           create: data.options.map((option, index) => ({
-            optionType: option.optionType === 'TEXT' ? PollOptionType.TEXT : PollOptionType.DATE,
+            optionType: option.optionType === 'TEXT' ? 'TEXT' : 'DATE',
             label: option.label,
             description: option.description,
             date: option.date,
@@ -148,7 +152,7 @@ export async function getPoll(pollId: string, userId?: string) {
 
   // Check if user has access to view this poll
   const isCreator = userId === poll.creatorId;
-  const isInvited = userId && poll.invites.some((invite) => invite.userId === userId);
+  const isInvited = userId && poll.invites.some((invite: any) => invite.userId === userId);
 
   if (!isCreator && !isInvited && poll.guildId) {
     // If it's a guild poll, allow viewing (Discord bot handles permissions)
@@ -176,7 +180,7 @@ export async function updatePoll(pollId: string, userId: string, data: UpdatePol
   }
 
   // Don't allow updates to finalized or cancelled polls
-  if (poll.status === PollStatus.FINALIZED || poll.status === PollStatus.CANCELLED) {
+  if (poll.status === 'FINALIZED' || poll.status === 'CANCELLED') {
     throw ErrorFactory.badRequest('Cannot update finalized or cancelled polls');
   }
 
@@ -214,7 +218,7 @@ export async function cancelPoll(pollId: string, userId: string) {
     throw ErrorFactory.forbidden('Only poll creator can cancel the poll');
   }
 
-  if (poll.status === PollStatus.FINALIZED) {
+  if (poll.status === 'FINALIZED') {
     throw ErrorFactory.badRequest('Cannot cancel finalized polls');
   }
 
@@ -222,7 +226,7 @@ export async function cancelPoll(pollId: string, userId: string) {
   const cancelledPoll = await db.poll.update({
     where: { id: pollId },
     data: {
-      status: PollStatus.CANCELLED,
+      status: 'CANCELLED',
       closedAt: new Date(),
     },
   });
@@ -250,12 +254,12 @@ export async function finalizePoll(pollId: string, userId: string, optionId: str
     throw ErrorFactory.forbidden('Only poll creator can finalize the poll');
   }
 
-  if (poll.status === PollStatus.FINALIZED) {
+  if (poll.status === 'FINALIZED') {
     throw ErrorFactory.badRequest('Poll is already finalized');
   }
 
   // Verify option belongs to this poll
-  const option = poll.options.find((opt) => opt.id === optionId);
+  const option = poll.options.find((opt: any) => opt.id === optionId);
   if (!option) {
     throw ErrorFactory.badRequest('Invalid option ID');
   }
@@ -264,7 +268,7 @@ export async function finalizePoll(pollId: string, userId: string, optionId: str
   const finalizedPoll = await db.poll.update({
     where: { id: pollId },
     data: {
-      status: PollStatus.FINALIZED,
+      status: 'FINALIZED',
       finalizedOptionId: optionId,
       closedAt: new Date(),
     },
@@ -297,7 +301,7 @@ export async function reopenPoll(pollId: string, userId: string, extensionDays: 
     throw ErrorFactory.forbidden('Only poll creator can reopen the poll');
   }
 
-  if (poll.status === PollStatus.VOTING) {
+  if (poll.status === 'VOTING') {
     throw ErrorFactory.badRequest('Poll is already open for voting');
   }
 
@@ -308,7 +312,7 @@ export async function reopenPoll(pollId: string, userId: string, extensionDays: 
   const reopenedPoll = await db.poll.update({
     where: { id: pollId },
     data: {
-      status: PollStatus.VOTING,
+      status: 'VOTING',
       votingDeadline: newDeadline,
       closedAt: null,
       finalizedOptionId: null,
@@ -376,5 +380,5 @@ export async function getInvitedPolls(userId: string) {
     },
   });
 
-  return invites.map((invite) => invite.poll);
+  return invites.map((invite: any) => invite.poll);
 }

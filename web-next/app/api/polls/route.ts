@@ -8,20 +8,19 @@ import { z } from 'zod';
 import { createPoll } from '@/lib/services/poll';
 import { requireAuth } from '@/lib/auth';
 import { handleApiError, successResponse } from '@/lib/errors';
-import { PollType, PollOptionType } from '@prisma/client';
 
 // Validation schema
 const createPollSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(1000).optional(),
-  type: z.nativeEnum(PollType).optional(),
+  type: z.enum(['EVENT', 'GENERIC', 'QOTW']).optional(),
   votingDeadline: z.string().datetime().optional(),
   guildId: z.string().optional(),
   channelId: z.string().optional(),
   options: z
     .array(
       z.object({
-        optionType: z.nativeEnum(PollOptionType).optional(),
+        optionType: z.enum(['DATE', 'TEXT']).optional(),
         label: z.string().min(1).max(200),
         description: z.string().max(500).optional(),
         date: z.string().datetime().optional(),

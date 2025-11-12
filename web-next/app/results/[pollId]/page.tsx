@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { IconChartBar, IconTrophy, IconCheck, IconAlertTriangle, IconLockOpen, IconBoxMultiple, IconHome, IconChecklist } from '@tabler/icons-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,13 +26,13 @@ interface VoteResults {
 }
 
 interface ResultsPageProps {
-  params: {
+  params: Promise<{
     pollId: string;
-  };
+  }>;
 }
 
 export default function ResultsPage({ params }: ResultsPageProps) {
-  const pollId = params.pollId;
+  const { pollId } = use(params);
   const router = useRouter();
   const { user } = useAuth();
   const { poll, loading: pollLoading, error: pollError } = usePoll(pollId);

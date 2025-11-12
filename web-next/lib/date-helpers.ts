@@ -1,5 +1,3 @@
-import { DateOption } from './types';
-
 /**
  * Format an ISO date string into a display label
  * Example: "2025-01-10" -> "Fri Jan 10"
@@ -200,4 +198,19 @@ export function generateThisWeekend(includeFriday = true): string[] {
 
   const pattern = includeFriday ? DayPatterns.FRI_SUN : DayPatterns.WEEKENDS;
   return generateDatesInRange(startDate, endDate, pattern);
+}
+
+/**
+ * Generate custom pattern of dates
+ */
+export function generateCustomPattern(
+  daysOfWeek: readonly number[],
+  monthsAhead: number,
+  monthCount: number = 1
+): string[] {
+  const today = new Date();
+  const startDate = new Date(today.getFullYear(), today.getMonth() + monthsAhead, 1);
+  const endDate = new Date(today.getFullYear(), today.getMonth() + monthsAhead + monthCount, 0);
+
+  return generateDatesInRange(startDate, endDate, daysOfWeek);
 }

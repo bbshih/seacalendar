@@ -9,23 +9,23 @@ import { z } from 'zod';
 import { getPoll, updatePoll, cancelPoll } from '@/lib/services/poll';
 import { requireAuth, optionalAuth } from '@/lib/auth';
 import { handleApiError, successResponse } from '@/lib/errors';
-import { PollStatus } from '@prisma/client';
 
 const updatePollSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(1000).optional(),
   votingDeadline: z.string().datetime().optional(),
-  status: z.nativeEnum(PollStatus).optional(),
+  status: z.enum(['DRAFT', 'VOTING', 'FINALIZED', 'CANCELLED', 'EXPIRED']).optional(),
 });
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Optional auth - allow viewing public polls
     const user = await optionalAuth(request);
-    const poll = await getPoll(params.id, user?.id);
+    const { id } = await params;
+    const poll = await getPoll(id, user?.id);
 
     return successResponse({ poll });
   } catch (error) {
@@ -35,11 +35,14 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Require authentication
     const user = await requireAuth(request);
+
+    // Await params in Next.js 15
+    const { id } = await params;
 
     // Parse and validate request body
     const body = await request.json();
@@ -53,7 +56,7 @@ export async function PATCH(
         : undefined,
     };
 
-    const poll = await updatePoll(params.id, user.id, updateData);
+    const poll = await updatePoll(id, user.id, updateData);
 
     return successResponse({ poll });
   } catch (error) {
@@ -63,12 +66,13 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Require authentication
     const user = await requireAuth(request);
-    const poll = await cancelPoll(params.id, user.id);
+    const { id } = await params;
+    const poll = await cancelPoll(id, user.id);
 
     return successResponse({ poll }, 200);
   } catch (error) {

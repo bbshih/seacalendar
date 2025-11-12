@@ -154,8 +154,8 @@ export async function getUserStats(userId: string) {
     votedInvites,
     participationRate: parseFloat(participationRate),
     pollsByStatus: pollsByStatus.reduce(
-      (acc, { status, _count }) => {
-        acc[status] = _count;
+      (acc: any, item: any) => {
+        acc[item.status] = item._count;
         return acc;
       },
       {} as Record<string, number>

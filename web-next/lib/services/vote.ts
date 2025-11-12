@@ -4,8 +4,10 @@
  */
 
 import { db } from '../db';
-import { PollStatus } from '@prisma/client';
 import { ErrorFactory } from '../errors';
+
+// Type aliases (Prisma client not fully generated)
+type PollStatus = 'DRAFT' | 'VOTING' | 'FINALIZED' | 'CANCELLED' | 'EXPIRED';
 
 export interface SubmitVoteData {
   availableOptionIds: string[];
@@ -47,7 +49,7 @@ export async function submitVote(pollId: string, userId: string, data: SubmitVot
     throw ErrorFactory.notFound('Poll not found');
   }
 
-  if (poll.status !== PollStatus.VOTING) {
+  if (poll.status !== 'VOTING') {
     throw ErrorFactory.badRequest('Poll is not accepting votes');
   }
 
@@ -57,7 +59,7 @@ export async function submitVote(pollId: string, userId: string, data: SubmitVot
   }
 
   // Validate option IDs belong to this poll
-  const validOptionIds = new Set(poll.options.map((opt) => opt.id));
+  const validOptionIds = new Set(poll.options.map((opt: any) => opt.id));
   const invalidAvailable = data.availableOptionIds.some((id) => !validOptionIds.has(id));
   const invalidMaybe = data.maybeOptionIds?.some((id) => !validOptionIds.has(id)) || false;
 
@@ -145,12 +147,12 @@ export async function getVoteResults(pollId: string): Promise<VoteResults> {
   const totalInvited = poll.invites.length;
 
   // Calculate results for each option
-  const optionResults = poll.options.map((option) => {
-    const availableCount = poll.votes.filter((vote) =>
+  const optionResults = poll.options.map((option: any) => {
+    const availableCount = poll.votes.filter((vote: any) =>
       vote.availableOptionIds.includes(option.id)
     ).length;
 
-    const maybeCount = poll.votes.filter((vote) => vote.maybeOptionIds.includes(option.id)).length;
+    const maybeCount = poll.votes.filter((vote: any) => vote.maybeOptionIds.includes(option.id)).length;
 
     return {
       optionId: option.id,
