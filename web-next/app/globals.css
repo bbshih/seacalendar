@@ -1,9 +1,6 @@
-@import "tailwindcss";
-
-/* Fix for Tailwind v4 gradient bug */
-:root {
-  --tw-gradient-via-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/preflight" layer(base);
+@import "tailwindcss/utilities" layer(utilities);
 
 @theme {
   --color-ocean-50: #f0f9ff;
