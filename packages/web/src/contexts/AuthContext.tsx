@@ -16,6 +16,7 @@ interface AuthContextType {
   login: (provider: 'discord', returnTo?: string) => void;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
+  loadUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -141,6 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         refreshAuth,
+        loadUser,
       }}
     >
       {children}
