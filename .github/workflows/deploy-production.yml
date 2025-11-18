@@ -29,10 +29,19 @@ jobs:
           [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
           echo "🔨 Installing dependencies..."
-          npm install
+          cd web-next && npm install && cd ..
+          cd discord-bot && npm install && cd ..
 
-          echo "🏗️ Building packages..."
+          echo "🏗️ Building Next.js app..."
+          cd web-next
+          npx prisma generate
           npm run build
+          cd ..
+
+          echo "🏗️ Building Discord bot..."
+          cd discord-bot
+          npm run build
+          cd ..
 
           echo "🗄️ Running database migrations..."
           # Build migration image from our own Dockerfile for security
@@ -59,22 +68,11 @@ jobs:
             -e DATABASE_URL \
             seacalendar-migrate
 
-          echo "🐳 Checking deployment mode..."
-          if docker ps | grep -q "seacalendar-api\|seacalendar-web\|seacalendar-bot"; then
-            echo "Production Docker mode detected"
-            echo "🔄 Rebuilding containers..."
-            docker compose -f docker-compose.prod.yml up -d --build
+          echo "🔄 Reloading services with PM2..."
+          pm2 reload ecosystem.config.js
 
-            echo "⏳ Waiting for services..."
-            sleep 10
-
-            echo "✅ Deployment complete!"
-            docker compose -f docker-compose.prod.yml ps
-          else
-            echo "Dev mode detected (npm)"
-            echo "Services will auto-restart via watch mode"
-            echo "✅ Code updated!"
-          fi
+          echo "✅ Deployment complete!"
+          pm2 status
 
       - name: Verify deployment
         run: |
