@@ -26,12 +26,14 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/discord/url');
       const data = await res.json();
 
-      if (data.success) {
+      if (data.success && data.data?.authUrl) {
         // Store the redirect path in session storage
         sessionStorage.setItem('authRedirect', from);
 
         // Redirect to Discord OAuth
-        window.location.href = data.authUrl;
+        window.location.href = data.data.authUrl;
+      } else {
+        console.error('No authUrl in response:', data);
       }
     } catch (error) {
       console.error('Failed to initiate login:', error);
