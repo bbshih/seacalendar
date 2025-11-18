@@ -61,7 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetch(`/api/auth/discord/url?state=${encodeURIComponent(state)}`)
       .then((res) => res.json())
       .then((data) => {
-        window.location.href = data.data.authUrl;
+        console.log('Discord API response:', data);
+        console.log('authUrl:', data.data?.authUrl);
+        if (data.data?.authUrl) {
+          window.location.href = data.data.authUrl;
+        } else {
+          console.error('No authUrl in response:', data);
+        }
+      })
+      .catch((error) => {
+        console.error('Discord login error:', error);
       });
   };
 
