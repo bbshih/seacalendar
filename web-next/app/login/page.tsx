@@ -2,21 +2,22 @@
 
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import Card from '@/components/shared/Card';
 import Button from '@/components/shared/Button';
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // Check if already authenticated
-    const token = localStorage.getItem('accessToken');
-    if (token) {
+    // Redirect if already authenticated
+    if (!isLoading && isAuthenticated) {
       const returnTo = searchParams.get('returnTo') || '/';
       router.push(returnTo);
     }
-  }, [router, searchParams]);
+  }, [isAuthenticated, isLoading, router, searchParams]);
 
   const handleLogin = async () => {
     try {
