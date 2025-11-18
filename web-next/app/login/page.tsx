@@ -13,23 +13,20 @@ export default function LoginPage() {
     // Check if already authenticated
     const token = localStorage.getItem('accessToken');
     if (token) {
-      const from = searchParams.get('from') || '/';
-      router.push(from);
+      const returnTo = searchParams.get('returnTo') || '/';
+      router.push(returnTo);
     }
   }, [router, searchParams]);
 
   const handleLogin = async () => {
     try {
-      const from = searchParams.get('from') || '/';
+      const returnTo = searchParams.get('returnTo') || '/';
 
-      // Get Discord OAuth URL
-      const res = await fetch('/api/auth/discord/url');
+      // Get Discord OAuth URL with state parameter
+      const res = await fetch(`/api/auth/discord/url?state=${encodeURIComponent(returnTo)}`);
       const data = await res.json();
 
       if (data.success && data.data?.authUrl) {
-        // Store the redirect path in session storage
-        sessionStorage.setItem('authRedirect', from);
-
         // Redirect to Discord OAuth
         window.location.href = data.data.authUrl;
       } else {
