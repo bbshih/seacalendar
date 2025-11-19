@@ -4,12 +4,12 @@
  */
 
 // Export types
-export * from "./types";
+export * from "./types/index.js";
 
 // Export utilities
-export * from "./utils/dateHelpers";
-export * from "./utils/nlpDateParser";
-export * from "./utils/llmDateParser";
+export * from "./utils/dateHelpers.js";
+export * from "./utils/nlpDateParser.js";
+export * from "./utils/llmDateParser.js";
 
 // Export validation schemas (will add later with Zod)
 // export * from './validation';

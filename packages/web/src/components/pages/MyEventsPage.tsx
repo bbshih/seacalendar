@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  IconList,
+  IconCalendar,
   IconCheck,
   IconChecklist,
   IconChartBar,
@@ -135,7 +135,7 @@ export default function MyEventsPageDb() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              <IconList
+              <IconCalendar
                 size={40}
                 className="inline mr-2 text-ocean-600"
                 style={{
@@ -144,9 +144,6 @@ export default function MyEventsPageDb() {
               />{" "}
               My Events
             </h1>
-            <p className="text-lg text-ocean-700 font-semibold">
-              Welcome back, {user?.username}!
-            </p>
           </div>
           <div className="flex gap-2">
             <Button

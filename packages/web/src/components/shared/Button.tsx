@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, ReactNode, useState } from "react";
+import { ButtonHTMLAttributes, ReactNode } from "react";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline" | "gradient" | "glass" | "glow" | "ghost";
@@ -16,20 +16,6 @@ export default function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const [ripples, setRipples] = useState<{ x: number; y: number; id: number }[]>([]);
-
-  const createRipple = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const button = e.currentTarget;
-    const rect = button.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const ripple = { x, y, id: Date.now() };
-
-    setRipples((prev) => [...prev, ripple]);
-    setTimeout(() => {
-      setRipples((prev) => prev.filter((r) => r.id !== ripple.id));
-    }, 600);
-  };
 
   const baseStyles =
     "font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-visible cursor-pointer";
@@ -60,6 +46,12 @@ export default function Button({
     lg: "py-4 px-8 text-lg",
   };
 
+  const gapStyles = {
+    sm: "gap-1.5",
+    md: "gap-3",
+    lg: "gap-3",
+  };
+
   const widthStyles = fullWidth ? "w-full" : "";
 
   return (
@@ -69,36 +61,17 @@ export default function Button({
         color: variantTextColors[variant],
       }}
       disabled={disabled}
-      onClick={(e) => {
-        createRipple(e);
-        props.onClick?.(e);
-      }}
       {...props}
     >
       {/* Glass reflection highlight - applied to all variants */}
       <span
-        className="absolute inset-0 rounded-full bg-gradient-to-br from-white/80 via-white/20 to-transparent pointer-events-none"
+        className="absolute inset-0 rounded-full bg-gradient-to-br from-white/80 via-white/20 to-transparent pointer-events-none z-[1]"
         style={{
           clipPath: "ellipse(45% 35% at 30% 20%)",
         }}
       />
 
-      <span className="relative z-10">{children}</span>
-
-      {/* Ripple effects */}
-      {ripples.map((ripple) => (
-        <span
-          key={ripple.id}
-          className="absolute bg-white/30 rounded-full animate-ripple pointer-events-none z-0"
-          style={{
-            left: ripple.x,
-            top: ripple.y,
-            width: 10,
-            height: 10,
-            transform: 'translate(-50%, -50%)',
-          }}
-        />
-      ))}
+      <span className={`relative z-10 flex items-center justify-center ${gapStyles[size]}`}>{children}</span>
     </button>
   );
 }
