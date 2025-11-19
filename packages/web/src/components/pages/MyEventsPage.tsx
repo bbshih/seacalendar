@@ -174,28 +174,19 @@ export default function MyEventsPageDb() {
             <h2 className="text-2xl font-bold text-ocean-600 mb-2">
               No Events Yet
             </h2>
-            <p className="text-ocean-500 mb-6">
+            <p className="text-ocean-500 mb-4">
               Create your first event here on the web or via Discord!
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                variant="gradient"
-                size="lg"
-                onClick={() => navigate("/create")}
-              >
-                ✨ Create Event
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => window.open("https://discord.com", "_blank")}
-              >
-                🎮 Use Discord{" "}
-                <code className="ml-2 bg-gray-200 px-2 py-1 rounded text-xs">
-                  /event
-                </code>
-              </Button>
-            </div>
+            <Button
+              variant="gradient"
+              size="lg"
+              onClick={() => navigate("/create")}
+            >
+              ✨ Create Event
+            </Button>
+            <p className="text-sm text-gray-600 mt-6">
+              💡 Tip: Use <code className="bg-gray-200 px-2 py-1 rounded">/create</code> in Discord to create an event from there
+            </p>
           </Card>
         ) : (
           <div className="space-y-4 animate-fade-in">
