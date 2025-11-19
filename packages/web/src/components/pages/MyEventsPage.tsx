@@ -137,10 +137,9 @@ export default function MyEventsPageDb() {
             >
               <IconList
                 size={40}
-                className="inline mr-2"
+                className="inline mr-2 text-ocean-600"
                 style={{
-                  color: "inherit",
-                  WebkitTextFillColor: "currentColor",
+                  WebkitTextFillColor: "#0e7490",
                 }}
               />{" "}
               My Events
