@@ -43,13 +43,16 @@ export default function CreateEventPage() {
   const [parseError, setParseError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState("");
+  const [titleError, setTitleError] = useState("");
+  const [optionsError, setOptionsError] = useState("");
 
   // Success modal
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdPoll, setCreatedPoll] = useState<any>(null);
 
-  // Refs for focusing invalid fields
+  // Refs for focusing and scrolling to invalid fields
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const optionsCardRef = useRef<HTMLDivElement>(null);
 
   // Load draft on mount
   useEffect(() => {
@@ -103,6 +106,7 @@ export default function CreateEventPage() {
       label,
     };
     setDateOptions([...dateOptions, newOption]);
+    if (optionsError) setOptionsError(""); // Clear error when adding options
   };
 
   const handleRemoveDate = (dateId: string) => {
@@ -138,6 +142,7 @@ export default function CreateEventPage() {
     };
     setTextOptions([...textOptions, newOption]);
     setTextInput("");
+    if (optionsError) setOptionsError(""); // Clear error when adding options
   };
 
   const handleRemoveTextOption = (optionId: string) => {
@@ -182,24 +187,33 @@ export default function CreateEventPage() {
   };
 
   const handleCreateEvent = async () => {
+    // Clear previous errors
+    setTitleError("");
+    setOptionsError("");
+    setCreateError("");
+
+    // Validate title
     if (!eventTitle.trim()) {
-      setCreateError("Please enter an event title");
-      // Focus the title input
+      setTitleError("Please enter an event title");
+      // Scroll to and focus the title input
+      titleInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       titleInputRef.current?.focus();
       return;
     }
 
+    // Validate options
     const totalOptions =
       optionType === "DATE" ? dateOptions.length : textOptions.length;
     if (totalOptions === 0) {
-      setCreateError(
+      setOptionsError(
         `Please add at least one ${optionType === "DATE" ? "date" : "option"}`,
       );
+      // Scroll to the options section
+      optionsCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
     setIsCreating(true);
-    setCreateError("");
 
     try {
       const token = localStorage.getItem("accessToken");
@@ -283,16 +297,6 @@ export default function CreateEventPage() {
           <p className="text-lg text-ocean-700 font-semibold animate-slide-up">
             Plan your next hangout with friends
           </p>
-          {(eventTitle ||
-            description ||
-            dateOptions.length > 0 ||
-            textOptions.length > 0) && (
-            <div className="mt-4">
-              <Button variant="ghost" size="sm" onClick={clearDraft}>
-                <IconTrash size={16} className="inline mr-1" /> Clear Draft
-              </Button>
-            </div>
-          )}
         </div>
 
         {/* Event Details */}
@@ -304,21 +308,17 @@ export default function CreateEventPage() {
           <div className="space-y-4">
             <div>
               <Input
+                ref={titleInputRef}
                 label="Event Title"
                 placeholder="e.g., Weekend Dinner, Movie Night, Game Session"
                 value={eventTitle}
-                onChange={(e) => setEventTitle(e.target.value)}
+                onChange={(e) => {
+                  setEventTitle(e.target.value);
+                  if (titleError) setTitleError(""); // Clear error on change
+                }}
+                error={titleError}
                 fullWidth
                 required
-              />
-              <input
-                ref={titleInputRef}
-                type="text"
-                className="sr-only"
-                tabIndex={-1}
-                aria-hidden="true"
-                value={eventTitle}
-                onChange={(e) => setEventTitle(e.target.value)}
               />
             </div>
 
@@ -364,12 +364,18 @@ export default function CreateEventPage() {
         {/* Date Selection */}
         {optionType === "DATE" && (
           <Card
+            ref={optionsCardRef}
             className="mb-6 animate-fade-in"
             style={{ animationDelay: "0.2s" }}
           >
             <h2 className="text-xl font-bold text-ocean-700 mb-4">
               Pick Dates ({dateOptions.length} selected)
             </h2>
+            {optionsError && (
+              <div className="mb-4 p-3 bg-red-50 border-2 border-red-400 rounded-lg">
+                <p className="text-red-700 font-medium">{optionsError}</p>
+              </div>
+            )}
 
             {/* Natural Language Date Input */}
             <div className="mb-4 p-4 bg-ocean-50 rounded-lg border border-ocean-200">
@@ -442,12 +448,18 @@ export default function CreateEventPage() {
         {/* Text Options */}
         {optionType === "TEXT" && (
           <Card
+            ref={optionsCardRef}
             className="mb-6 animate-fade-in"
             style={{ animationDelay: "0.2s" }}
           >
             <h2 className="text-xl font-bold text-ocean-700 mb-4">
               Custom Options ({textOptions.length} added)
             </h2>
+            {optionsError && (
+              <div className="mb-4 p-3 bg-red-50 border-2 border-red-400 rounded-lg">
+                <p className="text-red-700 font-medium">{optionsError}</p>
+              </div>
+            )}
 
             <div className="space-y-4">
               <div className="flex gap-2">
@@ -497,7 +509,7 @@ export default function CreateEventPage() {
           </Card>
         )}
 
-        {/* Error */}
+        {/* Server Error */}
         {createError && (
           <Card className="mb-6 bg-red-50 border-red-200 animate-fade-in">
             <p className="text-red-700">{createError}</p>
