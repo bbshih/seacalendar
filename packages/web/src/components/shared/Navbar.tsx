@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from './Button';
-import { IconList, IconPlus } from '@tabler/icons-react';
+import { IconCalendar, IconPlus } from '@tabler/icons-react';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -29,7 +29,7 @@ export default function Navbar() {
                 variant="glass"
                 size="sm"
               >
-                <IconList size={18} className="inline mr-1" /> My Events
+                <IconCalendar size={18} className="inline mr-1" /> My Events
               </Button>
             </Link>
 

@@ -4,7 +4,7 @@
  */
 
 // Export types
-export * from "./types";
+export * from "./types/index.js";
 
 // Export utilities (client-safe only)
 export * from "./utils/dateHelpers";
