@@ -8,12 +8,16 @@ export default defineConfig({
   base: "/", // Changed from "/seacalendar/" for Vercel deployment
   optimizeDeps: {
     include: ["@seacalendar/shared"],
+    exclude: ["@anthropic-ai/sdk"], // Server-only dependency
   },
   server: {
     port: 3000,
     strictPort: true,
     host: true,
     allowedHosts: ['cal.billyeatstofu.com', 'localhost'],
+    fs: {
+      allow: ['..'], // Allow accessing workspace packages
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
