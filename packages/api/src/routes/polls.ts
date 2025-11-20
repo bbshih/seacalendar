@@ -36,7 +36,9 @@ const createPollSchema = z.object({
         optionType: z.nativeEnum(PollOptionType).optional(),
         label: z.string().min(1).max(200),
         description: z.string().max(500).optional(),
-        date: z.string().datetime().optional(),
+        date: z.string().refine((val) => !isNaN(Date.parse(val)), {
+          message: "Invalid date format"
+        }).optional(),
         timeStart: z.string().regex(/^\d{2}:\d{2}$/).optional(),
         timeEnd: z.string().regex(/^\d{2}:\d{2}$/).optional(),
       })
