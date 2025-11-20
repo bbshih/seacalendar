@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: seacalendar-test-db
+    restart: unless-stopped
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts with dev DB
+    environment:
+      POSTGRES_DB: seacalendar_test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+    tmpfs:
+      - /var/lib/postgresql/data  # Use tmpfs for faster test DB (in-memory)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d seacalendar_test"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    networks:
+      - seacalendar-test
+
+networks:
+  seacalendar-test:
+    driver: bridge
