@@ -6,7 +6,6 @@ import {
   IconLoader,
   IconChecklist,
   IconChartBar,
-  IconTrash,
 } from "@tabler/icons-react";
 import Card from "../shared/Card";
 import Input from "../shared/Input";
@@ -82,15 +81,6 @@ export default function CreateEventPage() {
     };
     localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   }, [eventTitle, description, optionType, dateOptions, textOptions]);
-
-  const clearDraft = () => {
-    localStorage.removeItem(DRAFT_KEY);
-    setEventTitle("");
-    setDescription("");
-    setOptionType("DATE");
-    setDateOptions([]);
-    setTextOptions([]);
-  };
 
   const handleAddDate = (isoDate: string) => {
     const date = new Date(isoDate);
