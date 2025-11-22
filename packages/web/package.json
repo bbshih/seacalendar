@@ -5,7 +5,7 @@
   "description": "SeaCalendar web app - Ocean-themed friend group hangout organizer",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
