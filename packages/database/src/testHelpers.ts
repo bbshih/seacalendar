@@ -41,7 +41,8 @@ export async function resetTestDatabase() {
   await prisma.eventReminder.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.refreshToken.deleteMany();
-  await prisma.calendar.deleteMany();
+  await prisma.calendarEvent.deleteMany();
+  await prisma.calendarConnection.deleteMany();
   await prisma.authProvider.deleteMany();
   await prisma.user.deleteMany();
 }

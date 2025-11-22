@@ -57,16 +57,16 @@ import authRoutes from "./routes/auth";
 import pollRoutes from "./routes/polls";
 import voteRoutes from "./routes/votes";
 import userRoutes from "./routes/users";
-import memoryRoutes from "./routes/memories";
-import utilsRoutes from "./routes/utils";
+// import memoryRoutes from "./routes/memories"; // TODO: Re-enable when schema migration complete
+// import utilsRoutes from "./routes/utils"; // TODO: Re-enable when schema migration complete
 
 // Register API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/polls", pollRoutes);
 app.use("/api", voteRoutes); // Vote routes include /api/polls/:pollId/vote
 app.use("/api/users", userRoutes);
-app.use("/api/memories", memoryRoutes);
-app.use("/api/utils", utilsRoutes);
+// app.use("/api/memories", memoryRoutes); // TODO: Re-enable when schema migration complete
+// app.use("/api/utils", utilsRoutes); // TODO: Re-enable when schema migration complete
 
 // Import and initialize Socket.io handlers
 import { initializeSocketHandlers } from "./sockets";

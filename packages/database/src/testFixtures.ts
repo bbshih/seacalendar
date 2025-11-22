@@ -94,16 +94,18 @@ export async function createTestPoll(
 export async function createTestVote(
   prisma: PrismaClient = getTestPrisma(),
   overrides: {
-    userId: string;
-    optionId: string;
-    availability?: 'AVAILABLE' | 'MAYBE';
+    voterId: string;
+    pollId: string;
+    availableOptionIds?: string[];
+    maybeOptionIds?: string[];
   }
 ) {
   return await prisma.vote.create({
     data: {
-      userId: overrides.userId,
-      pollOptionId: overrides.optionId,
-      availability: overrides.availability || 'AVAILABLE',
+      voterId: overrides.voterId,
+      pollId: overrides.pollId,
+      availableOptionIds: overrides.availableOptionIds || [],
+      maybeOptionIds: overrides.maybeOptionIds || [],
     },
   });
 }
@@ -116,9 +118,8 @@ export async function createTestVenue(
   overrides: Partial<{
     name: string;
     address: string;
-    placeId: string;
-    latitude: number;
-    longitude: number;
+    guildId: string;
+    addedById: string;
   }> = {}
 ) {
   const timestamp = Date.now();
@@ -126,9 +127,8 @@ export async function createTestVenue(
     data: {
       name: overrides.name || `Test Venue ${timestamp}`,
       address: overrides.address || `123 Test St, Test City`,
-      placeId: overrides.placeId || `place-${timestamp}`,
-      latitude: overrides.latitude || 37.7749,
-      longitude: overrides.longitude || -122.4194,
+      guildId: overrides.guildId || `guild-${timestamp}`,
+      addedById: overrides.addedById || `user-${timestamp}`,
     },
   });
 }
@@ -201,7 +201,7 @@ export async function createTestAuthProvider(
   return await prisma.authProvider.create({
     data: {
       userId: overrides.userId,
-      provider: overrides.provider,
+      provider: overrides.provider as any, // Cast to AuthProviderType enum
       providerId: overrides.providerId,
       accessToken: overrides.accessToken,
     },

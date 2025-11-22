@@ -9,9 +9,14 @@ export * from "./types/index.js";
 // Export utilities (client-safe only)
 export * from "./utils/dateHelpers";
 
-// Server-only utilities (not exported to avoid bundling heavy deps in web)
-// Import directly from @seacalendar/shared/dist/utils/nlpDateParser if needed
-// Import directly from @seacalendar/shared/dist/utils/llmDateParser if needed
+// Server-only utilities - exported for API/bot use
+export {
+  parseDateFromNaturalLanguage,
+  parseEventDescriptionSmart,
+  parseEventDescriptionAdvanced,
+  parseEventDescription,
+  type ParsedEvent,
+} from "./utils/nlpDateParser.js";
 
 // Export validation schemas (will add later with Zod)
 // export * from './validation';
