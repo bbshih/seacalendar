@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/bot.ts",
-    "build": "tsc && tsc-alias",
+    "build": "NODE_OPTIONS='--max-old-space-size=2048' tsc && tsc-alias",
     "start": "node dist/bot.js",
     "test": "vitest",
     "deploy-commands": "tsx src/deploy-commands.ts"

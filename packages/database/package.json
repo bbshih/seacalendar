@@ -13,6 +13,7 @@
     "studio": "dotenv -e ../../.env.development -e ../../.env.development.local -- prisma studio",
     "seed": "dotenv -e ../../.env.development -e ../../.env.development.local -- tsx prisma/seed.ts",
     "reset": "npm run migrate:reset && npm run seed",
+    "prebuild": "prisma generate",
     "build": "tsc"
   },
   "dependencies": {
