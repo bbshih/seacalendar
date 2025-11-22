@@ -11,3 +11,7 @@ import { PrismaClient } from '@prisma/client';
 export const prisma = new PrismaClient();
 
 export default prisma;
+
+// Export test utilities (tree-shaken in production)
+export * from './testHelpers';
+export * from './testFixtures';

@@ -11,6 +11,8 @@
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:api": "playwright test --config=playwright.e2e.config.ts",
+    "test:e2e:api:ui": "playwright test --config=playwright.e2e.config.ts --ui",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
