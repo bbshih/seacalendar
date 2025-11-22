@@ -15,7 +15,7 @@
     "@seacalendar/database": "*",
     "@seacalendar/shared": "*",
     "chrono-node": "^2.7.5",
-    "date-fns": "^3.0.0",
+    "date-fns": "^4.1.0",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.1",
     "googleapis": "^128.0.0",
