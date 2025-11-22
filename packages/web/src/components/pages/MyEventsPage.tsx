@@ -23,7 +23,7 @@ interface Poll {
 }
 
 export default function MyEventsPageDb() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const [polls, setPolls] = useState<Poll[]>([]);
   const [isLoading, setIsLoading] = useState(true);
