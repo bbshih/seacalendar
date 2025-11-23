@@ -28,7 +28,7 @@
     "test:e2e:api": "npm run test:e2e -w @seacalendar/api",
     "test:e2e:web": "npm run test:e2e:api -w @seacalendar/web",
     "test:e2e:full": "npm run test:e2e:setup && npm run test:e2e:api && npm run test:e2e:web",
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build -w @seacalendar/database && npm run build -w @seacalendar/shared && npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist",
     "setup": "npm install && npm run db:setup && echo '\n✅ Setup complete! Run: npm run dev'"

@@ -3,17 +3,18 @@
  * Create shared albums for event memories
  */
 
-import { google, photoslibrary_v1 } from 'googleapis';
-import { Config } from '../config.js';
+import { google } from 'googleapis';
 
 // Initialize Google Photos API client
-let photosClient: photoslibrary_v1.Photoslibrary | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let photosClient: any | null = null;
 
 /**
  * Initialize Google Photos API client with service account
  * Requires GOOGLE_APPLICATION_CREDENTIALS env var pointing to service account JSON
  */
-function getPhotosClient(): photoslibrary_v1.Photoslibrary {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getPhotosClient(): any {
   if (photosClient) return photosClient;
 
   try {
@@ -24,7 +25,8 @@ function getPhotosClient(): photoslibrary_v1.Photoslibrary {
       ],
     });
 
-    photosClient = google.photoslibrary({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    photosClient = (google as any).photoslibrary({
       version: 'v1',
       auth,
     });

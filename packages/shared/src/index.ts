@@ -15,6 +15,8 @@ export {
   parseEventDescriptionSmart,
   parseEventDescriptionAdvanced,
   parseEventDescription,
+  formatDateOption,
+  validateParsedEvent,
   type ParsedEvent,
 } from "./utils/nlpDateParser.js";
 

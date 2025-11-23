@@ -164,20 +164,27 @@ export async function createPollScenario(
   if (scenario.withVotes) {
     const votes = [];
     for (const voter of voters) {
-      // Each voter votes for 1-2 random options
-      const votesPerVoter = Math.floor(Math.random() * 2) + 1;
+      // Each voter votes for 1-3 random options
+      const votesPerVoter = Math.floor(Math.random() * 3) + 1;
       const optionsToVote = poll.options
         .sort(() => Math.random() - 0.5)
         .slice(0, votesPerVoter);
 
-      for (const option of optionsToVote) {
-        const vote = await createTestVote(prisma, {
-          userId: voter.id,
-          optionId: option.id,
-          availability: Math.random() > 0.3 ? 'AVAILABLE' : 'MAYBE',
-        });
-        votes.push(vote);
-      }
+      // Randomly split options between available and maybe
+      const availableOptions = optionsToVote
+        .filter(() => Math.random() > 0.3)
+        .map((o) => o.id);
+      const maybeOptions = optionsToVote
+        .filter((o) => !availableOptions.includes(o.id))
+        .map((o) => o.id);
+
+      const vote = await createTestVote(prisma, {
+        voterId: voter.id,
+        pollId: poll.id,
+        availableOptionIds: availableOptions,
+        maybeOptionIds: maybeOptions,
+      });
+      votes.push(vote);
     }
 
     return { poll, voters, votes };
