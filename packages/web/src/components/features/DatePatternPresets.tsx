@@ -13,7 +13,6 @@ interface PatternHistory {
   label: string;
   description: string;
   usedAt: number;
-  generator: () => string[];
 }
 
 const RECENT_PATTERNS_KEY = "recentDatePatterns";
@@ -22,49 +21,7 @@ export default function DatePatternPresets({
   onDatesSelected,
 }: DatePatternPresetsProps) {
   const [recentPatterns, setRecentPatterns] = useState<PatternHistory[]>([]);
-
-  useEffect(() => {
-    // Load recent patterns from localStorage
-    const stored = localStorage.getItem(RECENT_PATTERNS_KEY);
-    if (stored) {
-      try {
-        const patterns = JSON.parse(stored);
-        setRecentPatterns(patterns);
-      } catch (error) {
-        console.error("Failed to load recent patterns:", error);
-      }
-    }
-  }, []);
-
-  const saveToHistory = (
-    label: string,
-    description: string,
-    generator: () => string[],
-  ) => {
-    const pattern: PatternHistory = {
-      label,
-      description,
-      usedAt: Date.now(),
-      generator,
-    };
-
-    // Remove duplicates by label and add to front
-    const filtered = recentPatterns.filter((p) => p.label !== label);
-    const updated = [pattern, ...filtered].slice(0, 3); // Keep only last 3
-
-    setRecentPatterns(updated);
-    localStorage.setItem(RECENT_PATTERNS_KEY, JSON.stringify(updated));
-  };
-
-  const handlePresetClick = (
-    label: string,
-    description: string,
-    generator: () => string[],
-  ) => {
-    const dates = generator();
-    saveToHistory(label, description, generator);
-    onDatesSelected(dates);
-  };
+  const [selectedPattern, setSelectedPattern] = useState<string | null>(null);
 
   const presets = [
     {
@@ -83,6 +40,53 @@ export default function DatePatternPresets({
       generator: () => generateThisWeekend(true),
     },
   ];
+
+  useEffect(() => {
+    // Load recent patterns from localStorage
+    const stored = localStorage.getItem(RECENT_PATTERNS_KEY);
+    if (stored) {
+      try {
+        const patterns = JSON.parse(stored);
+        setRecentPatterns(patterns);
+      } catch (error) {
+        console.error("Failed to load recent patterns:", error);
+      }
+    }
+  }, []);
+
+  const saveToHistory = (label: string, description: string) => {
+    const pattern: PatternHistory = {
+      label,
+      description,
+      usedAt: Date.now(),
+    };
+
+    // Remove duplicates by label and add to front
+    const filtered = recentPatterns.filter((p) => p.label !== label);
+    const updated = [pattern, ...filtered].slice(0, 3); // Keep only last 3
+
+    setRecentPatterns(updated);
+    localStorage.setItem(RECENT_PATTERNS_KEY, JSON.stringify(updated));
+  };
+
+  const handlePresetClick = (
+    label: string,
+    description: string,
+    generator: () => string[],
+  ) => {
+    // If clicking the same pattern, deselect it
+    if (selectedPattern === label) {
+      setSelectedPattern(null);
+      onDatesSelected([]);
+      return;
+    }
+
+    // Otherwise, select the pattern and generate dates
+    const dates = generator();
+    setSelectedPattern(label);
+    saveToHistory(label, description);
+    onDatesSelected(dates);
+  };
 
   return (
     <div className="space-y-4">
@@ -108,28 +112,43 @@ export default function DatePatternPresets({
             </h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {recentPatterns.map((pattern) => (
-              <button
-                key={pattern.label}
-                onClick={() =>
-                  handlePresetClick(
-                    pattern.label,
-                    pattern.description,
-                    pattern.generator,
-                  )
-                }
-                className="group relative p-3 rounded-lg border-2 border-coral-200 bg-coral-50 hover:border-coral-400 hover:bg-coral-100 transition-all duration-200 text-left hover:shadow-md cursor-pointer"
-              >
-                <div className="flex flex-col gap-0.5">
-                  <div className="text-sm font-medium text-coral-800 group-hover:text-coral-900">
-                    {pattern.label}
+            {recentPatterns.map((pattern) => {
+              const preset = presets.find((p) => p.label === pattern.label);
+              if (!preset) return null;
+              const isSelected = selectedPattern === pattern.label;
+              return (
+                <button
+                  key={pattern.label}
+                  onClick={() =>
+                    handlePresetClick(
+                      pattern.label,
+                      pattern.description,
+                      preset.generator,
+                    )
+                  }
+                  className={`group relative p-3 rounded-lg border-2 transition-all duration-200 text-left hover:shadow-md cursor-pointer ${
+                    isSelected
+                      ? "border-coral-500 bg-coral-200 shadow-md"
+                      : "border-coral-200 bg-coral-50 hover:border-coral-400 hover:bg-coral-100"
+                  }`}
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <div
+                      className={`text-sm font-medium ${
+                        isSelected
+                          ? "text-coral-900"
+                          : "text-coral-800 group-hover:text-coral-900"
+                      }`}
+                    >
+                      {pattern.label}
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      {pattern.description}
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-600">
-                    {pattern.description}
-                  </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -154,31 +173,50 @@ export default function DatePatternPresets({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {presets.map((preset) => (
-            <button
-              key={preset.label}
-              onClick={() =>
-                handlePresetClick(
-                  preset.label,
-                  preset.description,
-                  preset.generator,
-                )
-              }
-              className="group relative p-4 rounded-lg border-2 border-ocean-200 bg-white hover:border-ocean-400 hover:bg-ocean-50 transition-all duration-200 text-left hover:shadow-md cursor-pointer"
-            >
-              <div className="flex flex-col gap-1">
-                <div className="font-medium text-ocean-800 group-hover:text-ocean-900">
-                  {preset.label}
+          {presets.map((preset) => {
+            const isSelected = selectedPattern === preset.label;
+            return (
+              <button
+                key={preset.label}
+                onClick={() =>
+                  handlePresetClick(
+                    preset.label,
+                    preset.description,
+                    preset.generator,
+                  )
+                }
+                className={`group relative p-4 rounded-lg border-2 transition-all duration-200 text-left hover:shadow-md cursor-pointer ${
+                  isSelected
+                    ? "border-ocean-500 bg-ocean-100 shadow-md"
+                    : "border-ocean-200 bg-white hover:border-ocean-400 hover:bg-ocean-50"
+                }`}
+              >
+                <div className="flex flex-col gap-1">
+                  <div
+                    className={`font-medium ${
+                      isSelected
+                        ? "text-ocean-900"
+                        : "text-ocean-800 group-hover:text-ocean-900"
+                    }`}
+                  >
+                    {preset.label}
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    {preset.description}
+                  </div>
                 </div>
-                <div className="text-xs text-gray-600">
-                  {preset.description}
-                </div>
-              </div>
 
-              {/* Wave animation on hover */}
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-ocean-400 to-coral-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full" />
-            </button>
-          ))}
+                {/* Wave animation on hover */}
+                <div
+                  className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-ocean-400 to-coral-400 transform transition-transform duration-300 origin-left rounded-full ${
+                    isSelected
+                      ? "scale-x-100"
+                      : "scale-x-0 group-hover:scale-x-100"
+                  }`}
+                />
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

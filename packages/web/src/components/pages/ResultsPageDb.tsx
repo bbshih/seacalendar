@@ -39,7 +39,12 @@ export default function ResultsPageDb() {
   const { pollId } = useParams<{ pollId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { poll, loading: pollLoading, error: pollError } = usePoll(pollId);
+  const {
+    poll,
+    loading: pollLoading,
+    error: pollError,
+    refetch,
+  } = usePoll(pollId);
 
   const [results, setResults] = useState<VoteResults | null>(null);
   const [resultsLoading, setResultsLoading] = useState(true);
@@ -53,10 +58,10 @@ export default function ResultsPageDb() {
   const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
-    if (pollId) {
-      loadResults();
+    if (poll) {
+      calculateResults();
     }
-  }, [pollId]);
+  }, [poll]);
 
   // Update meta tags for link preview
   useEffect(() => {
@@ -72,22 +77,39 @@ export default function ResultsPageDb() {
     };
   }, [poll, results, pollId]);
 
-  const loadResults = async () => {
-    if (!pollId) return;
+  const calculateResults = () => {
+    if (!poll) return;
 
     setResultsLoading(true);
     setResultsError("");
 
     try {
-      const data = await api.get<{
-        success: boolean;
-        data: { results: VoteResults };
-      }>(`/polls/${pollId}/results`);
-      setResults(data.data.results);
+      const totalVoters = poll.votes.length;
+      const optionResults: OptionResult[] = poll.options.map((option) => {
+        const availableCount = poll.votes.filter((vote) =>
+          vote.availableOptions.includes(option.id),
+        ).length;
+        const maybeCount = poll.votes.filter((vote) =>
+          vote.maybeOptions.includes(option.id),
+        ).length;
+
+        return {
+          optionId: option.id,
+          label: option.label,
+          availableCount,
+          maybeCount,
+          availablePercentage:
+            totalVoters > 0 ? (availableCount / totalVoters) * 100 : 0,
+          maybePercentage:
+            totalVoters > 0 ? (maybeCount / totalVoters) * 100 : 0,
+        };
+      });
+
+      setResults({ totalVoters, optionResults });
     } catch (error) {
-      console.error("Failed to load results:", error);
+      console.error("Failed to calculate results:", error);
       setResultsError(
-        error instanceof Error ? error.message : "Failed to load results",
+        error instanceof Error ? error.message : "Failed to calculate results",
       );
     } finally {
       setResultsLoading(false);
@@ -101,9 +123,8 @@ export default function ResultsPageDb() {
 
     try {
       await api.post(`/polls/${pollId}/reopen`, { days: 7 }, true);
-      // Reload results
-      await loadResults();
-      window.location.reload(); // Force refresh to show updated poll status
+      // Force refresh to show updated poll status
+      window.location.reload();
     } catch (error) {
       console.error("Failed to reopen poll:", error);
       alert(error instanceof Error ? error.message : "Failed to reopen poll");
@@ -155,8 +176,8 @@ export default function ResultsPageDb() {
         NotificationTemplates.voteSubmitted(poll.title, pollId || "");
       }
 
-      // Reload results and close modal
-      await loadResults();
+      // Reload poll data (results will be recalculated automatically)
+      await refetch();
       setShowQuickVote(false);
       setSelectedOptions([]);
     } catch (error) {
