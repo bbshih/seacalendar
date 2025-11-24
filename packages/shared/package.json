@@ -11,10 +11,10 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.68.0",
+    "@anthropic-ai/sdk": "^0.71.0",
     "chrono-node": "^2.9.0",
     "date-fns": "^4.1.0",
-    "zod": "^3.22.4"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
