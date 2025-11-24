@@ -20,7 +20,7 @@
     "dotenv": "^16.4.1",
     "googleapis": "^128.0.0",
     "node-cron": "^3.0.3",
-    "zod": "^3.22.4"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
