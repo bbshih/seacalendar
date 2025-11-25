@@ -1,5 +1,12 @@
 version: '3.8'
 
+# Shared logging configuration for all services
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   postgres:
     image: postgres:15-alpine
@@ -8,6 +15,17 @@ services:
     env_file:
       - .env.production           # Template (committed to git)
       - .env.production.local     # Actual secrets (gitignored, takes priority)
+    command: >
+      postgres
+      -c shared_buffers=128MB
+      -c effective_cache_size=256MB
+      -c max_connections=50
+      -c work_mem=4MB
+      -c maintenance_work_mem=64MB
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c wal_buffers=4MB
+      -c checkpoint_completion_target=0.9
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backups:/backups
@@ -18,6 +36,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          memory: 256M
+    logging: *default-logging
 
   api:
     build:
@@ -28,6 +54,8 @@ services:
     env_file:
       - .env.production           # Template (committed to git)
       - .env.production.local     # Actual secrets (gitignored, takes priority)
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=200
     depends_on:
       postgres:
         condition: service_healthy
@@ -35,6 +63,14 @@ services:
       - seacalendar
     ports:
       - "3001:3001"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          memory: 128M
+    logging: *default-logging
 
   discord-bot:
     build:
@@ -45,11 +81,21 @@ services:
     env_file:
       - .env.production           # Template (committed to git)
       - .env.production.local     # Actual secrets (gitignored, takes priority)
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=200
     depends_on:
       - postgres
       - api
     networks:
       - seacalendar
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          memory: 128M
+    logging: *default-logging
 
   web:
     build:
@@ -61,6 +107,14 @@ services:
       - "3000:80"
     networks:
       - seacalendar
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+        reservations:
+          memory: 32M
+    logging: *default-logging
 
 volumes:
   postgres_data:
