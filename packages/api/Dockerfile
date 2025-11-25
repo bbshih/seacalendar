@@ -50,18 +50,14 @@ COPY packages/api/package*.json ./packages/api/
 # Install only production dependencies
 RUN npm ci --omit=dev --workspace=@seacalendar/api
 
-# Copy built files from builder
+# Copy built files and generated Prisma client from builder
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
 COPY --from=builder /app/packages/database/prisma/schema.prisma ./packages/database/prisma/schema.prisma
 COPY --from=builder /app/packages/database/prisma/migrations ./packages/database/prisma/migrations
 COPY --from=builder /app/packages/api/dist ./packages/api/dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-
-# Generate Prisma client in production stage
-WORKDIR /app/packages/database
-RUN npx prisma generate
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
 # Set working directory to api package
 WORKDIR /app/packages/api
