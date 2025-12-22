@@ -15,12 +15,12 @@
     "@seacalendar/database": "*",
     "@seacalendar/shared": "*",
     "chrono-node": "^2.7.5",
-    "date-fns": "^3.0.0",
-    "discord.js": "^14.14.1",
-    "dotenv": "^16.4.1",
-    "googleapis": "^128.0.0",
-    "node-cron": "^3.0.3",
-    "zod": "^3.22.4"
+    "date-fns": "^4.1.0",
+    "discord.js": "^14.25.1",
+    "dotenv": "^17.2.3",
+    "googleapis": "^169.0.0",
+    "node-cron": "^4.2.1",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
